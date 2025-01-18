@@ -31,7 +31,6 @@ yarn-error.log*
 
 # env files
 .env*
-!.env
 
 # vercel
 .vercel
@@ -45,3 +44,9 @@ next-env.d.ts
 
 # Certificates
 certs
+
+# Payload default media upload directory
+public/media/
+
+public/robots.txt
+public/sitemap*.xml
