@@ -1,25 +1,63 @@
-FROM node:18-alpine AS base
+# The base image
+FROM node:20.16.0-bookworm-slim AS base
 
-# Stage 1: Install dependencies
+
+
+# The "dependencies" stage
+# It's good to install dependencies in a separate stage to be explicit about
+# the files that make it into production stage to avoid image bloat
 FROM base AS deps
-WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
 
-# Stage 2: Build the application
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN yarn run build
+# Enable Corepack so that Yarn can be installed
+RUN corepack enable
 
-# Stage 3: Production server
-FROM base AS runner
+# The application directory
 WORKDIR /app
+
+# Copy fiels for package management
+COPY package.json yarn.lock .yarnrc.yml ./
+
+# Install packages
+RUN yarn install --immutable --inline-builds
+
+
+
+# The final image
+FROM base AS production
+
+# Enable Corepack so that Yarn can be installed
+RUN corepack enable
+
+# Create a group and a non-root user to run the app
+RUN groupadd --gid 1001 "nodejs"
+RUN useradd --uid 1001 --create-home --shell /bin/bash --groups "nodejs" "nextjs"
+
+# The application directory
+WORKDIR /app
+
+# Make sure that the .next directory exists
+RUN mkdir -p /app/.next && chown -R nextjs:nodejs /app
+
+# Copy packages from the dependencies stage
+COPY --from=deps --chown=nextjs:nodejs /app/.yarn /app/.yarn
+
+# Copy the rest of the application files
+COPY --chown=nextjs:nodejs . .
+
+# Enable production mode
 ENV NODE_ENV=production
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
 
+# Disable Next.js telemetry
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Configure application port
+ENV PORT=3000
+
+# Let image users know what port the app is going to listen on
 EXPOSE 3000
-CMD ["node", "server.js"]
+
+# Change the user
+USER nextjs:nodejs
+
+# Make sure dependencies are picked up correctly
+RUN yarn install --immutable --inline-builds
