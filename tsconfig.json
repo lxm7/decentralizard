@@ -1,52 +1,29 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "esModuleInterop": true,
-    "target": "ES2022",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES2022"
-    ],
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
-    "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "incremental": true,
-    "jsx": "preserve",
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
     "resolveJsonModule": true,
-    "sourceMap": true,
     "isolatedModules": true,
+    "jsx": "preserve",
     "plugins": [
       {
         "name": "next"
       }
     ],
+    "baseUrl": "app/",
     "paths": {
-      "@payload-config": [
-        "./src/payload.config.ts"
-      ],
-      "react": [
-        "./node_modules/@types/react"
-      ],
-      "@/*": [
-        "./src/*"
-      ],
+      "@/styles/*": ["styles/*"],
+      "@/components/*": ["components/*"]
     }
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    "redirects.js",
-    "next.config.js",
-    "next-sitemap.config.cjs"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
 }
