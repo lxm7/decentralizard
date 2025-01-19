@@ -2,11 +2,11 @@ services:
   # The reverse proxy - the main entrypoint into the application. Holds the TLS
   # certificates.
   nginx:
-    image: "nginx:1.27.0-bookworm"
+    image: 'nginx:1.27.0-bookworm'
     volumes:
       - ./nginx/production.conf:/etc/nginx/nginx.conf
       - ./certs:/certs
-    command: ["nginx", "-g", "daemon off;"]
+    command: ['nginx', '-g', 'daemon off;']
     restart: always
     ports:
       - 443:443
@@ -16,7 +16,7 @@ services:
       app:
         condition: service_started
     healthcheck:
-      test: ["CMD", "service", "nginx", "status"]
+      test: ['CMD', 'service', 'nginx', 'status']
       interval: 30s
       timeout: 5s
       retries: 5
@@ -31,9 +31,11 @@ services:
     env_file:
       - .env.production
     volumes:
-      - "app_build:/app/.next"
-    command: ["yarn", "start"]
+      - 'app_build:/app/.next'
+    command: ['yarn', 'start']
     restart: always
+    environment:
+      - NODE_ENV=production
     networks:
       - public
       - internal
@@ -49,8 +51,8 @@ services:
     env_file:
       - .env.production
     volumes:
-      - "app_build:/app/.next"
-    command: ["yarn", "build"]
+      - 'app_build:/app/.next'
+    command: ['yarn', 'build']
 volumes:
   # The volume that is going to store the .next directory where the built
   # application is located

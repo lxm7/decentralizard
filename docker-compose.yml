@@ -6,10 +6,25 @@ services:
       dockerfile: Dockerfile
       target: production
     volumes:
-      - "app_build:/app/.next"
+      - 'app_build:/app/.next'
+      - ./:/app
+      - /app/node_modules
     ports:
-      - "3000:3000"
-    command: ["yarn", "start"]
+      - '3000:3000'
+    command: sh -c 'HOSTNAME="0.0.0.0" yarn dev'
+    restart: always
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /app/src
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
     depends_on:
       app_build:
         condition: service_completed_successfully
@@ -20,8 +35,8 @@ services:
       dockerfile: Dockerfile
       target: production
     volumes:
-      - "app_build:/app/.next"
-    command: ["yarn", "build"]
+      - 'app_build:/app/.next'
+    command: ['yarn', 'build']
 volumes:
   # The volume that is going to store the .next directory where the built
   # application is located
