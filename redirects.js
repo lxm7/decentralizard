@@ -13,24 +13,24 @@ const redirects = async () => {
   }
 
   const maintenance = () => {
-    if (process.env.NODE_ENV === 'development') {
-      return {
-        destination: '/maintenance.html',
-        has: [
+    return process.env.NEXT_PUBLIC_SHOW_MAINTENANCE === '1'
+      ? [
           {
-            type: 'header',
-            key: 'user-agent',
-            // value: '(.*Trident.*)', // all ie browsers
+            source: '/((?!maintenance).*)',
+            destination: '/maintenance',
+            permanent: false,
           },
-        ],
-        permanent: false,
-        source: '/:path((?!maintenance.html$).*)', // all pages except the incompatibility page
-      }
-    }
-    return []
+        ]
+      : [
+          {
+            source: '/maintenance',
+            destination: '/',
+            permanent: false,
+          },
+        ]
   }
 
-  const redirects = [internetExplorerRedirect] //, maintenance()
+  const redirects = [internetExplorerRedirect, ...maintenance()]
 
   return redirects
 }
