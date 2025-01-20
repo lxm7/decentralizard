@@ -5,18 +5,18 @@ const redirects = async () => {
       {
         type: 'header',
         key: 'user-agent',
-        value: '(.*Trident.*)', // all ie browsers
+        value: '(.*Trident.*)',
       },
     ],
     permanent: false,
-    source: '/:path((?!ie-incompatible.html$).*)', // all pages except the incompatibility page
+    source: '/:path((?!ie-incompatible.html$|images/future1.webp$).*)',
   }
 
   const maintenance = () => {
     return process.env.NEXT_PUBLIC_SHOW_MAINTENANCE === '1'
       ? [
           {
-            source: '/((?!maintenance).*)',
+            source: '/((?!maintenance|images/future1.webp).*)',
             destination: '/maintenance',
             permanent: false,
           },
