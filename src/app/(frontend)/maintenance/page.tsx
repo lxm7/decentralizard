@@ -12,15 +12,20 @@ export default function MaintenancePage() {
           objectPosition: 'bottom',
         }}
         unoptimized
-        // quality={75}
         className="z-0"
       />
 
-      {/* Centered text with semi-transparent background */}
-      <div className="absolute inset-0 flex items-center justify-center z-10">
-        <div className="bg-black bg-opacity-50 rounded-lg px-6 py-4 text-center">
-          <h1 className="text-white text-xl md:text-3xl">
-            This is under going maintenance. Come back soon!
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black bg-opacity-70 z-10"></div>
+
+      {/* Centered content */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center z-20 space-y-6">
+        <Image src="/images/logo2-white.png" alt="logo" width={240} height={40} className="z-1" />
+
+        {/* Text */}
+        <div className="px-6 text-center">
+          <h1 className="text-white text-xl md:text-xl">
+            This site is under going maintenance. Come back soon!
           </h1>
         </div>
       </div>
