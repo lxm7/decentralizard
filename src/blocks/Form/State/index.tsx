@@ -18,12 +18,8 @@ import { stateOptions } from './options'
 
 export const State: React.FC<
   StateField & {
-    control: Control<FieldValues, any>
-    errors: Partial<
-      FieldErrorsImpl<{
-        [x: string]: any
-      }>
-    >
+    control: Control<FieldValues, unknown>
+    errors: Partial<FieldErrorsImpl<FieldValues>>
   }
 > = ({ name, control, errors, label, required, width }) => {
   return (

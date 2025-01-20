@@ -31,7 +31,7 @@ export default function MaintenancePage() {
         {/* Text */}
         <div className="px-6 text-center">
           <h1 className="text-white text-xl md:text-xl">
-            This site is under going maintenance. Come back soon!
+            This site is under construction. Come back soon!
           </h1>
         </div>
       </div>

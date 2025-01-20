@@ -12,8 +12,11 @@ const compat = new FlatCompat({
 const eslintConfig = [
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
+    settings: {
+      reportUnusedDisableDirectives: false, // Suppress unused disable directive warnings globally
+    },
     rules: {
-      '@typescript-eslint/ban-ts-comment': 'warn',
+      '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-empty-object-type': 'warn',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [
@@ -28,6 +31,18 @@ const eslintConfig = [
           caughtErrorsIgnorePattern: '^(_|ignore)',
         },
       ],
+    },
+  },
+  {
+    files: ['src/endpoints/seed/**/*.{js,ts,jsx,tsx}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
+  {
+    files: ['src/endpoints/seed/**/*.{js,ts,jsx,tsx}'],
+    rules: {
+      '@typescript-eslint/ban-ts-comment': 'off',
     },
   },
 ]

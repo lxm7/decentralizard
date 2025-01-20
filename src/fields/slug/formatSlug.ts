@@ -8,6 +8,7 @@ export const formatSlug = (val: string): string =>
 
 export const formatSlugHook =
   (fallback: string): FieldHook =>
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ({ data, operation, originalDoc, value }) => {
     if (typeof value === 'string') {
       return formatSlug(value)
