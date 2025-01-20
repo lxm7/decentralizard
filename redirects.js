@@ -5,14 +5,34 @@ const redirects = async () => {
       {
         type: 'header',
         key: 'user-agent',
-        value: '(.*Trident.*)', // all ie browsers
+        value: '(.*Trident.*)',
       },
     ],
     permanent: false,
-    source: '/:path((?!ie-incompatible.html$).*)', // all pages except the incompatibility page
+    source:
+      '/:path((?!ie-incompatible.html$|images/future1.webp$|images/logo2-white.svg$|images/logo2-black.svg$).*)',
   }
 
-  const redirects = [internetExplorerRedirect]
+  const maintenance = () => {
+    return process.env.NEXT_PUBLIC_SHOW_MAINTENANCE === '1'
+      ? [
+          {
+            source:
+              '/((?!maintenance|images/future1.webp|images/logo2-white.png|images/logo2-black.png).*)',
+            destination: '/maintenance',
+            permanent: false,
+          },
+        ]
+      : [
+          {
+            source: '/maintenance',
+            destination: '/',
+            permanent: false,
+          },
+        ]
+  }
+
+  const redirects = [internetExplorerRedirect, ...maintenance()]
 
   return redirects
 }
