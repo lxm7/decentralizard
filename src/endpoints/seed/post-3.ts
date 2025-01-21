@@ -4,7 +4,7 @@ export const post3: Partial<Post> = {
   slug: 'dollar-and-sense-the-financial-forecast',
   _status: 'published',
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  // @ts-expect-error payload generated
   authors: ['{{AUTHOR}}'],
   content: {
     root: {
@@ -253,12 +253,12 @@ export const post3: Partial<Post> = {
     },
   },
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  // @ts-expect-error payload generated
   heroImage: '{{IMAGE_1}}',
   meta: {
     description: `Money isn't just currency; it's a language. Dive deep into its nuances, where strategy meets intuition in the vast sea of finance.`,
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-expect-error payload generated
     image: '{{IMAGE_1}}',
     title: 'Dollar and Sense: The Financial Forecast',
   },

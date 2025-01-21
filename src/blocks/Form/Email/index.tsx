@@ -8,13 +8,15 @@ import React from 'react'
 import { Error } from '../Error'
 import { Width } from '../Width'
 
+// type CustomFieldValues = {
+//   email: string
+//   password?: string
+//   rememberMe: boolean
+// }
+
 export const Email: React.FC<
   EmailField & {
-    errors: Partial<
-      FieldErrorsImpl<{
-        [x: string]: any
-      }>
-    >
+    errors: Partial<FieldErrorsImpl<FieldValues>>
     register: UseFormRegister<FieldValues>
   }
 > = ({ name, defaultValue, errors, label, register, required: requiredFromProps, width }) => {

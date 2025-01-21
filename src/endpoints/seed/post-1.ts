@@ -3,8 +3,7 @@ import type { Post } from '@/payload-types'
 export const post1: Partial<Post> = {
   slug: 'digital-horizons',
   _status: 'published',
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  // @ts-expect-error payload generated
   authors: ['{{AUTHOR}}'],
   content: {
     root: {
@@ -292,14 +291,14 @@ export const post1: Partial<Post> = {
       version: 1,
     },
   },
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+
+  // @ts-expect-error payload generated
   heroImage: '{{IMAGE_1}}',
   meta: {
     description:
       'Dive into the marvels of modern innovation, where the only constant is change. A journey where pixels and data converge to craft the future.',
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+
+    // @ts-expect-error payload generated
     image: '{{IMAGE_1}}',
     title: 'Digital Horizons: A Glimpse into Tomorrow',
   },

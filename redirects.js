@@ -18,18 +18,12 @@ const redirects = async () => {
       ? [
           {
             source:
-              '/((?!maintenance|images/future1.webp|images/logo2-white.png|images/logo2-black.png).*)',
+              '/((?!maintenance|images/future1.webp|images/logo2-white.svg|images/logo2-black.svg).*)',
             destination: '/maintenance',
             permanent: false,
           },
         ]
-      : [
-          {
-            source: '/maintenance',
-            destination: '/',
-            permanent: false,
-          },
-        ]
+      : []
   }
 
   const redirects = [internetExplorerRedirect, ...maintenance()]
