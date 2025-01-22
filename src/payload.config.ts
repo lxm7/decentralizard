@@ -1,5 +1,6 @@
 // storage-adapter-import-placeholder
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 
 import sharp from 'sharp' // sharp-import
 import path from 'path'
@@ -67,11 +68,27 @@ export default buildConfig({
   collections: [Pages, Posts, Media, Categories, Users],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
+  custom: {
+    supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  },
   plugins: [
     ...plugins,
     // storage-adapter-placeholder
   ],
   secret: process.env.PAYLOAD_SECRET,
+  email: nodemailerAdapter({
+    defaultFromAddress: 'contact@decentralizard.com',
+    defaultFromName: 'Decentralizard',
+    // Nodemailer transportOptions
+    // transport: nodemailer.createTransport({
+    //   host: process.env.SMTP_HOST,
+    //   port: parseInt(process.env.SMTP_PORT || '587', 10),
+    //   auth: {
+    //     user: process.env.SMTP_USER,
+    //     pass: process.env.SMTP_PASS,
+    //   },
+    // }),
+  }),
   sharp,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

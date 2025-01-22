@@ -1,8 +1,14 @@
+'use client'
+
 import Image from 'next/image'
+import { useState } from 'react'
 
 export default function MaintenancePage() {
+  const [imageLoaded, setImageLoaded] = useState(false)
+
   return (
     <div className="relative w-screen h-screen">
+      {/* Background image */}
       <Image
         src="/images/future1.webp"
         alt="Background future space image"
@@ -12,7 +18,10 @@ export default function MaintenancePage() {
           objectPosition: 'bottom',
         }}
         unoptimized
-        className="z-0"
+        className={`z-0 transition-opacity duration-500 ${
+          imageLoaded ? 'opacity-100' : 'opacity-0'
+        }`}
+        onLoad={() => setImageLoaded(true)}
       />
 
       {/* Overlay */}
@@ -20,19 +29,36 @@ export default function MaintenancePage() {
 
       {/* Centered content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center z-20 space-y-6">
-        <Image
-          src="/images/logo2-white.svg"
-          alt="logo"
-          width={240}
-          height={40}
-          className="z-1 h-10"
-        />
-
+        {/* Logo (Switch visibility based on imageLoaded state) */}
+        <div className="relative w-60 h-10">
+          <Image
+            src="/images/logo2-white-loader-colour.svg"
+            alt="logo-loader"
+            layout="fill"
+            className={`absolute transition-opacity duration-500 ${
+              imageLoaded ? 'opacity-0' : 'opacity-100'
+            }`}
+          />
+          <Image
+            src="/images/logo2-white.svg"
+            alt="logo"
+            layout="fill"
+            className={`absolute transition-opacity duration-500 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+        </div>
         {/* Text */}
         <div className="px-6 text-center">
-          <h1 className="text-white text-xl md:text-xl">
-            This site is under construction. Come back soon!
-          </h1>
+          {imageLoaded ? (
+            <h1 className="text-white text-xl md:text-xl">
+              This site is under construction. Come back soon!
+            </h1>
+          ) : (
+            <h1 className="text-transparent bg-clip-text text-xl md:text-xl">
+              This site is under construction. Come back soon!
+            </h1>
+          )}
         </div>
       </div>
     </div>

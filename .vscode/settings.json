@@ -36,5 +36,9 @@
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": "explicit"
     }
+  },
+  "files.associations": {
+    "*.xml": "html",
+    "*.svg": "html"
   }
 }
