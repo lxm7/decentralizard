@@ -34,7 +34,7 @@ export default function MaintenancePage() {
           <Image
             src="/images/logo2-white-loader-colour.svg"
             alt="logo-loader"
-            layout="fill"
+            fill
             className={`absolute transition-opacity duration-500 ${
               imageLoaded ? 'opacity-0' : 'opacity-100'
             }`}
@@ -42,7 +42,7 @@ export default function MaintenancePage() {
           <Image
             src="/images/logo2-white.svg"
             alt="logo"
-            layout="fill"
+            fill
             className={`absolute transition-opacity duration-500 ${
               imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
