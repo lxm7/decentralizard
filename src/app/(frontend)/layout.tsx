@@ -27,7 +27,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html className={cn(GeistSans.variable, GeistMono.variable)} lang="en" suppressHydrationWarning>
       <head>
-        <meta
+        {/* <meta
           nonce={nonce}
           httpEquiv="Content-Security-Policy"
           content={`
@@ -40,8 +40,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             base-uri 'self';
             form-action 'self';
           `}
-        />
-        <InitTheme />
+        /> */}
+        <InitTheme nonce={nonce} />
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
       </head>

@@ -11,7 +11,7 @@ export function middleware(request: NextRequest) {
     default-src 'self';
     style-src 'self' 'unsafe-inline';
     connect-src 'self' decentralizard.com *.decentralizard.com ws://localhost:3000 ${isDevelopment ? 'ws://localhost:3000' : ''};
-    script-src 'strict-dynamic' 'nonce-${nonce}' ${isDevelopment ? "'unsafe-eval' 'unsafe-inline'" : ''} ${productionDomain};
+    script-src 'strict-dynamic' 'nonce-${nonce}' ${isDevelopment ? "'unsafe-eval' 'unsafe-inline'" : ''};
     img-src 'self' blob: data: ${isDevelopment ? '' : productionDomain};
     font-src 'self' ${isDevelopment ? '' : productionDomain};
     object-src 'none';
