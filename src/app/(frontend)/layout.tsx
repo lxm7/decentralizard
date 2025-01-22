@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 
 import { cn } from '@/utilities/ui'
 import { GeistMono } from 'geist/font/mono'
@@ -16,12 +17,30 @@ import { draftMode } from 'next/headers'
 import './globals.css'
 import { getServerSideURL } from '@/utilities/getURL'
 
+export const dynamic = 'force-dynamic'
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { isEnabled } = await draftMode()
+  const incomingHeaders = await headers()
+  const nonce = incomingHeaders.get('x-nonce') || ''
 
   return (
     <html className={cn(GeistSans.variable, GeistMono.variable)} lang="en" suppressHydrationWarning>
       <head>
+        <meta
+          nonce={nonce}
+          httpEquiv="Content-Security-Policy"
+          content={`
+            default-src 'self';
+            script-src 'strict-dynamic' 'nonce-${nonce}' 'unsafe-eval' 'unsafe-inline';
+            style-src 'self' 'unsafe-inline';
+            img-src 'self' blob: data:;
+            font-src 'self';
+            object-src 'none';
+            base-uri 'self';
+            form-action 'self';
+          `}
+        />
         <InitTheme />
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
