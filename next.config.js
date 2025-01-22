@@ -22,7 +22,6 @@ const nextConfig = {
     ],
   },
   reactStrictMode: true,
-  swcMinify: true,
   redirects,
   async headers() {
     return [
