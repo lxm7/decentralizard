@@ -76,19 +76,19 @@ export default buildConfig({
     // storage-adapter-placeholder
   ],
   secret: process.env.PAYLOAD_SECRET,
-  email: nodemailerAdapter({
-    defaultFromAddress: 'contact@decentralizard.com',
-    defaultFromName: 'Decentralizard',
-    // Nodemailer transportOptions
-    // transport: nodemailer.createTransport({
-    //   host: process.env.SMTP_HOST,
-    //   port: parseInt(process.env.SMTP_PORT || '587', 10),
-    //   auth: {
-    //     user: process.env.SMTP_USER,
-    //     pass: process.env.SMTP_PASS,
-    //   },
-    // }),
-  }),
+  // email: nodemailerAdapter({
+  //   defaultFromAddress: 'contact@decentralizard.com',
+  //   defaultFromName: 'Decentralizard',
+  // Nodemailer transportOptions
+  // transport: nodemailer.createTransport({
+  //   host: process.env.SMTP_HOST,
+  //   port: parseInt(process.env.SMTP_PORT || '587', 10),
+  //   auth: {
+  //     user: process.env.SMTP_USER,
+  //     pass: process.env.SMTP_PASS,
+  //   },
+  // }),
+  // }),
   sharp,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
