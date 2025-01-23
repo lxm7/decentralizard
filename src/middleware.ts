@@ -10,10 +10,10 @@ export function middleware(request: NextRequest) {
   const cspHeader = `
     default-src 'self';
     style-src 'self' 'unsafe-inline';
-    connect-src 'self' decentralizard.com *.decentralizard.com ws://localhost:3000 ${isDevelopment ? 'ws://localhost:3000' : ''};
+    connect-src 'self' decentralizard.com *.decentralizard.com ${isDevelopment ? 'ws://localhost:3000' : ''};
     script-src 'strict-dynamic' 'nonce-${nonce}' ${isDevelopment ? "'unsafe-eval' 'unsafe-inline'" : ''};
-    img-src 'self' blob: data: ${isDevelopment ? '' : productionDomain};
-    font-src 'self' ${isDevelopment ? '' : productionDomain};
+    img-src 'self' blob: data: https: ${isDevelopment ? '' : productionDomain};
+    font-src 'self' https: ${isDevelopment ? '' : productionDomain};
     object-src 'none';
     base-uri 'self';
     form-action 'self';

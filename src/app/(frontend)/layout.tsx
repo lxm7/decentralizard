@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { headers } from 'next/headers'
 
 import { cn } from '@/utilities/ui'
 import { GeistMono } from 'geist/font/mono'
@@ -21,27 +20,11 @@ export const dynamic = 'force-dynamic'
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { isEnabled } = await draftMode()
-  const incomingHeaders = await headers()
-  const nonce = incomingHeaders.get('x-nonce') || ''
 
   return (
     <html className={cn(GeistSans.variable, GeistMono.variable)} lang="en" suppressHydrationWarning>
       <head>
-        {/* <meta
-          nonce={nonce}
-          httpEquiv="Content-Security-Policy"
-          content={`
-            default-src 'self';
-            script-src 'strict-dynamic' 'nonce-${nonce}' 'unsafe-eval' 'unsafe-inline';
-            style-src 'self' 'unsafe-inline';
-            img-src 'self' blob: data:;
-            font-src 'self';
-            object-src 'none';
-            base-uri 'self';
-            form-action 'self';
-          `}
-        /> */}
-        <InitTheme nonce={nonce} />
+        <InitTheme />
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
       </head>
@@ -67,6 +50,9 @@ export const metadata: Metadata = {
   openGraph: mergeOpenGraph(),
   twitter: {
     card: 'summary_large_image',
-    creator: '@payloadcms',
+    title: 'Decentralizard',
+    description: 'Decentralizard Content site where news, culture, crypto and music meet',
+    images: ['https://decentralizard.com/images/future1.webp'],
+    site: '@Decentralizard1',
   },
 }
