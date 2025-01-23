@@ -16,6 +16,8 @@ import { draftMode } from 'next/headers'
 import './globals.css'
 import { getServerSideURL } from '@/utilities/getURL'
 
+export const dynamic = 'force-dynamic'
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { isEnabled } = await draftMode()
 
@@ -24,7 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <InitTheme />
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
-        <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
+        <link href="/favicon.svg" rel="icon" sizes="any" type="image/svg+xml" />
       </head>
       <body>
         <Providers>
@@ -48,6 +50,9 @@ export const metadata: Metadata = {
   openGraph: mergeOpenGraph(),
   twitter: {
     card: 'summary_large_image',
-    creator: '@payloadcms',
+    title: 'Decentralizard',
+    description: 'Decentralizard Content site where news, culture, crypto and music meet',
+    images: ['https://decentralizard.com/images/future1.webp'],
+    site: '@Decentralizard1',
   },
 }

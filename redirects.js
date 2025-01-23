@@ -10,7 +10,7 @@ const redirects = async () => {
     ],
     permanent: false,
     source:
-      '/:path((?!ie-incompatible.html$|images/future1.webp$|images/logo2-white.svg$|images/logo2-black.svg$).*)',
+      '/:path((?!ie-incompatible.html$|images/future1.webp$|images/logo2-white.svg$|images/logo2-white-loader-colour.svg$|images/logo2-black.svg$).*)',
   }
 
   const maintenance = () => {
@@ -18,7 +18,7 @@ const redirects = async () => {
       ? [
           {
             source:
-              '/((?!maintenance|images/future1.webp|images/logo2-white.svg|images/logo2-black.svg).*)',
+              '/((?!maintenance|images/future1.webp|images/logo2-white.svg|images/logo2-white-loader-colour.svg|images/logo2-black.svg).*)',
             destination: '/maintenance',
             permanent: false,
           },

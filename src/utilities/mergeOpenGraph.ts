@@ -2,15 +2,17 @@ import type { Metadata } from 'next'
 import { getServerSideURL } from './getURL'
 
 const defaultOpenGraph: Metadata['openGraph'] = {
+  title: 'Decentralizard',
   type: 'website',
-  description: 'An open-source website built with Payload and Next.js.',
+  description: 'Decentralizard Content site, news, culture, crypto and music zine',
+  url: 'https://decentralizard.com',
   images: [
     {
-      url: `${getServerSideURL()}/images/website-template-OG.webp`,
+      url: `${getServerSideURL()}/images/future1.webp`,
+      alt: 'An image of a future city',
     },
   ],
-  siteName: 'Payload Website Template',
-  title: 'Payload Website Template',
+  siteName: 'Decentralizard',
 }
 
 export const mergeOpenGraph = (og?: Metadata['openGraph']): Metadata['openGraph'] => {

@@ -26,7 +26,8 @@ jobs:
             set -eo pipefail
 
             cd decentralizard
-            git pull origin main
+            git fetch origin
+            git reset --hard origin/main
 
             nohup scripts/production.sh > "deploy-${DATE}.log" 2> "deploy-${DATE}.log" &
           '"
