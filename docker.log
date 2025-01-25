@@ -1,0 +1,274 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [seeder internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.51kB 0.0s done
+#1 DONE 0.0s
+
+#2 [seeder internal] load metadata for docker.io/library/node:20.16.0-bookworm-slim
+#2 ...
+
+#3 [seeder auth] library/node:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [seeder internal] load metadata for docker.io/library/node:20.16.0-bookworm-slim
+#2 DONE 2.9s
+
+#4 [seeder internal] load .dockerignore
+#4 transferring context: 236B done
+#4 DONE 0.0s
+
+#5 [seeder base 1/1] FROM docker.io/library/node:20.16.0-bookworm-slim@sha256:2d4585684de1a8483b91ed507cefb6270e8e0f3feff1a2d586e95d3e13c1af39
+#5 resolve docker.io/library/node:20.16.0-bookworm-slim@sha256:2d4585684de1a8483b91ed507cefb6270e8e0f3feff1a2d586e95d3e13c1af39 0.0s done
+#5 DONE 0.0s
+
+#6 [seeder internal] load build context
+#6 transferring context: 4.53MB 5.0s
+#6 transferring context: 5.81MB 6.7s done
+#6 DONE 7.5s
+
+#7 [seeder production 4/8] WORKDIR /app
+#7 CACHED
+
+#8 [seeder deps 2/4] WORKDIR /app
+#8 CACHED
+
+#9 [seeder deps 1/4] RUN corepack enable
+#9 CACHED
+
+#10 [seeder production 2/8] RUN groupadd --gid 1001 "nodejs"
+#10 CACHED
+
+#11 [seeder deps 4/4] RUN yarn install --immutable --inline-builds
+#11 CACHED
+
+#12 [seeder production 3/8] RUN useradd --uid 1001 --create-home --shell /bin/bash --groups "nodejs" "nextjs"
+#12 CACHED
+
+#13 [seeder production 5/8] RUN mkdir -p /app/.next && chown -R nextjs:nodejs /app
+#13 CACHED
+
+#14 [seeder deps 3/4] COPY package.json yarn.lock .yarnrc.yml ./
+#14 CACHED
+
+#15 [seeder production 6/8] COPY --from=deps --chown=nextjs:nodejs /app/.yarn /app/.yarn
+#15 CACHED
+
+#16 [seeder production 7/8] COPY --chown=nextjs:nodejs . .
+#16 DONE 37.9s
+
+#17 [seeder production 8/8] RUN yarn install --immutable --inline-builds
+#17 1.520 ! Corepack is about to download https://repo.yarnpkg.com/4.6.0/packages/yarnpkg-cli/bin/yarn.js
+#17 3.086 ➤ YN0000: · Yarn 4.6.0
+#17 3.139 ➤ YN0000: ┌ Resolution step
+#17 3.789 ➤ YN0000: └ Completed in 0s 650ms
+#17 3.792 ➤ YN0000: ┌ Post-resolution validation
+#17 3.792 ➤ YN0060: │ react is listed by your project with version 19.0.0 (pdd9d1), which doesn't satisfy what lucide-react and other dependencies request (but they have non-overlapping ranges!).
+#17 3.792 ➤ YN0060: │ react-dom is listed by your project with version 19.0.0 (p1e824), which doesn't satisfy what payload-admin-bar and other dependencies request (but they have non-overlapping ranges!).
+#17 3.792 ➤ YN0002: │ decentralizard@workspace:. doesn't provide @faceless-ui/modal (p6ce02), requested by @payloadcms/richtext-lexical.
+#17 3.792 ➤ YN0002: │ decentralizard@workspace:. doesn't provide @faceless-ui/scroll-info (p60e36), requested by @payloadcms/richtext-lexical.
+#17 3.792 ➤ YN0002: │ decentralizard@workspace:. doesn't provide @lexical/table (p24cd3), requested by @payloadcms/richtext-lexical.
+#17 3.792 ➤ YN0086: │ Some peer dependencies are incorrectly met by your project; run yarn explain peer-requirements <hash> for details, where <hash> is the six-letter p-prefixed code.
+#17 3.792 ➤ YN0086: │ Some peer dependencies are incorrectly met by dependencies; run yarn explain peer-requirements for details.
+#17 3.893 ➤ YN0000: └ Completed
+#17 3.894 ➤ YN0000: ┌ Fetch step
+#17 7.426 ➤ YN0013: │ No new packages added to the project, but 7 were removed (- 168.21 MiB).
+#17 7.426 ➤ YN0000: └ Completed in 3s 516ms
+#17 7.550 ➤ YN0000: ┌ Link step
+#17 9.990 ➤ YN0008: │ sharp@npm:0.32.6 must be rebuilt because its dependency tree changed
+#17 9.991 ➤ YN0008: │ sharp@npm:0.33.5 must be rebuilt because its dependency tree changed
+#17 9.992 ➤ YN0008: │ esbuild@npm:0.23.1 must be rebuilt because its dependency tree changed
+#17 9.992 ➤ YN0008: │ esbuild@npm:0.19.12 must be rebuilt because its dependency tree changed
+#17 9.993 ➤ YN0008: │ esbuild@npm:0.18.20 must be rebuilt because its dependency tree changed
+#17 10.49 ➤ YN0000: │ sharp@npm:0.32.6 STDOUT sharp: Downloading https://github.com/lovell/sharp-libvips/releases/download/v8.14.5/libvips-8.14.5-linux-x64.tar.br
+#17 21.85 ➤ YN0000: │ sharp@npm:0.32.6 STDOUT sharp: Integrity check passed for linux-x64
+#17 23.94 ➤ YN0000: └ Completed in 16s 386ms
+#17 24.08 ➤ YN0000: · Done with warnings in 20s 999ms
+#17 DONE 24.4s
+
+#18 [seeder] exporting to image
+#18 exporting layers
+#18 exporting layers 99.5s done
+#18 exporting manifest sha256:fcaa97fd64a968e0f65a4611c193c6eddc6743126f387827bdbd5673b0925b8e 0.0s done
+#18 exporting config sha256:c7e4491b93128eac6e460f1c922438c1073a120ae6905a3ecabba259c750fbdb 0.0s done
+#18 exporting attestation manifest sha256:1907469a090af6a04eececc04871288ef8fe0601d58021a997489eb88b099661 0.0s done
+#18 exporting manifest list sha256:1f8b411ad79197aa121f08b6d93f53334af88d306577c1fb8dc54f575373b288 0.0s done
+#18 naming to docker.io/library/decentralizard-seeder:latest done
+#18 unpacking to docker.io/library/decentralizard-seeder:latest
+#18 unpacking to docker.io/library/decentralizard-seeder:latest 34.6s done
+#18 DONE 134.2s
+
+#19 [seeder] resolving provenance for metadata file
+#19 DONE 0.2s
+
+#20 [app internal] load build definition from Dockerfile
+#20 transferring dockerfile: 1.51kB 0.0s done
+#20 DONE 0.0s
+
+#2 [app internal] load metadata for docker.io/library/node:20.16.0-bookworm-slim
+#2 DONE 5.4s
+
+#21 [app internal] load .dockerignore
+#21 transferring context: 236B done
+#21 DONE 0.0s
+
+#5 [app base 1/1] FROM docker.io/library/node:20.16.0-bookworm-slim@sha256:2d4585684de1a8483b91ed507cefb6270e8e0f3feff1a2d586e95d3e13c1af39
+#5 resolve docker.io/library/node:20.16.0-bookworm-slim@sha256:2d4585684de1a8483b91ed507cefb6270e8e0f3feff1a2d586e95d3e13c1af39 0.0s done
+#5 DONE 0.1s
+
+#22 [app internal] load build context
+#22 transferring context: 4.74MB 5.0s
+#22 transferring context: 5.79MB 6.2s done
+#22 DONE 6.3s
+
+#9 [app deps 1/4] RUN corepack enable
+#9 CACHED
+
+#12 [app production 3/8] RUN useradd --uid 1001 --create-home --shell /bin/bash --groups "nodejs" "nextjs"
+#12 CACHED
+
+#7 [app production 4/8] WORKDIR /app
+#7 CACHED
+
+#13 [app production 5/8] RUN mkdir -p /app/.next && chown -R nextjs:nodejs /app
+#13 CACHED
+
+#23 [app deps 4/4] RUN yarn install --immutable --inline-builds
+#23 CACHED
+
+#10 [app production 2/8] RUN groupadd --gid 1001 "nodejs"
+#10 CACHED
+
+#8 [app deps 2/4] WORKDIR /app
+#8 CACHED
+
+#24 [app deps 3/4] COPY package.json yarn.lock .yarnrc.yml ./
+#24 CACHED
+
+#25 [app production 6/8] COPY --from=deps --chown=nextjs:nodejs /app/.yarn /app/.yarn
+#25 CACHED
+
+#26 [app production 7/8] COPY --chown=nextjs:nodejs . .
+#26 DONE 25.5s
+
+#27 [app production 8/8] RUN yarn install --immutable --inline-builds
+#27 2.599 ! Corepack is about to download https://repo.yarnpkg.com/4.6.0/packages/yarnpkg-cli/bin/yarn.js
+#27 4.872 ➤ YN0000: · Yarn 4.6.0
+#27 4.909 ➤ YN0000: ┌ Resolution step
+#27 5.306 ➤ YN0000: └ Completed in 0s 397ms
+#27 5.309 ➤ YN0000: ┌ Post-resolution validation
+#27 5.309 ➤ YN0060: │ react is listed by your project with version 19.0.0 (pdd9d1), which doesn't satisfy what lucide-react and other dependencies request (but they have non-overlapping ranges!).
+#27 5.309 ➤ YN0060: │ react-dom is listed by your project with version 19.0.0 (p1e824), which doesn't satisfy what payload-admin-bar and other dependencies request (but they have non-overlapping ranges!).
+#27 5.309 ➤ YN0002: │ decentralizard@workspace:. doesn't provide @faceless-ui/modal (p6ce02), requested by @payloadcms/richtext-lexical.
+#27 5.309 ➤ YN0002: │ decentralizard@workspace:. doesn't provide @faceless-ui/scroll-info (p60e36), requested by @payloadcms/richtext-lexical.
+#27 5.309 ➤ YN0002: │ decentralizard@workspace:. doesn't provide @lexical/table (p24cd3), requested by @payloadcms/richtext-lexical.
+#27 5.310 ➤ YN0086: │ Some peer dependencies are incorrectly met by your project; run yarn explain peer-requirements <hash> for details, where <hash> is the six-letter p-prefixed code.
+#27 5.310 ➤ YN0086: │ Some peer dependencies are incorrectly met by dependencies; run yarn explain peer-requirements for details.
+#27 5.440 ➤ YN0000: └ Completed
+#27 5.440 ➤ YN0000: ┌ Fetch step
+#27 8.209 ➤ YN0013: │ No new packages added to the project, but 7 were removed (- 168.21 MiB).
+#27 8.209 ➤ YN0000: └ Completed in 2s 769ms
+#27 8.299 ➤ YN0000: ┌ Link step
+#27 10.73 ➤ YN0008: │ sharp@npm:0.32.6 must be rebuilt because its dependency tree changed
+#27 10.74 ➤ YN0008: │ sharp@npm:0.33.5 must be rebuilt because its dependency tree changed
+#27 10.74 ➤ YN0008: │ esbuild@npm:0.23.1 must be rebuilt because its dependency tree changed
+#27 10.74 ➤ YN0008: │ esbuild@npm:0.19.12 must be rebuilt because its dependency tree changed
+#27 10.74 ➤ YN0008: │ esbuild@npm:0.18.20 must be rebuilt because its dependency tree changed
+#27 11.28 ➤ YN0000: │ sharp@npm:0.32.6 STDOUT sharp: Downloading https://github.com/lovell/sharp-libvips/releases/download/v8.14.5/libvips-8.14.5-linux-x64.tar.br
+#27 14.73 ➤ YN0000: │ sharp@npm:0.32.6 STDOUT sharp: Integrity check passed for linux-x64
+#27 17.41 ➤ YN0000: └ Completed in 9s 110ms
+#27 17.56 ➤ YN0000: · Done with warnings in 12s 685ms
+#27 DONE 17.9s
+
+#28 [app] exporting to image
+#28 exporting layers
+#28 exporting layers 93.1s done
+#28 exporting manifest sha256:42d3a8fef2241ebf3d6ecfa6944908ad4788c2245ae75a794de7b465573f9cee
+#28 exporting manifest sha256:42d3a8fef2241ebf3d6ecfa6944908ad4788c2245ae75a794de7b465573f9cee 0.0s done
+#28 exporting config sha256:dfd34a17ef90982dda111e66e5cb4a5c8e1c9dc648b4f0713a8a4aaa52ce01a6 done
+#28 exporting attestation manifest sha256:ab97068241df3085a79c78540a145894239226858b8796a235e835adb7984268 0.0s done
+#28 exporting manifest list sha256:692f3d47fa3c3f1d840dc97a46e8bae8bad0eade4c1c5a30a90a38a59da72578 done
+#28 naming to docker.io/library/decentralizard-app:latest done
+#28 unpacking to docker.io/library/decentralizard-app:latest
+#28 unpacking to docker.io/library/decentralizard-app:latest 33.0s done
+#28 DONE 126.1s
+
+#29 [app] resolving provenance for metadata file
+#29 DONE 0.0s
+Attaching to main-app, seeder, supabase-auth, supabase-db, supabase-realtime, supabase-rest
+supabase-db        | The files belonging to this database system will be owned by user "postgres".
+supabase-db        | This user must also own the server process.
+supabase-db        | 
+supabase-db        | The database cluster will be initialized with locale "en_US.UTF-8".
+supabase-db        | The default database encoding has accordingly been set to "UTF8".
+supabase-db        | The default text search configuration will be set to "english".
+supabase-db        | 
+supabase-db        | Data page checksums are disabled.
+supabase-db        | 
+supabase-db        | fixing permissions on existing directory /var/lib/postgresql/data ... ok
+supabase-db        | creating subdirectories ... ok
+supabase-db        | selecting dynamic shared memory implementation ... posix
+supabase-db        | selecting default max_connections ... 100
+supabase-db        | selecting default shared_buffers ... 128MB
+supabase-db        | selecting default time zone ... Etc/UTC
+supabase-db        | creating configuration files ... ok
+supabase-db        | running bootstrap script ... ok
+supabase-db        | performing post-bootstrap initialization ... ok
+supabase-db        | syncing data to disk ... ok
+supabase-db        | 
+supabase-db        | 
+supabase-db        | Success. You can now start the database server using:
+supabase-db        | 
+supabase-db        |     /usr/bin/pg_ctl -D /var/lib/postgresql/data -l logfile start
+supabase-db        | 
+supabase-db        | waiting for server to start.... 2025-01-25 13:18:06.274 UTC [54] LOG:  pgaudit extension initialized
+supabase-db        |  2025-01-25 13:18:06.293 UTC [54] LOG:  pgsodium primary server secret key loaded
+supabase-db        |  2025-01-25 13:18:06.326 UTC [54] LOG:  starting PostgreSQL 15.8 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 13.2.0, 64-bit
+supabase-db        |  2025-01-25 13:18:06.328 UTC [54] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+supabase-db        |  2025-01-25 13:18:06.345 UTC [63] LOG:  database system was shut down at 2025-01-25 13:18:05 UTC
+supabase-db        |  2025-01-25 13:18:06.360 UTC [54] LOG:  database system is ready to accept connections
+supabase-db        |  2025-01-25 13:18:06.363 UTC [66] LOG:  TimescaleDB background worker launcher connected to shared catalogs
+supabase-db        |  2025-01-25 13:18:06.393 UTC [68] LOG:  pg_cron scheduler started
+supabase-db        |  done
+supabase-db        | server started
+supabase-db        | 
+supabase-db        | /usr/local/bin/docker-entrypoint.sh: running /docker-entrypoint-initdb.d/00-roles.sql
+supabase-db        | [local] 2025-01-25 13:18:06.529 UTC [75] postgres@postgres ERROR:  role "anon" already exists
+supabase-db        | [local] 2025-01-25 13:18:06.529 UTC [75] postgres@postgres CONTEXT:  SQL statement "CREATE ROLE anon"
+supabase-db        | 	PL/pgSQL function inline_code_block line 19 at SQL statement
+supabase-db        | [local] 2025-01-25 13:18:06.529 UTC [75] postgres@postgres STATEMENT:  DO $$
+supabase-db        | 	BEGIN
+supabase-db        | 	  -- 1. Create postgres superuser first
+supabase-db        | 	  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'postgres') THEN
+supabase-db        | 	    CREATE ROLE postgres WITH 
+supabase-db        | 	      LOGIN 
+supabase-db        | 	      SUPERUSER 
+supabase-db        | 	      PASSWORD 'postgres';
+supabase-db        | 	  END IF;
+supabase-db        | 	
+supabase-db        | 	  -- 2. Create anon role before granting it
+supabase-db        | 	  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'anon') THEN
+supabase-db        | 	    CREATE ROLE anon;
+supabase-db        | 	  END IF;
+supabase-db        | 	
+supabase-db        | 	  -- 3. Create authenticator with password
+supabase-db        | 	  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'authenticator') THEN
+supabase-db        | 	    CREATE ROLE authenticator NOINHERIT LOGIN PASSWORD 'authenticator123';
+supabase-db        | 	    CREATE ROLE anon;
+supabase-db        | 	    -- Now grant AFTER creating anon
+supabase-db        | 	    GRANT anon TO authenticator;
+supabase-db        | 	  END IF;
+supabase-db        | 	
+supabase-db        | 	  -- 4. Create auth admin
+supabase-db        | 	  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'supabase_auth_admin') THEN
+supabase-db        | 	    CREATE ROLE supabase_auth_admin WITH LOGIN PASSWORD 'authadmin123';
+supabase-db        | 	  END IF;
+supabase-db        | 	
+supabase-db        | 	  -- Force password updates
+supabase-db        | 	  ALTER ROLE postgres WITH PASSWORD 'postgres';
+supabase-db        | 	  ALTER ROLE authenticator WITH PASSWORD 'authenticator123';
+supabase-db        | 	  ALTER ROLE supabase_auth_admin WITH PASSWORD 'authadmin123';
+supabase-db        | 	END $$;
+[Ksupabase-db exited with code 0
+supabase-db        | 
+supabase-db        | PostgreSQL Database directory appears to contain a database; Skipping initialization
+supabase-db        | 
