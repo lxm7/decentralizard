@@ -50,8 +50,3 @@ public/media/
 
 public/robots.txt
 public/sitemap*.xml
-
-#docker 
-volumes/db/data/
-volumes/db/logs/
-volumes/app_build/

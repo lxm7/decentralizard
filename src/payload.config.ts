@@ -62,10 +62,7 @@ export default buildConfig({
   editor: defaultLexical,
   db: postgresAdapter({
     pool: {
-      connectionString:
-        process.env.NODE_ENV === 'production'
-          ? process.env.DATABASE_URI
-          : 'postgres://postgres:postgres@supabase-db:5432/postgres',
+      connectionString: process.env.DATABASE_URI || '',
     },
   }),
   collections: [Pages, Posts, Media, Categories, Users],

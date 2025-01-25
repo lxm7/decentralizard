@@ -1,166 +1,43 @@
 services:
-  db:
-    container_name: supabase-db
-    image: supabase/postgres:15.8.1.020
-    restart: unless-stopped
-    volumes:
-      - ./volumes/db/data:/var/lib/postgresql/data
-      - ./volumes/db/00-roles.sql:/docker-entrypoint-initdb.d/00-roles.sql
-      - ./volumes/db/01-supabase.sql:/docker-entrypoint-initdb.d/01-supabase.sql
-      - ./volumes/db/02-jwt.sql:/docker-entrypoint-initdb.d/02-jwt.sql
-      - ./volumes/db/03-realtime.sql:/docker-entrypoint-initdb.d/03-realtime.sql
-      - ./volumes/db/04-webhooks.sql:/docker-entrypoint-initdb.d/04-webhooks.sql
-      - ./volumes/db/05-logs.sql:/docker-entrypoint-initdb.d/05-logs.sql
-      - ./volumes/db/06-pooler.sql:/docker-entrypoint-initdb.d/06-pooler.sql
-      - ./volumes/init/data.sql:/docker-entrypoint-initdb.d/99-seed.sql
-
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_HOST: /var/run/postgresql
-      PGPORT: ${POSTGRES_PORT}
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    healthcheck:
-      test: ['CMD', '-c', 'pg_isready -U postgres']
-      interval: 10s
-      timeout: 10s
-      retries: 30 # Give more time for init
-      start_period: 40s
-
-    # healthcheck:
-    #   test: ['CMD', 'pg_isready', '-U', 'postgres', '-h', '127.0.0.1']
-    #   interval: 5s
-    #   timeout: 5s
-    #   retries: 10
-    # depends_on:
-    #   vector:
-    #     condition: service_healthy
-    command:
-      [
-        'postgres',
-        '-c',
-        'config_file=/etc/postgresql/postgresql.conf',
-        '-c',
-        'log_min_messages=warning',
-      ]
-
-  supabase-auth:
-    image: supabase/gotrue:v2.167.0
-    container_name: supabase-auth
-    restart: unless-stopped
-    environment:
-      GOTRUE_JWT_SECRET: supersecretkey
-      GOTRUE_JWT_EXP: ${JWT_EXPIRY}
-      GOTRUE_API_HOST: 0.0.0.0
-      GOTRUE_API_PORT: 9999
-      API_EXTERNAL_URL: http://localhost:9999
-      GOTRUE_DB_DRIVER: postgres
-      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${AUTH_ADMIN_PASSWORD}@db:5432/postgres
-      GOTRUE_SITE_URL: http://localhost:3000
-      GOTRUE_URI_ALLOW_LIST: ${ADDITIONAL_REDIRECT_URLS}
-      GOTRUE_DISABLE_SIGNUP: ${DISABLE_SIGNUP}
-      GOTRUE_JWT_ADMIN_ROLES: service_role
-      GOTRUE_JWT_AUD: authenticated
-      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
-      GOTRUE_EXTERNAL_EMAIL_ENABLED: ${ENABLE_EMAIL_SIGNUP}
-      GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: ${ENABLE_ANONYMOUS_USERS}
-      GOTRUE_MAILER_AUTOCONFIRM: ${ENABLE_EMAIL_AUTOCONFIRM}
-      GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_ADMIN_EMAIL}
-      GOTRUE_SMTP_HOST: ${SMTP_HOST}
-      GOTRUE_SMTP_PORT: ${SMTP_PORT}
-      GOTRUE_SMTP_USER: ${SMTP_USER}
-      GOTRUE_SMTP_PASS: ${SMTP_PASS}
-      GOTRUE_SMTP_SENDER_NAME: ${SMTP_SENDER_NAME}
-      GOTRUE_MAILER_URLPATHS_INVITE: ${MAILER_URLPATHS_INVITE}
-      GOTRUE_MAILER_URLPATHS_CONFIRMATION: ${MAILER_URLPATHS_CONFIRMATION}
-      GOTRUE_MAILER_URLPATHS_RECOVERY: ${MAILER_URLPATHS_RECOVERY}
-      GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: ${MAILER_URLPATHS_EMAIL_CHANGE}
-      GOTRUE_EXTERNAL_PHONE_ENABLED: ${ENABLE_PHONE_SIGNUP}
-      GOTRUE_SMS_AUTOCONFIRM: ${ENABLE_PHONE_AUTOCONFIRM}
-    depends_on:
-      db:
-        condition: service_healthy
-      # analytics:
-      #   condition: service_healthy
-
-  supabase-rest:
-    image: postgrest/postgrest:v12.2.0
-    container_name: supabase-rest
-    restart: unless-stopped
-    environment:
-      PGRST_DB_URI: postgres://authenticator:${AUTHENTICATOR_PASSWORD}@db:5432/postgres
-      PGRST_DB_SCHEMAS: public
-      PGRST_DB_ANON_ROLE: anon
-      PGRST_JWT_SECRET: supersecretkey
-      PGRST_DB_USE_LEGACY_GUCS: 'false'
-      PGRST_APP_SETTINGS_JWT_SECRET: supersecretkey
-      PGRST_APP_SETTINGS_JWT_EXP: ${JWT_EXPIRY}
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - '3001:3000' # Changed to avoid port conflict
-
-  supabase-realtime:
-    image: supabase/realtime:v2.33.70
-    container_name: supabase-realtime
-    restart: unless-stopped
-    environment:
-      DB_HOST: db
-      DB_USER: authenticator
-      DB_PASSWORD: ${AUTHENTICATOR_PASSWORD}
-      DB_NAME: postgres
-      PORT: 4000
-      JWT_SECRET: supersecretkey
-      DB_SCHEMA: public
-      RLIMIT_NOFILE: '10000'
-      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
-      APP_NAME: realtime
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - '4000:4000'
-
+  # The main application service
   app:
     build:
       context: .
       dockerfile: Dockerfile
       target: production
-    container_name: main-app
     volumes:
       - 'app_build:/app/.next'
-      - './:/app'
-      - '/app/node_modules'
+      - ./:/app
+      - /app/node_modules
     ports:
       - '3000:3000'
-    command: sh -c 'export HOSTNAME="0.0.0.0" && yarn dev'
+    command: sh -c 'HOSTNAME="0.0.0.0" yarn dev'
     restart: always
     environment:
-      NODE_ENV: development
-      WATCHPACK_POLLING: 'true'
-      DATABASE_URI: postgres://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /app/src
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
     depends_on:
-      db:
-        condition: service_healthy
-      seeder:
+      app_build:
         condition: service_completed_successfully
-
-  seeder:
+  # The one-off container that builds the application
+  app_build:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: seeder
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DATABASE_URI: postgres://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
-      # Add other necessary environment variables
-    command: sh -c "yarn migrate && yarn seed"
-    restart: 'no'
-
+      target: production
+    volumes:
+      - 'app_build:/app/.next'
+    command: ['yarn', 'build']
 volumes:
-  db-config:
+  # The volume that is going to store the .next directory where the built
+  # application is located
   app_build: {}
