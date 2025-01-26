@@ -3,17 +3,13 @@ services:
     container_name: supabase-db
     image: supabase/postgres:15.8.1.020
     restart: unless-stopped
+    networks:
+      - supabase-network
     volumes:
-      - ./volumes/db/data:/var/lib/postgresql/data
-      - ./volumes/db/00-roles.sql:/docker-entrypoint-initdb.d/00-roles.sql
-      - ./volumes/db/01-supabase.sql:/docker-entrypoint-initdb.d/01-supabase.sql
-      - ./volumes/db/02-jwt.sql:/docker-entrypoint-initdb.d/02-jwt.sql
-      - ./volumes/db/03-realtime.sql:/docker-entrypoint-initdb.d/03-realtime.sql
-      - ./volumes/db/04-webhooks.sql:/docker-entrypoint-initdb.d/04-webhooks.sql
-      - ./volumes/db/05-logs.sql:/docker-entrypoint-initdb.d/05-logs.sql
-      - ./volumes/db/06-pooler.sql:/docker-entrypoint-initdb.d/06-pooler.sql
-      - ./volumes/init/data.sql:/docker-entrypoint-initdb.d/99-seed.sql
-
+      - postgres_data:/var/lib/postgresql/data
+      # https://github.com/supabase/supabase/tree/master/docker/volumes/db
+      - ./volumes/db:/docker-entrypoint-initdb.d
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
     environment:
       POSTGRES_USER: postgres
       POSTGRES_HOST: /var/run/postgresql
@@ -22,29 +18,13 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     healthcheck:
-      test: ['CMD', '-c', 'pg_isready -U postgres']
-      interval: 10s
-      timeout: 10s
+      test: ['CMD', '-c', 'pg_isready -U postgres -d postgres']
+      interval: 2s
+      timeout: 2s
       retries: 30 # Give more time for init
-      start_period: 40s
-
-    # healthcheck:
-    #   test: ['CMD', 'pg_isready', '-U', 'postgres', '-h', '127.0.0.1']
-    #   interval: 5s
-    #   timeout: 5s
-    #   retries: 10
-    # depends_on:
-    #   vector:
-    #     condition: service_healthy
+      start_period: 10s
     command:
-      [
-        'postgres',
-        '-c',
-        'config_file=/etc/postgresql/postgresql.conf',
-        '-c',
-        'log_min_messages=warning',
-      ]
-
+      ['postgres', '-c', 'config_file=/etc/postgresql/postgresql.conf', '-c', 'listen_addresses=*']
   supabase-auth:
     image: supabase/gotrue:v2.167.0
     container_name: supabase-auth
@@ -56,7 +36,7 @@ services:
       GOTRUE_API_PORT: 9999
       API_EXTERNAL_URL: http://localhost:9999
       GOTRUE_DB_DRIVER: postgres
-      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${AUTH_ADMIN_PASSWORD}@db:5432/postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${AUTH_ADMIN_PASSWORD}@db:5432/postgres?connect_timeout=10
       GOTRUE_SITE_URL: http://localhost:3000
       GOTRUE_URI_ALLOW_LIST: ${ADDITIONAL_REDIRECT_URLS}
       GOTRUE_DISABLE_SIGNUP: ${DISABLE_SIGNUP}
@@ -78,11 +58,15 @@ services:
       GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: ${MAILER_URLPATHS_EMAIL_CHANGE}
       GOTRUE_EXTERNAL_PHONE_ENABLED: ${ENABLE_PHONE_SIGNUP}
       GOTRUE_SMS_AUTOCONFIRM: ${ENABLE_PHONE_AUTOCONFIRM}
+      GOTRUE_DB_CONNECT_RETRIES: 15 # Add this
+      GOTRUE_DB_CONNECT_TIMEOUT: 5 # Seconds
     depends_on:
       db:
         condition: service_healthy
-      # analytics:
-      #   condition: service_healthy
+    networks:
+      - supabase-network
+        # analytics:
+        #   condition: service_healthy
 
   supabase-rest:
     image: postgrest/postgrest:v12.2.0
@@ -90,12 +74,15 @@ services:
     restart: unless-stopped
     environment:
       PGRST_DB_URI: postgres://authenticator:${AUTHENTICATOR_PASSWORD}@db:5432/postgres
-      PGRST_DB_SCHEMAS: public
       PGRST_DB_ANON_ROLE: anon
       PGRST_JWT_SECRET: supersecretkey
       PGRST_DB_USE_LEGACY_GUCS: 'false'
       PGRST_APP_SETTINGS_JWT_SECRET: supersecretkey
       PGRST_APP_SETTINGS_JWT_EXP: ${JWT_EXPIRY}
+      PGRST_DB_SCHEMAS: 'public,storage,graphql_public'
+      PGRST_DB_EXTRA_SEARCH_PATH: 'public,extensions'
+      PGRST_JWT_AUD: 'authenticated'
+      PGRST_OPENAPI_SERVER_PROXY_URI: 'http://localhost:3000'
     depends_on:
       db:
         condition: service_healthy
@@ -117,6 +104,18 @@ services:
       RLIMIT_NOFILE: '10000'
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       APP_NAME: realtime
+      DB_EXTENSIONS: 'pg_cron,pg_net,pg_stat_statements,pg_hint_plan'
+      SLOT_NAME: supabase_realtime_replication_slot
+      REPLICATION_MODE: logical
+      REPLICATION_USER: supabase_realtime_admin
+      REPLICATION_PASSWORD: ${REPLICATION_PASSWORD}
+      REPLICATION_HOST: db
+      REPLICATION_PORT: 5432
+      DB_CONNECT_TIMEOUT: 15 # Add this
+      DB_RECONNECT_INTERVAL: 2
+      DB_SSLMODE: disable
+    networks:
+      - supabase-network
     depends_on:
       db:
         condition: service_healthy
@@ -161,6 +160,12 @@ services:
     command: sh -c "yarn migrate && yarn seed"
     restart: 'no'
 
+networks:
+  supabase-network:
+    driver: bridge
+    attachable: true
+
 volumes:
-  db-config:
+  # db-config:
   app_build: {}
+  postgres_data: {}
