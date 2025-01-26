@@ -5,11 +5,6 @@
 .gitattributes
 .node-version
 
-# Docker files
-.dockerignore*
-Dockerfile*
-docker-compose*.yml
-
 # Readme
 README.md
 
@@ -18,3 +13,15 @@ nginx
 
 # Certificates
 certs
+
+
+node_modules
+.next
+dist
+.dockerignore
+.git
+.gitignore
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz

@@ -3,8 +3,9 @@ services:
     container_name: supabase-db
     image: supabase/postgres:15.8.1.020
     restart: unless-stopped
-    networks:
-      - supabase-network
+    dns:
+      - 8.8.8.8 # Google DNS
+      - 1.1.1.1 # Cloudflare DNS
     volumes:
       - postgres_data:/var/lib/postgresql/data
       # https://github.com/supabase/supabase/tree/master/docker/volumes/db
@@ -17,26 +18,33 @@ services:
       POSTGRES_PORT: ${POSTGRES_PORT}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    # healthcheck:
+    #   test: ['CMD', '-c', 'pg_isready -U postgres -d postgres']
+    #   interval: 2s
+    #   timeout: 2s
+    #   retries: 20
+    # start_period: 30s
+    networks:
+      supabase-network:
+        aliases:
+          - database
+          - db
     healthcheck:
-      test: ['CMD', '-c', 'pg_isready -U postgres -d postgres']
-      interval: 2s
-      timeout: 2s
-      retries: 20
-      start_period: 30s
-    command:
-      ['postgres', '-c', 'config_file=/etc/postgresql/postgresql.conf', '-c', 'listen_addresses=*']
+      test: ['CMD-SHELL', 'pg_isready -U postgres -h supabase-db']
+      start_period: 45s
   supabase-auth:
     image: supabase/gotrue:v2.167.0
     container_name: supabase-auth
     restart: unless-stopped
     environment:
       GOTRUE_JWT_SECRET: supersecretkey
+      AUTH_ADMIN_PASSWORD: ${AUTH_ADMIN_PASSWORD}
       GOTRUE_JWT_EXP: ${JWT_EXPIRY}
       GOTRUE_API_HOST: 0.0.0.0
       GOTRUE_API_PORT: 9999
       API_EXTERNAL_URL: http://localhost:9999
       GOTRUE_DB_DRIVER: postgres
-      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${AUTH_ADMIN_PASSWORD}@db:5432/postgres?connect_timeout=10
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${AUTH_ADMIN_PASSWORD}@db:5432/postgres
       GOTRUE_SITE_URL: http://localhost:3000
       GOTRUE_URI_ALLOW_LIST: ${ADDITIONAL_REDIRECT_URLS}
       GOTRUE_DISABLE_SIGNUP: ${DISABLE_SIGNUP}
@@ -86,6 +94,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - supabase-network
     ports:
       - '3001:3000' # Changed to avoid port conflict
 
@@ -128,6 +138,9 @@ services:
       dockerfile: Dockerfile
       target: production
     container_name: main-app
+    extra_hosts:
+      - 'db:supabase-db'
+      - 'database:supabase-db'
     volumes:
       - 'app_build:/app/.next'
       - './:/app'
@@ -140,6 +153,8 @@ services:
       NODE_ENV: development
       WATCHPACK_POLLING: 'true'
       DATABASE_URI: postgres://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
+    networks:
+      - supabase-network
     depends_on:
       db:
         condition: service_healthy
@@ -154,6 +169,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - supabase-network
     environment:
       DATABASE_URI: postgres://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
       # Add other necessary environment variables
@@ -164,6 +181,11 @@ networks:
   supabase-network:
     driver: bridge
     attachable: true
+    name: supabase-network
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+          gateway: 172.20.0.1
 
 volumes:
   # db-config:

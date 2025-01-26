@@ -41,9 +41,11 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'supabase_auth_admin') THEN
     CREATE ROLE supabase_auth_admin NOINHERIT BYPASSRLS;
   END IF;
+  
+  ALTER ROLE supabase_auth_admin WITH PASSWORD '${AUTH_ADMIN_PASSWORD}';
 END $$;
 
 -- Always set passwords (even if roles existed)
 ALTER ROLE postgres WITH PASSWORD '${POSTGRES_PASSWORD}';
-ALTER ROLE supabase_auth_admin WITH PASSWORD '${AUTH_ADMIN_PASSWORD}';
+-- ALTER ROLE supabase_auth_admin WITH PASSWORD '${AUTH_ADMIN_PASSWORD}';
 ALTER ROLE authenticator WITH PASSWORD '${AUTHENTICATOR_PASSWORD}';

@@ -1,63 +1,52 @@
 # The base image
-FROM node:20.16.0-bookworm-slim AS base
-
-
-
-# The "dependencies" stage
-# It's good to install dependencies in a separate stage to be explicit about
-# the files that make it into production stage to avoid image bloat
-FROM base AS deps
-
-# Enable Corepack so that Yarn can be installed
+FROM node:20.16.0-alpine AS base
+RUN apk add --no-cache bash
 RUN corepack enable
 
-# The application directory
+# Stage 1: Dependencies
+FROM base AS deps
 WORKDIR /app
 
-# Copy fiels for package management
-COPY package.json yarn.lock .yarnrc.yml ./
+# First copy only the files needed for dependency installation
+COPY package.json yarn.lock .yarnrc.yml .yarn/ ./
 
-# Install packages
+# Install dependencies with frozen lockfile
 RUN yarn install --immutable --inline-builds
 
+# Stage 2: Builder
+FROM base AS builder
+WORKDIR /app
 
+# Copy dependencies from previous stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/.yarn ./.yarn
+COPY . .
 
-# The final image
+# Build the application
+RUN yarn build
+
+# Stage 3: Production
 FROM base AS production
 
-# Enable Corepack so that Yarn can be installed
-RUN corepack enable
+# Create non-root user
+RUN addgroup -g 1001 nodejs && \
+    adduser -u 1001 -G nodejs -s /bin/sh -D nextjs
 
-# Create a group and a non-root user to run the app
-RUN groupadd --gid 1001 "nodejs"
-RUN useradd --uid 1001 --create-home --shell /bin/bash --groups "nodejs" "nextjs"
-
-# The application directory
 WORKDIR /app
 
-# Make sure that the .next directory exists
-RUN mkdir -p /app/.next && chown -R nextjs:nodejs /app
+# Copy built assets from builder
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/.yarn ./.yarn
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
-# Copy packages from the dependencies stage
-COPY --from=deps --chown=nextjs:nodejs /app/.yarn /app/.yarn
+# Runtime configuration
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=3000
 
-# Copy the rest of the application files
-COPY --chown=nextjs:nodejs . .
-
-# Enable production mode
-ENV NODE_ENV=production
-
-# Disable Next.js telemetry
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# Configure application port
-ENV PORT=3000
-
-# Let image users know what port the app is going to listen on
 EXPOSE 3000
-
-# Change the user
 USER nextjs:nodejs
 
-# Make sure dependencies are picked up correctly
-RUN yarn install --immutable --inline-builds
+CMD ["yarn", "start"]
