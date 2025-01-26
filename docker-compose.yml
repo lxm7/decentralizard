@@ -21,8 +21,8 @@ services:
       test: ['CMD', '-c', 'pg_isready -U postgres -d postgres']
       interval: 2s
       timeout: 2s
-      retries: 30 # Give more time for init
-      start_period: 10s
+      retries: 20
+      start_period: 30s
     command:
       ['postgres', '-c', 'config_file=/etc/postgresql/postgresql.conf', '-c', 'listen_addresses=*']
   supabase-auth:
