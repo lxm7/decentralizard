@@ -1,9 +1,11 @@
 // storage-adapter-import-placeholder
+process.env.NODE_OPTIONS = '--tls-min-v1.2'
+
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
-
-import sharp from 'sharp' // sharp-import
+import fs from 'fs'
 import path from 'path'
+import sharp from 'sharp' // sharp-import
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
@@ -63,6 +65,10 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
+      ssl: {
+        ca: fs.readFileSync(path.resolve(process.cwd(), process.env.CERT_CA || '')),
+        rejectUnauthorized: true,
+      },
     },
   }),
   collections: [Pages, Posts, Media, Categories, Users],
