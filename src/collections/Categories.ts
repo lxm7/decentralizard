@@ -21,6 +21,14 @@ export const Categories: CollectionConfig = {
       type: 'text',
       required: true,
     },
+    {
+      name: 'parent',
+      type: 'relationship',
+      relationTo: 'categories', // 👈 Self-referential
+      admin: {
+        position: 'sidebar',
+      },
+    },
     ...slugField(),
   ],
 }

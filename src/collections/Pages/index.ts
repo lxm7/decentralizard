@@ -40,8 +40,12 @@ export const Pages: CollectionConfig<'pages'> = {
     defaultColumns: ['title', 'slug', 'updatedAt'],
     livePreview: {
       url: ({ data, req }) => {
+        console.log('livePreview', data.path, data.slug)
+
         const path = generatePreviewPath({
-          slug: typeof data?.slug === 'string' ? data.slug : '',
+          // If the document has a 'path' field, use that.
+          slug: typeof data?.path === 'string' ? data.path : (data?.slug ?? ''),
+          // slug: typeof data?.slug === 'string' ? data.slug : '',
           collection: 'pages',
           req,
         })
@@ -51,7 +55,9 @@ export const Pages: CollectionConfig<'pages'> = {
     },
     preview: (data, { req }) =>
       generatePreviewPath({
-        slug: typeof data?.slug === 'string' ? data.slug : '',
+        // If the document has a 'path' field, use that.
+        slug: typeof data?.path === 'string' ? data.path : ((data?.slug ?? '') as string),
+        // slug: typeof data?.slug === 'string' ? data.slug : '',
         collection: 'pages',
         req,
       }),
@@ -62,6 +68,22 @@ export const Pages: CollectionConfig<'pages'> = {
       name: 'title',
       type: 'text',
       required: true,
+    },
+    {
+      name: 'path',
+      label: 'Path',
+      type: 'text',
+      admin: {
+        readOnly: true,
+      },
+    },
+    {
+      name: 'parent',
+      type: 'relationship',
+      relationTo: 'pages', // 👈 Self-referential relationship
+      admin: {
+        position: 'sidebar',
+      },
     },
     {
       type: 'tabs',
@@ -121,11 +143,52 @@ export const Pages: CollectionConfig<'pages'> = {
       },
     },
     ...slugField(),
+    // indexes: [
+    //     { fields: { slug: 1, parent: 1 }, options: { unique: true } },
+    //     { fields: { parent: 1 } },
+    //   ],
   ],
+  // hooks: {
+  //   afterChange: [revalidatePage],
+  //   beforeChange: [populatePublishedAt],
+  //   beforeDelete: [revalidateDelete],
+  // },
   hooks: {
-    afterChange: [revalidatePage],
-    beforeChange: [populatePublishedAt],
-    beforeDelete: [revalidateDelete],
+    /**
+     * If you want to automatically build a “path” field (for example, if a page’s
+     * full URL is built from its parent’s slug), you can use a beforeChange hook.
+     *
+     * This example hook does the following:
+     * - When saving a page, if a parent is selected, it fetches the parent document
+     *   and uses its "path" (or its slug if no path exists) to build the new page’s path.
+     * - Otherwise, the path is set to the page’s slug.
+     *
+     * NOTE: This example is simplified. In a production project you may want to add
+     * additional error checking and also update children pages if a parent’s slug changes.
+     */
+    beforeChange: [
+      async ({ data, req }) => {
+        if (data.parent && req) {
+          // Fetch the parent document
+          const parentResult = await req.payload.find({
+            collection: 'pages',
+            where: { id: { equals: data.parent } },
+            limit: 1,
+          })
+          if (parentResult.docs.length > 0) {
+            const parentDoc = parentResult.docs[0] as { slug: string; path?: string }
+            const parentPath = parentDoc.path || parentDoc.slug
+            data.path = `${parentPath}/${data.slug}`
+            console.log(`Computed path for ${data.title}: ${data.path}`)
+          } else {
+            data.path = data.slug
+          }
+        } else {
+          data.path = data.slug
+        }
+        return data
+      },
+    ],
   },
   versions: {
     drafts: {
