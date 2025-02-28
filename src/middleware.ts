@@ -10,8 +10,15 @@ export function middleware(request: NextRequest) {
   const cspHeader = `
     default-src 'self';
     style-src 'self' 'unsafe-inline';
-    connect-src 'self' decentralizard.com *.decentralizard.com ${isDevelopment ? 'ws://localhost:3000' : ''};
-    script-src 'strict-dynamic' 'nonce-${nonce}' ${isDevelopment ? "'unsafe-eval' 'unsafe-inline'" : ''};
+    connect-src 'self' decentralizard.com *.decentralizard.com ${
+      isDevelopment ? 'ws://localhost:3000' : ''
+    };
+    script-src 'self' 'nonce-${nonce}' ${
+      isDevelopment ? "'unsafe-eval' 'unsafe-inline'" : "'strict-dynamic'"
+    };
+    script-src-elem 'self' 'nonce-${nonce}' ${
+      isDevelopment ? "'unsafe-eval' 'unsafe-inline'" : "'strict-dynamic'"
+    };
     img-src 'self' blob: data: https: ${isDevelopment ? '' : productionDomain};
     font-src 'self' https: ${isDevelopment ? '' : productionDomain};
     object-src 'none';
@@ -20,6 +27,7 @@ export function middleware(request: NextRequest) {
     frame-ancestors 'none';
     upgrade-insecure-requests;
   `
+
   // Replace newline characters and spaces
   const contentSecurityPolicyHeaderValue = cspHeader.replace(/\s{2,}/g, ' ').trim()
 

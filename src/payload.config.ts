@@ -75,7 +75,7 @@ export default buildConfig({
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   custom: {
-    supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY,
   },
   plugins: [
     ...plugins,
