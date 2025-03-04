@@ -13,12 +13,8 @@ export function middleware(request: NextRequest) {
     connect-src 'self' decentralizard.com *.decentralizard.com ${
       isDevelopment ? 'ws://localhost:3000' : ''
     };
-    script-src 'self' 'nonce-${nonce}' ${
-      isDevelopment ? "'unsafe-eval' 'unsafe-inline'" : "'strict-dynamic'"
-    };
-    script-src-elem 'self' 'nonce-${nonce}' ${
-      isDevelopment ? "'unsafe-eval' 'unsafe-inline'" : "'strict-dynamic'"
-    };
+    script-src 'self' 'nonce-${nonce}' ${isDevelopment ? "'unsafe-eval'" : "'strict-dynamic'"};
+    script-src-elem 'self' 'nonce-${nonce}' ${isDevelopment ? "'unsafe-eval'" : "'strict-dynamic'"};
     img-src 'self' blob: data: https: ${isDevelopment ? '' : productionDomain};
     font-src 'self' https: ${isDevelopment ? '' : productionDomain};
     object-src 'none';

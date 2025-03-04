@@ -158,6 +158,15 @@ export interface Page {
 export interface Post {
   id: number;
   title: string;
+  url: string;
+  /**
+   * Short summary of this article
+   */
+  shortDescription?: string | null;
+  /**
+   * Categories this article belongs to
+   */
+  category_titles?: string[] | null;
   heroImage?: (number | null) | Media;
   content: {
     root: {
@@ -1065,6 +1074,9 @@ export interface FormBlockSelect<T extends boolean = true> {
  */
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
+  url?: T;
+  shortDescription?: T;
+  category_titles?: T;
   heroImage?: T;
   content?: T;
   relatedPosts?: T;

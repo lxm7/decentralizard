@@ -75,6 +75,30 @@ export const Posts: CollectionConfig<'posts'> = {
       required: true,
     },
     {
+      name: 'url',
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'shortDescription',
+      type: 'text',
+      label: 'Short Description',
+      admin: {
+        description: 'Short summary of this article',
+        placeholder: 'Short summary of this article',
+      },
+    },
+    {
+      name: 'category_titles',
+      type: 'text',
+      label: 'Category Titles',
+      hasMany: true,
+      admin: {
+        readOnly: true,
+        description: 'Categories this article belongs to',
+      },
+    },
+    {
       type: 'tabs',
       tabs: [
         {

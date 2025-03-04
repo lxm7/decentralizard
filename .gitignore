@@ -50,3 +50,6 @@ public/media/
 
 public/robots.txt
 public/sitemap*.xml
+
+scripts/**.json
+scripts/seed-blog-posts.ts 
