@@ -1,4 +1,3 @@
-// (frontend)/page.tsx
 import type { Metadata } from 'next'
 import { draftMode } from 'next/headers'
 import React from 'react'
@@ -6,8 +5,9 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { cache } from 'react'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
+import { ArticleAnalyzer } from '@/components/ArticleAnalyzer'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
-import { RenderHero } from '@/heros/RenderHero'
+// import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { homeStatic } from '@/endpoints/seed/home-static'
@@ -72,52 +72,20 @@ export default async function HomePage() {
   const { hero, layout } = page
 
   return (
-    <article className="pt-16 pb-24 home-page">
+    <article className="home-page">
       <PageClient />
       <PayloadRedirects disableNotFound url={url} />
 
       {draft && <LivePreviewListener />}
 
-      <RenderHero {...hero} />
+      {/* <RenderHero {...hero} /> */}
       <RenderBlocks blocks={layout} />
 
       {/* Recent Posts Section */}
       {recentPosts.length > 0 && (
-        <div className="recent-posts container mx-auto mt-16">
-          <h2 className="text-3xl font-bold mb-8">Recent Posts</h2>
-          <div className="posts-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {recentPosts.map((post) => (
-              <div
-                key={post.id}
-                className="post-card bg-white rounded-lg shadow-md overflow-hidden"
-              >
-                {/* {post.featuredImage && (
-                  <img
-                    src={post.featuredImage.url}
-                    alt={post.featuredImage.alt || post.title}
-                    className="w-full h-48 object-cover"
-                  />
-                )} */}
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
-                  {/* <p className="text-gray-500 text-sm mb-3">
-                    {new Date(post.publishedDate).toLocaleDateString()}
-                  </p> */}
-                  <p className="text-gray-700 mb-4">
-                    {(post.content.root.children[0] as Record<string, any>).children[0].text}
-                  </p>
-                  <a
-                    href={`${post.url}`}
-                    target="__blank"
-                    className="text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    Read More
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <main className="flex-1 overflow-hidden">
+          <ArticleAnalyzer posts={recentPosts} />
+        </main>
       )}
     </article>
   )
