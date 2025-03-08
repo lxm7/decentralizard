@@ -1,15 +1,8 @@
 #!/usr/bin/env bash
 
 set -exo pipefail
-
-# tear down previous containers
-# docker compose --file docker-compose.production.yml down -t 1
-
-# Build and run the latest version of the app
-docker compose --file docker-compose.production.yml up --build --detach nginx
-
-# reload after we have build our new container incase nginx caches anything
-# sudo nginx -s reload
-
-# Remove the unused containers
-docker system prune --force
+## Keep existing nginx running while deploying new app containers
+docker compose build app
+docker compose up -d --no-deps --scale app=2 app
+sleep 15 # Wait for healthcheck (adjust as needed)
+docker compose up -d --no-deps --scale app=1 app

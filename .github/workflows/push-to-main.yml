@@ -2,14 +2,45 @@ name: Push to main
 on:
   push:
     branches: [main]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15 # Increased from 5
+    env:
+      DOCKER_BUILDKIT: 1
+      BUILDKIT_PROGRESS: plain
+      SUPABASE_PROJECT_ID: xqhhhtucxbbnapliboaa
+
     steps:
-      # Clone the repo
+      # All your existing steps here
+      - name: Get Runner IP
+        id: ip
+        run: |
+          RUNNER_IP=$(curl -s https://ipinfo.io/ip)
+          echo "Runner IP: $RUNNER_IP"
+          echo "ip_address=$RUNNER_IP" >> $GITHUB_OUTPUT
+
+      - name: Whitelist Runner IP in Supabase
+        run: |
+          curl -X POST "https://api.supabase.com/v1/projects/${SUPABASE_PROJECT_ID}/network-restrictions" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "cidr": "${{ steps.ip.outputs.ip_address }}/32",
+              "description": "GitHub Actions Runner"
+            }'
+
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: docker-buildx-${{ github.sha }}
+          restore-keys: docker-buildx-
+
       - name: Prepare SSH key
         run: |
           echo "${{ secrets.VPS_SSH_DEPLOY }}" | base64 -d > vps_key.pem
@@ -22,12 +53,32 @@ jobs:
         run: |
           DATE=$(date "+%Y%m%d%H%M%S")
 
-          ssh -i vps_key.pem "${{ secrets.VPS_SSH_USERNAME }}@${{ secrets.VPS_IP }}" bash -c "'
-            set -eo pipefail
+          ssh -i vps_key.pem "${{ secrets.VPS_SSH_USERNAME }}@${{ secrets.VPS_IP }}" bash -s <<'EOF'
+          set -eo pipefail
+          trap 'echo "Error on line $LINENO"; exit 1' ERR
 
-            cd decentralizard
-            git fetch origin
-            git reset --hard origin/main
+          cd decentralizard
+          git fetch origin
+          git reset --hard origin/main
 
-            nohup scripts/production.sh > "deploy-${DATE}.log" 2> "deploy-${DATE}.log" &
-          '"
+          # Set version
+          export DEPLOYMENT_VERSION=$(date +%s)
+
+          # Cleanup and build cache
+          docker builder prune -af
+          docker compose -f docker-compose.production.yml build --build-arg VERSION=$VERSION app
+
+          # Start new container
+          docker compose -f docker-compose.production.yml up -d \
+            --no-deps \
+            --scale app=2 \
+            --timestamp=$DEPLOYMENT_VERSION
+
+          # Wait for new container healthcheck
+          NEW_CONTAINER_ID=$(docker ps -q --filter "label=deployment.version=$DEPLOYMENT_VERSION")
+          timeout 300 bash -c "while ! docker exec $NEW_CONTAINER_ID curl -fs http://localhost:3000/api/health; do sleep 5; done"
+
+          # Stop old containers
+          OLD_CONTAINERS=$(docker ps -q --filter "label=deployment.version!=$DEPLOYMENT_VERSION")
+          [ -z "$OLD_CONTAINERS" ] || docker stop $OLD_CONTAINERS
+          EOF
