@@ -1,10 +1,11 @@
+import React from 'react'
 import type { Metadata } from 'next'
 import Script from 'next/script'
+import { draftMode, headers } from 'next/headers'
 
 import { cn } from '@/utilities/ui'
 import { GeistMono } from 'geist/font/mono'
 import { GeistSans } from 'geist/font/sans'
-import React from 'react'
 
 import { AdminBar } from '@/components/AdminBar'
 // import { Footer } from '@/Footer/Component'
@@ -12,7 +13,6 @@ import { AdminBar } from '@/components/AdminBar'
 import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
-import { draftMode } from 'next/headers'
 
 import './globals.css'
 import { getServerSideURL } from '@/utilities/getURL'
@@ -21,6 +21,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { isEnabled } = await draftMode()
+  // const nonce = (await headers()).get('x-nonce') as string
 
   return (
     <html className={cn(GeistSans.variable, GeistMono.variable)} lang="en" suppressHydrationWarning>
@@ -28,11 +29,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <InitTheme />
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
         <link href="/favicon.svg" rel="icon" sizes="any" type="image/svg+xml" />
-        <Script
+        <meta name="google-adsense-account" content="ca-pub-8283897961287774" />
+        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8283897961287774"
           crossOrigin="anonymous"
-        ></Script>
+        ></script>
       </head>
       <body>
         <Providers>

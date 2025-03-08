@@ -87,7 +87,7 @@ export const Pages: CollectionConfig<'pages'> = {
         {
           name: 'meta',
           label: 'SEO',
-          fields: [
+          fields: [ 
             OverviewField({
               titlePath: 'meta.title',
               descriptionPath: 'meta.description',

@@ -7,37 +7,56 @@ export function middleware(request: NextRequest) {
 
   // require-trusted-types-for 'script';
 
-  const cspHeader = `
-    default-src 'self';
-    style-src 'self' 'unsafe-inline';
-    connect-src 'self' decentralizard.com *.decentralizard.com ${
-      isDevelopment ? 'ws://localhost:3000' : ''
-    };
-    script-src 'self' 'nonce-${nonce}' ${isDevelopment ? "'unsafe-eval'" : "'strict-dynamic'"};
-    script-src-elem 'self' 'nonce-${nonce}' ${isDevelopment ? "'unsafe-eval'" : "'strict-dynamic'"};
-    img-src 'self' blob: data: https: ${isDevelopment ? '' : productionDomain};
-    font-src 'self' https: ${isDevelopment ? '' : productionDomain};
-    object-src 'none';
-    base-uri 'self';
-    form-action 'self';
-    frame-ancestors 'none';
-    upgrade-insecure-requests;
-  `
+  // const cspHeader = `
+  //   default-src 'self';
+  //   style-src 'self' 'unsafe-inline';
+  //   connect-src 'self' decentralizard.com *.decentralizard.com ${
+  //     isDevelopment ? 'ws://localhost:3000' : ''
+  //   };
+  //   script-src ${trustedScriptSources.join(' ')};
+  //   script-src-elem ${trustedScriptSources.join(' ')};
+  //   img-src 'self' blob: data: https: ${isDevelopment ? '' : productionDomain};
+  //   font-src 'self' https: ${isDevelopment ? '' : productionDomain};
+  //   object-src 'none';
+  //   base-uri 'self';
+  //   form-action 'self';
+  //   frame-ancestors 'none';
+  //   upgrade-insecure-requests;
+  // `
 
-  // Replace newline characters and spaces
-  const contentSecurityPolicyHeaderValue = cspHeader.replace(/\s{2,}/g, ' ').trim()
+  const cspDirectives = [
+    "default-src 'self'",
+    "style-src 'self' 'unsafe-inline'",
+    // Note the use of https for all external hosts
+    "connect-src 'self' https://decentralizard.com https://*.decentralizard.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com",
+    // Using a nonce in script-src; remove 'script-src-elem' if not needed.
+    `script-src 'self' 'nonce-${nonce}' 'unsafe-eval' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net`,
+    // Uncomment the following line only if you explicitly need inline scripts in script elements.
+    // "script-src-elem 'unsafe-inline'",
+    // The productionDomain should be provided only in production.
+    `img-src 'self' blob: data: https: ${isDevelopment ? '' : productionDomain}`,
+    `font-src 'self' https: ${isDevelopment ? '' : productionDomain}`,
+    "object-src 'none'",
+    "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://ep2.adtrafficquality.google https://www.google.com",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    'upgrade-insecure-requests',
+  ]
+
+  // Join directives with "; " and ensure a trailing semicolon.
+  const cspHeader = cspDirectives.join('; ') + ';'
 
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-nonce', nonce)
-
-  requestHeaders.set('Content-Security-Policy', contentSecurityPolicyHeaderValue)
+  requestHeaders.set('Content-Security-Policy', cspHeader)
 
   const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   })
-  response.headers.set('Content-Security-Policy', contentSecurityPolicyHeaderValue)
+  response.headers.set('Content-Security-Policy', cspHeader)
 
   return response
 }
