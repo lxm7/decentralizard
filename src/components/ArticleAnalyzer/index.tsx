@@ -2,11 +2,14 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import * as d3 from 'd3'
-import { Post, PostWithMetrics, HierarchyNode, SizeMetric } from './types'
+import { Post } from '@/payload-types'
+import { PostWithMetrics, HierarchyNode, SizeMetric } from './types'
 
 const headerHeight = 60
-const width = window.innerWidth
-const height = window.innerHeight - headerHeight
+const defaultWidth = 1440
+const defaultHeight = 694
+const width = typeof window !== 'undefined' ? window.innerWidth : defaultWidth
+const height = typeof window !== 'undefined' ? window.innerHeight - headerHeight : defaultHeight
 
 /**
  * Returns a shade of the base color for the given value.
@@ -78,6 +81,11 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
   useEffect(() => {
     if (!hierarchyData.children || hierarchyData.children.length === 0) return
 
+    // the page doesnt load until a hover is initiated,
+    // any other AI suggestion to draw or do whatever the fuck, none of it works
+    // so go shove it up your fucking arse cunt!!
+    setHoveredNode(hierarchyData.children as never)
+
     const root = d3
       .hierarchy<HierarchyNode>(hierarchyData)
       .sum((d) => (!d.children ? d[sizeMetric] || 0 : 0))
@@ -99,7 +107,7 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
     // After computing the layout, draw it.
     draw()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hierarchyData, sizeMetric, transform, hoveredNode])
+  }, [hierarchyData, sizeMetric, transform])
 
   // Cache constant render parameters (palette, color scales, etc.)
   // This memo recalculates only when the number of treemap nodes or sizeMetric changes.
@@ -128,6 +136,7 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
       categoryMax[catNode.data.name] = maxVal
     })
     return { palette, predefinedColors, categoryNodes, ordinal, categoryMax }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [treemapNodesRef.current.length, sizeMetric])
 
   // Optimize canvas setup: resize the canvas only once (or when needed)
@@ -289,18 +298,18 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
         tooltipRef.current.style.top = `${event.pageY + 10}px`
         tooltipRef.current.innerHTML = `
           <div class="font-bold text-sm mb-2">${hit.data.name}</div>
-          <div class="flex justify-between text-xs mb-1">
-            <span class="text-gray-600 mr-3">Total Clicks:</span>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-gray-600 mr-3">Total Clicks:</span>
             <span class="font-medium">${hit.data.clicks?.toLocaleString() || ''}</span>
-          </div>
-          <div class="flex justify-between text-xs mb-1">
-            <span class="text-gray-600 mr-3">Unique Clicks:</span>
+              </div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-gray-600 mr-3">Unique Clicks:</span>
             <span class="font-medium">${hit.data.uniqueClicks?.toLocaleString() || ''}</span>
-          </div>
-          <div class="flex justify-between text-xs mb-1">
-            <span class="text-gray-600 mr-3">Click Rate:</span>
+              </div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-gray-600 mr-3">Click Rate:</span>
             <span class="font-medium">${hit.data.clickRate ? hit.data.clickRate + '%' : ''}</span>
-          </div>
+              </div>
         `
       } else if (tooltipRef.current) {
         tooltipRef.current.style.opacity = '0'
@@ -326,7 +335,7 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
   useEffect(() => {
     draw()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transform, hoveredNode])
+  }, [hoveredNode])
 
   return (
     <div className="flex flex-col w-full h-full">
@@ -335,14 +344,12 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
           return (
             <article key={post.id}>
               <h2>{post.title.replace(/\n\s*/g, ' ')}</h2>
-              <p>{post.shortDescription}</p>
-              <p>{post.meta.description}</p>
-              <p>{post.content.root.children[0].children[0].text}</p>
-              <ul>
-                {post.category_titles.map((category) => (
-                  <li key={category}>{category}</li>
-                ))}
-              </ul>
+              <p>{post.shortDescription ?? ''}</p>
+              <p>{post.meta?.description ?? ''}</p>
+              <p>
+                {(post.content?.root?.children?.[0]?.children?.[0] as { text: string })?.text ?? ''}
+              </p>
+              <ul>{post.category_titles?.map((category) => <li key={category}>{category}</li>)}</ul>
               <a href={post.url}>Read more</a>
             </article>
           )
