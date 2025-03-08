@@ -143,6 +143,12 @@ export interface Page {
      */
     image?: (number | null) | Media;
     description?: string | null;
+    keywords?:
+      | {
+          keyword?: string | null;
+          id?: string | null;
+        }[]
+      | null;
   };
   publishedAt?: string | null;
   slug?: string | null;
@@ -158,6 +164,15 @@ export interface Page {
 export interface Post {
   id: number;
   title: string;
+  url: string;
+  /**
+   * Short summary of this article
+   */
+  shortDescription?: string | null;
+  /**
+   * Categories this article belongs to
+   */
+  category_titles?: string[] | null;
   heroImage?: (number | null) | Media;
   content: {
     root: {
@@ -183,6 +198,12 @@ export interface Post {
      */
     image?: (number | null) | Media;
     description?: string | null;
+    keywords?:
+      | {
+          keyword?: string | null;
+          id?: string | null;
+        }[]
+      | null;
   };
   publishedAt?: string | null;
   authors?: (number | User)[] | null;
@@ -967,6 +988,12 @@ export interface PagesSelect<T extends boolean = true> {
         title?: T;
         image?: T;
         description?: T;
+        keywords?:
+          | T
+          | {
+              keyword?: T;
+              id?: T;
+            };
       };
   publishedAt?: T;
   slug?: T;
@@ -1065,6 +1092,9 @@ export interface FormBlockSelect<T extends boolean = true> {
  */
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
+  url?: T;
+  shortDescription?: T;
+  category_titles?: T;
   heroImage?: T;
   content?: T;
   relatedPosts?: T;
@@ -1075,6 +1105,12 @@ export interface PostsSelect<T extends boolean = true> {
         title?: T;
         image?: T;
         description?: T;
+        keywords?:
+          | T
+          | {
+              keyword?: T;
+              id?: T;
+            };
       };
   publishedAt?: T;
   authors?: T;

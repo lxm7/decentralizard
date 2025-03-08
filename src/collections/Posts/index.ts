@@ -48,7 +48,7 @@ export const Posts: CollectionConfig<'posts'> = {
     },
   },
   admin: {
-    defaultColumns: ['title', 'slug', 'updatedAt'],
+    defaultColumns: ['title', 'slug', 'content', 'categories'],
     livePreview: {
       url: ({ data, req }) => {
         const path = generatePreviewPath({
@@ -73,6 +73,30 @@ export const Posts: CollectionConfig<'posts'> = {
       name: 'title',
       type: 'text',
       required: true,
+    },
+    {
+      name: 'url',
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'shortDescription',
+      type: 'text',
+      label: 'Short Description',
+      admin: {
+        description: 'Short summary of this article',
+        placeholder: 'Short summary of this article',
+      },
+    },
+    {
+      name: 'category_titles',
+      type: 'text',
+      label: 'Category Titles',
+      hasMany: true,
+      admin: {
+        readOnly: true,
+        description: 'Categories this article belongs to',
+      },
     },
     {
       type: 'tabs',
@@ -160,6 +184,18 @@ export const Posts: CollectionConfig<'posts'> = {
               titlePath: 'meta.title',
               descriptionPath: 'meta.description',
             }),
+            {
+              name: 'keywords',
+              type: 'array',
+              fields: [
+                {
+                  name: 'keyword',
+                  type: 'text',
+                },
+              ],
+              label: 'Keywords',
+              required: false,
+            },
           ],
         },
       ],
@@ -193,6 +229,7 @@ export const Posts: CollectionConfig<'posts'> = {
       hasMany: true,
       relationTo: 'users',
     },
+
     // This field is only used to populate the user data via the `populateAuthors` hook
     // This is because the `user` collection has access control locked to protect user privacy
     // GraphQL will also not return mutated user data that differs from the underlying schema
