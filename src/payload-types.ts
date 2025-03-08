@@ -143,6 +143,12 @@ export interface Page {
      */
     image?: (number | null) | Media;
     description?: string | null;
+    keywords?:
+      | {
+          keyword?: string | null;
+          id?: string | null;
+        }[]
+      | null;
   };
   publishedAt?: string | null;
   slug?: string | null;
@@ -192,6 +198,12 @@ export interface Post {
      */
     image?: (number | null) | Media;
     description?: string | null;
+    keywords?:
+      | {
+          keyword?: string | null;
+          id?: string | null;
+        }[]
+      | null;
   };
   publishedAt?: string | null;
   authors?: (number | User)[] | null;
@@ -976,6 +988,12 @@ export interface PagesSelect<T extends boolean = true> {
         title?: T;
         image?: T;
         description?: T;
+        keywords?:
+          | T
+          | {
+              keyword?: T;
+              id?: T;
+            };
       };
   publishedAt?: T;
   slug?: T;
@@ -1087,6 +1105,12 @@ export interface PostsSelect<T extends boolean = true> {
         title?: T;
         image?: T;
         description?: T;
+        keywords?:
+          | T
+          | {
+              keyword?: T;
+              id?: T;
+            };
       };
   publishedAt?: T;
   authors?: T;

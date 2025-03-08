@@ -2,9 +2,11 @@ import type { Metadata } from 'next'
 import { getServerSideURL } from './getURL'
 
 const defaultOpenGraph: Metadata['openGraph'] = {
-  title: 'Decentralizard',
+  title:
+    'Decentralizard: AI, Art, Culture, Music, Bitcoin, Green Tech and crypto news and discussion',
   type: 'website',
-  description: 'Decentralizard Content site, news, culture, crypto and music zine',
+  description:
+    'Decentralizard is a content aggregator, newsletter and thought organiser at the intersection of news, science, art and culture of tomorrow.',
   url: 'https://decentralizard.com',
   images: [
     {

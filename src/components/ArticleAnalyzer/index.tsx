@@ -31,15 +31,16 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
   const tooltipRef = useRef<HTMLDivElement>(null)
   const [sizeMetric] = useState<SizeMetric>('clicks')
   const [postsWithMetrics, setPostsWithMetrics] = useState<PostWithMetrics[]>([])
-  // We'll store the current zoom transform in state.
+  // Store the current zoom transform in state.
   const [transform, setTransform] = useState<d3.ZoomTransform>(d3.zoomIdentity)
-  // We'll cache the treemap nodes after layout computation.
+  // Cache the treemap nodes after layout computation.
   const treemapNodesRef = useRef<d3.HierarchyRectangularNode<HierarchyNode>[]>([])
+  // For hover interactions; initially null so that hover updates work normally.
   const [hoveredNode, setHoveredNode] = useState<d3.HierarchyRectangularNode<HierarchyNode> | null>(
     null,
   )
 
-  // Enrich posts with random metrics (for demonstration).
+  // Enrich posts with random metrics for demonstration.
   useEffect(() => {
     const enriched = posts.map((post) => {
       const clicks = Math.floor(Math.random() * 2000) + 100 // between 100 and 2100
@@ -77,15 +78,16 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
     }
   }, [postsWithMetrics])
 
-  // Compute treemap layout whenever hierarchyData, sizeMetric, or transform change.
+  // Compute and render the treemap layout.
   useEffect(() => {
     if (!hierarchyData.children || hierarchyData.children.length === 0) return
 
-    // the page doesnt load until a hover is initiated,
-    // any other AI suggestion to draw or do whatever the fuck, none of it works
-    // so go shove it up your fucking arse cunt!!
-    setHoveredNode(hierarchyData.children as never)
-
+    // set the hover here tmp fix - because stupid render
+    setHoveredNode(
+      hierarchyData.children as unknown as React.SetStateAction<
+        d3.HierarchyRectangularNode<HierarchyNode>
+      >,
+    )
     const root = d3
       .hierarchy<HierarchyNode>(hierarchyData)
       .sum((d) => (!d.children ? d[sizeMetric] || 0 : 0))
@@ -100,17 +102,14 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
       .round(true)
     treemapLayout(root)
 
-    treemapNodesRef.current = root.descendants() as
-      | d3.HierarchyRectangularNode<HierarchyNode>[]
-      | []
+    treemapNodesRef.current = root.descendants() as d3.HierarchyRectangularNode<HierarchyNode>[]
 
-    // After computing the layout, draw it.
+    // After computing the layout, draw the treemap.
     draw()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hierarchyData, sizeMetric, transform])
 
   // Cache constant render parameters (palette, color scales, etc.)
-  // This memo recalculates only when the number of treemap nodes or sizeMetric changes.
   const renderConstants = useMemo(() => {
     if (!treemapNodesRef.current.length) {
       return null
@@ -136,10 +135,9 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
       categoryMax[catNode.data.name] = maxVal
     })
     return { palette, predefinedColors, categoryNodes, ordinal, categoryMax }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [treemapNodesRef.current.length, sizeMetric])
 
-  // Optimize canvas setup: resize the canvas only once (or when needed)
+  // Optimize canvas setup: Resize the canvas only once (or when needed).
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -156,7 +154,7 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
     }
   }, [])
 
-  // `draw` renders the entire treemap on canvas.
+  // `draw` renders the entire treemap on the canvas.
   const draw = () => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -171,7 +169,6 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
     context.translate(transform.x, transform.y)
     context.scale(transform.k, transform.k)
 
-    // Use cached render constants.
     const rc = renderConstants
     if (!rc) {
       context.restore()
@@ -179,7 +176,6 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
     }
     const { predefinedColors, ordinal, categoryMax } = rc
 
-    // Draw each node.
     treemapNodesRef.current.forEach((d) => {
       const x = d.x0,
         y = d.y0,
@@ -187,7 +183,7 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
         h = d.y1 - d.y0
       if (w <= 0 || h <= 0) return
 
-      // Set fill color.
+      // Set fill color: Use a subtle fill for category nodes.
       if (d.children) {
         context.fillStyle = 'rgba(255,255,255,0.1)'
       } else {
@@ -211,6 +207,7 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
         context.fillRect(x, y, w, h)
         context.restore()
       }
+
       // Draw text for leaf nodes.
       context.font = '12px sans-serif'
       context.textBaseline = 'top'
@@ -228,7 +225,8 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
         const valueText = sizeMetric === 'clickRate' ? `${value}%` : value?.toLocaleString() || ''
         context.fillText(valueText, x + 5, y + 20)
       }
-      // Also draw text for category nodes, if space allows.
+
+      // Draw text for category nodes if space allows.
       if (d.children && w > 50 && h > 25) {
         context.font = '14px sans-serif'
         context.fillStyle = '#fff'
@@ -253,10 +251,8 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
       .zoom<HTMLCanvasElement, unknown>()
       .scaleExtent([1, 8])
       .on('zoom', (event) => {
-        // Get the pointer coordinates relative to the canvas.
         const [pointerX, pointerY] = d3.pointer(event, canvas)
         const k = event.transform.k
-        // Compute translation so that the pointer remains fixed.
         const tx = -pointerX * (k - 1)
         const ty = -pointerY * (k - 1)
         setTransform(d3.zoomIdentity.translate(tx, ty).scale(k))
@@ -273,7 +269,6 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
       const rect = canvas.getBoundingClientRect()
       const mouseX = event.clientX - rect.left
       const mouseY = event.clientY - rect.top
-      // Invert the transform.
       const x = (mouseX - transform.x) / transform.k
       const y = (mouseY - transform.y) / transform.k
       let hit: d3.HierarchyRectangularNode<HierarchyNode> | null = null
@@ -298,18 +293,18 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
         tooltipRef.current.style.top = `${event.pageY + 10}px`
         tooltipRef.current.innerHTML = `
           <div class="font-bold text-sm mb-2">${hit.data.name}</div>
-              <div class="flex justify-between text-xs mb-1">
-                <span class="text-gray-600 mr-3">Total Clicks:</span>
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-gray-600 mr-3">Total Clicks:</span>
             <span class="font-medium">${hit.data.clicks?.toLocaleString() || ''}</span>
-              </div>
-              <div class="flex justify-between text-xs mb-1">
-                <span class="text-gray-600 mr-3">Unique Clicks:</span>
+          </div>
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-gray-600 mr-3">Unique Clicks:</span>
             <span class="font-medium">${hit.data.uniqueClicks?.toLocaleString() || ''}</span>
-              </div>
-              <div class="flex justify-between text-xs mb-1">
-                <span class="text-gray-600 mr-3">Click Rate:</span>
+          </div>
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-gray-600 mr-3">Click Rate:</span>
             <span class="font-medium">${hit.data.clickRate ? hit.data.clickRate + '%' : ''}</span>
-              </div>
+          </div>
         `
       } else if (tooltipRef.current) {
         tooltipRef.current.style.opacity = '0'
@@ -331,37 +326,49 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
     }
   }, [transform])
 
-  // Whenever the zoom transform or hovered node changes, redraw the canvas.
   useEffect(() => {
     draw()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hoveredNode])
 
   return (
-    <div className="flex flex-col w-full h-full">
-      <div className="sr-only">
-        {postsWithMetrics.map((post) => {
-          return (
-            <article key={post.id}>
-              <h2>{post.title.replace(/\n\s*/g, ' ')}</h2>
-              <p>{post.shortDescription ?? ''}</p>
-              <p>{post.meta?.description ?? ''}</p>
-              <p>
-                {(post.content?.root?.children?.[0]?.children?.[0] as { text: string })?.text ?? ''}
-              </p>
-              <ul>{post.category_titles?.map((category) => <li key={category}>{category}</li>)}</ul>
-              <a href={post.url}>Read more</a>
-            </article>
-          )
-        })}
-      </div>
-      <div className="relative flex-1 overflow-hidden">
-        <canvas ref={canvasRef} width={width} height={height} className="w-full h-full block" />
+    <main className="flex flex-col w-full h-full" role="main">
+      {/* SEO and accessibility: Detailed article information available to crawlers and screen readers */}
+      <section className="sr-only" aria-label="Detailed article information for SEO">
+        {postsWithMetrics.map((post) => (
+          <article key={post.id} role="article">
+            <h2>{post.title.replace(/\n\s*/g, ' ')}</h2>
+            <p>{post.shortDescription ?? ''}</p>
+            <p>{post.meta?.description ?? ''}</p>
+            <p>
+              {(post.content?.root?.children?.[0]?.children?.[0] as { text: string })?.text ?? ''}
+            </p>
+            <ul>{post.category_titles?.map((category) => <li key={category}>{category}</li>)}</ul>
+            <a href={post.url}>Read more</a>
+          </article>
+        ))}
+      </section>
+
+      {/* Interactive treemap visualization */}
+      <section
+        className="relative flex-1 overflow-hidden"
+        aria-label="Interactive articles treemap"
+        role="img"
+      >
+        <canvas
+          ref={canvasRef}
+          width={width}
+          height={height}
+          className="w-full h-full block"
+          aria-label="Interactive treemap visualization of articles. Use scroll to zoom."
+        />
         <div
           ref={tooltipRef}
+          role="tooltip"
+          aria-live="polite"
           className="absolute p-3 bg-white bg-opacity-95 border border-gray-300 rounded shadow-lg pointer-events-none opacity-0 transition-opacity duration-200 z-10 max-w-xs"
         />
-      </div>
-    </div>
+      </section>
+    </main>
   )
 }

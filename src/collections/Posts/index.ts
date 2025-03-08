@@ -184,6 +184,18 @@ export const Posts: CollectionConfig<'posts'> = {
               titlePath: 'meta.title',
               descriptionPath: 'meta.description',
             }),
+            {
+              name: 'keywords',
+              type: 'array',
+              fields: [
+                {
+                  name: 'keyword',
+                  type: 'text',
+                },
+              ],
+              label: 'Keywords',
+              required: false,
+            },
           ],
         },
       ],
