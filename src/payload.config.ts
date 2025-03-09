@@ -2,7 +2,7 @@
 process.env.NODE_OPTIONS = '--tls-min-v1.2'
 
 import { postgresAdapter } from '@payloadcms/db-postgres'
-import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
+// import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import fs from 'fs'
 import path from 'path'
 import sharp from 'sharp' // sharp-import

@@ -69,7 +69,7 @@ export default async function HomePage() {
   // Fetch recent posts
   const recentPosts = await fetchRecentPosts()
   // console.log({ recentPosts })
-  const { hero, layout } = page
+  const { layout } = page // {hero}
 
   return (
     <article className="home-page">

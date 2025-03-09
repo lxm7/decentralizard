@@ -13,6 +13,7 @@ docker-compose*.yml
 # yarn
 .yarn/cache
 .yarn/unplugged
+!.yarn/releases/yarn-4.7.0.cjs
 
 # Readme
 README.md

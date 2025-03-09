@@ -6,6 +6,7 @@ FROM node:20.16.0-bookworm-slim AS base
 # The "dependencies" stage
 FROM base AS deps
 RUN corepack enable
+# RUN corepack prepare yarn@4.7.0 --activate
 WORKDIR /app
 
 # Copy only essential package management files
@@ -22,8 +23,8 @@ RUN --mount=type=cache,target=/app/.yarn/cache,uid=1001,gid=1001 \
 FROM deps AS builder
 
 # Use mock/stub API during build
-ENV NEXT_PUBLIC_SUPABASE_URL=http://localhost:8000/mock
-ENV NEXT_PUBLIC_SUPABASE_KEY=mock_key
+# ENV NEXT_PUBLIC_SUPABASE_URL=http://localhost:8000/mock
+# ENV NEXT_PUBLIC_SUPABASE_KEY=mock_key
 
 COPY --chown=node:node . .
 RUN yarn build

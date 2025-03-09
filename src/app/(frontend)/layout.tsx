@@ -1,7 +1,6 @@
 import React from 'react'
 import type { Metadata } from 'next'
-import Script from 'next/script'
-import { draftMode, headers } from 'next/headers'
+import { draftMode } from 'next/headers'
 
 import { cn } from '@/utilities/ui'
 import { GeistMono } from 'geist/font/mono'

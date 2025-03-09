@@ -19,7 +19,7 @@ COPY package.json yarn.lock .yarnrc.yml ./
 
 # Install packages
 RUN yarn install --immutable --inline-builds
-
+  
 
 
 # The final image

@@ -135,6 +135,7 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
       categoryMax[catNode.data.name] = maxVal
     })
     return { palette, predefinedColors, categoryNodes, ordinal, categoryMax }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [treemapNodesRef.current.length, sizeMetric])
 
   // Optimize canvas setup: Resize the canvas only once (or when needed).

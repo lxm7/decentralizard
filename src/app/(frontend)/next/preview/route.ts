@@ -4,6 +4,8 @@ import { getPayload, type PayloadRequest } from 'payload'
 import configPromise from '@payload-config'
 import { CollectionSlug } from 'payload'
 
+export const dynamic = 'force-dynamic'
+
 // const payloadToken = 'payload-token'
 
 export async function GET(

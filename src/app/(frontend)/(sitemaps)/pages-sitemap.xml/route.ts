@@ -9,7 +9,7 @@ const getPagesSitemap = unstable_cache(
     const SITE_URL =
       process.env.NEXT_PUBLIC_SERVER_URL ||
       process.env.VERCEL_PROJECT_PRODUCTION_URL ||
-      'https://example.com'
+      'https://decentralizard.com'
 
     const results = await payload.find({
       collection: 'pages',
@@ -62,6 +62,16 @@ const getPagesSitemap = unstable_cache(
 )
 
 export async function GET() {
+  // Check if we're in a build environment
+  if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_BUILD_MODE === 'true') {
+    return getServerSideSitemap([
+      {
+        loc: 'https://decentralizard.com',
+        lastmod: new Date().toISOString(),
+      },
+    ])
+  }
+
   const sitemap = await getPagesSitemap()
 
   return getServerSideSitemap(sitemap)
