@@ -34,6 +34,28 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8283897961287774"
           crossOrigin="anonymous"
         ></script>
+        {/* TEST 1 */}
+        <ins
+          className="adsbygoogle"
+          style={{ display: 'block' }}
+          data-ad-format="fluid"
+          data-ad-layout-key="-hc+4+18-27-l"
+          data-ad-client="ca-pub-8283897961287774"
+          data-ad-slot="3751333318"
+        ></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+
+        {/* TEST 2 */}
+        <ins
+          className="adsbygoogle"
+          // style="display:block"
+          style={{ display: 'block' }}
+          data-ad-client="ca-pub-8283897961287774"
+          data-ad-slot="2809818550"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        ></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
       </head>
       <body>
         <Providers>
