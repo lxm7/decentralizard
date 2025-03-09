@@ -66,13 +66,11 @@ jobs:
 
           # Cleanup and build cache
           docker builder prune -af
-          docker compose -f docker-compose.production.yml build --build-arg VERSION=$VERSION app
 
           # Start new container
-          docker compose -f docker-compose.production.yml up -d \
+          DEPLOYMENT_VERSION=$DEPLOYMENT_VERSION docker compose -f docker-compose.production.yml up -d --force-recreate --build \
             --no-deps \
-            --scale app=2 \
-            --timestamp=$DEPLOYMENT_VERSION
+            --scale app=2
 
           # Wait for new container healthcheck
           NEW_CONTAINER_ID=$(docker ps -q --filter "label=deployment.version=$DEPLOYMENT_VERSION")
