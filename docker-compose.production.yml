@@ -21,13 +21,14 @@ services:
       retries: 5
 
   app:
-    image: decentralizard/app:latest
     labels:
       - 'deployment.version=${DEPLOYMENT_VERSION}'
     build:
       context: .
       dockerfile: Dockerfile.production
       target: production
+      secrets:
+        - cacert
     env_file:
       - .env.production
     command: ['yarn', 'start']
@@ -43,6 +44,10 @@ services:
       timeout: 3s
       retries: 10
       start_period: 15s
+
+secrets:
+  cacert:
+    file: /root/decentralizard/certs/prod-ca-2021.crt
 
 networks:
   public: {}

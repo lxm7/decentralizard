@@ -11,7 +11,7 @@ jobs:
       DOCKER_BUILDKIT: 1
       BUILDKIT_PROGRESS: plain
       SUPABASE_PROJECT_ID: xqhhhtucxbbnapliboaa
-      NEXT_PUBLIC_SERVER_URL: 'https://decentralizard.com'
+
     steps:
       # All your existing steps here
       - name: Get Runner IP
@@ -48,24 +48,6 @@ jobs:
         run: |
           mkdir ~/.ssh/ && touch ~/.ssh/known_hosts
           echo "${{ secrets.VPS_SSH_HOST_KEYS }}" | base64 -d >> ~/.ssh/known_hosts
-
-      # --- New Build Step to Respect the .dockerignore ---
-      - name: Build Docker image using local context
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: Dockerfile.production # specify if your Dockerfile is not in the repo root
-          push: false
-          build-args: |
-            NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
-            NODE_ENV=production
-            DATABASE_URI=${{ secrets.DATABASE_URI }}
-            CERT_CA=${{ secrets.CERT_CA }}
-            NEXT_PUBLIC_SUPABASE_SERVICE_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_SERVICE_KEY }}
-            PAYLOAD_SECRET=${{ secrets.PAYLOAD_SECRET }}
-          # tags: decentralizard/app:latest
-          # cache-from: type=local,src=/tmp/.buildx-cache
-          # cache-to: type=local,dest=/tmp/.buildx-cache
 
       - name: Start the deployment of the latest version in the background
         run: |
