@@ -28,16 +28,16 @@ export function middleware(request: NextRequest) {
     "default-src 'self'",
     "style-src 'self' 'unsafe-inline'",
     // Note the use of https for all external hosts
-    "connect-src 'self' https://decentralizard.com https://*.decentralizard.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com",
+    "connect-src 'self' https://decentralizard.com https://*.decentralizard.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com",
     // Using a nonce in script-src; remove 'script-src-elem' if not needed.
-    `script-src 'self' 'nonce-${nonce}' 'unsafe-eval' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net`,
+    `script-src 'self' 'nonce-${nonce}' 'unsafe-eval' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com`,
     // Uncomment the following line only if you explicitly need inline scripts in script elements.
     // "script-src-elem 'unsafe-inline'",
     // The productionDomain should be provided only in production.
     `img-src 'self' blob: data: https: ${isDevelopment ? '' : productionDomain}`,
     `font-src 'self' https: ${isDevelopment ? '' : productionDomain}`,
     "object-src 'none'",
-    "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://ep2.adtrafficquality.google https://www.google.com",
+    "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://ep2.adtrafficquality.google https://www.google.com https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com https://td.doubleclick.net/",
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",

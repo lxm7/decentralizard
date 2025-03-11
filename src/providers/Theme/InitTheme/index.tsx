@@ -3,9 +3,14 @@ import React from 'react'
 
 import { defaultTheme, themeLocalStorageKey } from '../ThemeSelector/types'
 
-export const InitTheme: React.FC = () => {
+interface InitThemeProps {
+  nonce: string
+}
+
+export const InitTheme: React.FC<InitThemeProps> = ({ nonce }) => {
   return (
     <Script
+      nonce={nonce}
       dangerouslySetInnerHTML={{
         __html: `
   (function () {
