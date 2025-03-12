@@ -316,15 +316,14 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
       const hit = getHitNode(event)
       if (hit && !hit.children && hit.data.url) {
         // send to google analytics
-        if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-          window.gtag('event', 'article_click', {
-            event_category: hit.parent?.data.name || 'Uncategorized',
-            event_label: hit.data.name,
-            event_link: hit.data.url,
-            value: hit.data[sizeMetric],
-            transport_type: 'beacon',
-          })
-        }
+        gtag('event', 'article_click', {
+          event_category: hit.parent?.data.name || 'Uncategorized',
+          event_label: hit.data.name,
+          event_link: hit.data.url,
+          value: hit.data[sizeMetric],
+          transport_type: 'beacon',
+        })
+
         window.open(hit.data.url, '_blank')
       }
     }

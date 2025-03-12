@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["jest", "node"],
+    "types": ["jest", "node", "@types/gtag.js"],
     "baseUrl": ".",
     "esModuleInterop": true,
     "target": "ES2022",

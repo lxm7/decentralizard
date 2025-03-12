@@ -18,7 +18,7 @@
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rm -rf node_modules && rm pnpm-lock.yaml && pnpm --ignore-workspace install",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
-    "seedPosts": "payload run ./scripts/seed-blog-posts.ts",
+    "seed": "payload run ./scripts/seed-blog-posts.ts",
     "test": "jest --watch"
   },
   "dependencies": {
@@ -65,6 +65,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/d3": "^7",
     "@types/escape-html": "^1.0.2",
+    "@types/gtag.js": "^0.0.20",
     "@types/jest": "^29.5.14",
     "@types/node": "22.5.4",
     "@types/react": "19.0.7",
