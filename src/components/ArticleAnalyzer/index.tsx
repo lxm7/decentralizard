@@ -337,7 +337,7 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
       const hit = getHitNode(event)
       if (hit && !hit.children && hit.data.url) {
         // send to google analytics
-        gtag('event', 'article_click', {
+        window.gtag('event', 'article_click', {
           event_category: hit.parent?.data.name || 'Uncategorized',
           event_label: hit.data.name,
           event_link: hit.data.url,
