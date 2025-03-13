@@ -40,6 +40,27 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
     null,
   )
 
+  // Manage canvas dimensions in state.
+  const [dimensions, setDimensions] = useState({
+    width: defaultWidth,
+    height: defaultHeight,
+  })
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight - headerHeight,
+      })
+    }
+
+    // Set dimensions on mount.
+    handleResize()
+    // Listen for resize events.
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   // Enrich posts with random metrics for demonstration.
   useEffect(() => {
     const enriched = posts.map((post) => {
@@ -95,7 +116,7 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
 
     const treemapLayout = d3
       .treemap<HierarchyNode>()
-      .size([width, height])
+      .size([dimensions.width, dimensions.height])
       .paddingOuter(3)
       .paddingTop(19)
       .paddingInner(1)
@@ -107,7 +128,7 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
     // After computing the layout, draw the treemap.
     draw()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hierarchyData, sizeMetric, transform])
+  }, [hierarchyData, sizeMetric, transform, dimensions])
 
   // Cache constant render parameters (palette, color scales, etc.)
   const renderConstants = useMemo(() => {
@@ -144,16 +165,16 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
     if (!canvas) return
 
     const dpr = window.devicePixelRatio || 1
-    canvas.width = width * dpr
-    canvas.height = height * dpr
-    canvas.style.width = `${width}px`
-    canvas.style.height = `${height}px`
+    canvas.width = dimensions.width * dpr
+    canvas.height = dimensions.height * dpr
+    canvas.style.width = `${dimensions.width}px`
+    canvas.style.height = `${dimensions.height}px`
 
     const context = canvas.getContext('2d')
     if (context) {
       context.scale(dpr, dpr)
     }
-  }, [])
+  }, [dimensions])
 
   // `draw` renders the entire treemap on the canvas.
   const draw = () => {
@@ -368,8 +389,8 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
       >
         <canvas
           ref={canvasRef}
-          width={width}
-          height={height}
+          width={dimensions.width}
+          height={dimensions.height}
           className="w-full h-full block"
           aria-label="Interactive treemap visualization of articles. Use scroll to zoom."
         />

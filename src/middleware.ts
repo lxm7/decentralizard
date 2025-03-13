@@ -28,7 +28,7 @@ export function middleware(request: NextRequest) {
     "default-src 'self'",
     "style-src 'self' 'unsafe-inline'",
     // Note the use of https for all external hosts
-    "connect-src 'self' https://decentralizard.com https://*.decentralizard.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com",
+    "connect-src 'self' https://decentralizard.com https://*.decentralizard.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net/",
     // Using a nonce in script-src; remove 'script-src-elem' if not needed.
     `script-src 'self' 'nonce-${nonce}' 'unsafe-eval' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://securepubads.g.doubleclick.net https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com`,
     // Uncomment the following line only if you explicitly need inline scripts in script elements.
