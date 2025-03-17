@@ -42,7 +42,7 @@ const fetchRecentPosts = cache(async () => {
 
   const posts = await payload.find({
     collection: 'posts',
-    limit: 500,
+    limit: 1000,
     sort: '-publishedDate', // Adjust based on your field name
     depth: 0,
   })

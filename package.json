@@ -19,6 +19,7 @@
     "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rm -rf node_modules && rm pnpm-lock.yaml && pnpm --ignore-workspace install",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "seed": "payload run ./scripts/seed-blog-posts.ts",
+    "getCategories": "payload run ./scripts/getCategories.ts",
     "test": "jest --watch"
   },
   "dependencies": {
@@ -54,7 +55,8 @@
     "react-hook-form": "7.45.4",
     "sharp": "0.32.6",
     "tailwind-merge": "^2.3.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

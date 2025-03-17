@@ -1,19 +1,17 @@
 'use client'
 
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useState, useEffect, useMemo, useRef, FC } from 'react'
 import * as d3 from 'd3'
 import { Post } from '@/payload-types'
 import { PostWithMetrics, HierarchyNode, SizeMetric } from './types'
+import { useCanvasStore } from '@/store/useCanvasStore'
 
 const headerHeight = 60
-const defaultWidth = 1440
-const defaultHeight = 694
-const width = typeof window !== 'undefined' ? window.innerWidth : defaultWidth
-const height = typeof window !== 'undefined' ? window.innerHeight - headerHeight : defaultHeight
+const TARGET_NODE_COUNT = 30 // Target number of articles to display at any zoom level
 
 /**
- * Returns a shade of the base color for the given value.
- * The variation parameter controls how far we brighten/darken.
+ * A helper function that returns a shade of the base color.
+ * The variation controls how much we brighten/darken.
  */
 function getShade(baseColor: string, value: number, max: number, variation: number = 2): string {
   const t = max > 0 ? value / max : 0
@@ -22,30 +20,39 @@ function getShade(baseColor: string, value: number, max: number, variation: numb
   return d3.interpolateLab(brighter, darker)(t)
 }
 
-interface ArticleAnalyzerProps {
-  posts: Post[]
-}
+/*––––––––––––––––––––––––––––––––––––––
+  ARTICLE ANALYZER – TREEMAP (Snippet 2)
+–––––––––––––––––––––––––––––––––––––––––*/
 
-export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
+export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
   const [sizeMetric] = useState<SizeMetric>('clicks')
   const [postsWithMetrics, setPostsWithMetrics] = useState<PostWithMetrics[]>([])
-  // Store the current zoom transform in state.
-  const [transform, setTransform] = useState<d3.ZoomTransform>(d3.zoomIdentity)
-  // Cache the treemap nodes after layout computation.
+
+  // Store the current zoom state
+  const [zoomState, setZoomState] = useState({
+    scale: 1,
+    centerX: 0,
+    centerY: 0,
+    visibleRegion: { x: 0, y: 0, width: 0, height: 0 },
+  })
+
+  // Cache the treemap nodes after layout computation
   const treemapNodesRef = useRef<d3.HierarchyRectangularNode<HierarchyNode>[]>([])
-  // For hover interactions; initially null so that hover updates work normally.
+  const allNodesRef = useRef<d3.HierarchyRectangularNode<HierarchyNode>[]>([])
+
+  // For hover interactions
   const [hoveredNode, setHoveredNode] = useState<d3.HierarchyRectangularNode<HierarchyNode> | null>(
     null,
   )
+  const { dimensions, setDimensions } = useCanvasStore()
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
-  // Manage canvas dimensions in state.
-  const [dimensions, setDimensions] = useState({
-    width: defaultWidth,
-    height: defaultHeight,
-  })
+  // Track the full hierarchy data
+  const hierarchyRootRef = useRef<d3.HierarchyNode<HierarchyNode> | null>(null)
 
+  // Set up canvas dimensions
   useEffect(() => {
     const handleResize = () => {
       setDimensions({
@@ -53,18 +60,15 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
         height: window.innerHeight - headerHeight,
       })
     }
-
-    // Set dimensions on mount.
     handleResize()
-    // Listen for resize events.
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  }, [setDimensions])
 
-  // Enrich posts with random metrics for demonstration.
+  // Enrich posts with random metrics
   useEffect(() => {
     const enriched = posts.map((post) => {
-      const clicks = Math.floor(Math.random() * 2000) + 100 // between 100 and 2100
+      const clicks = Math.floor(Math.random() * 2000) + 100
       const uniqueClicks = Math.floor(clicks * (0.7 + Math.random() * 0.2))
       const clickRate = +((uniqueClicks / clicks) * 10 + Math.random() * 2).toFixed(1)
       return { ...post, clicks, uniqueClicks, clickRate }
@@ -72,7 +76,7 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
     setPostsWithMetrics(enriched)
   }, [posts])
 
-  // Memoize the hierarchical data.
+  // Build hierarchical data for the treemap
   const hierarchyData: HierarchyNode = useMemo(() => {
     const categorized: Record<string, PostWithMetrics[]> = {}
     postsWithMetrics.forEach((post) => {
@@ -99,18 +103,96 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
     }
   }, [postsWithMetrics])
 
-  // Compute and render the treemap layout.
-  useEffect(() => {
-    if (!hierarchyData.children || hierarchyData.children.length === 0) return
+  // Limit articles to target density
+  const limitArticlesToTargetDensity = (
+    nodes: d3.HierarchyRectangularNode<HierarchyNode>[],
+    targetCount: number,
+    zoomScale: number,
+  ) => {
+    // If we have fewer nodes than target, return all of them
+    if (nodes.length <= targetCount) return nodes
 
-    // set the hover here tmp fix - because stupid render
-    setHoveredNode(
-      hierarchyData.children as unknown as React.SetStateAction<
-        d3.HierarchyRectangularNode<HierarchyNode>
-      >,
-    )
+    // Filter for leaf nodes (articles) and category nodes
+    const categoryNodes = nodes.filter((n) => n.depth === 1)
+    const leafNodes = nodes.filter((n) => !n.children && n.depth > 1)
+
+    if (leafNodes.length <= targetCount) {
+      // If we have fewer leaf nodes than target, return all categories and leaves
+      return [...categoryNodes, ...leafNodes]
+    }
+
+    // When highly zoomed in, prioritize visible articles with higher values
+    if (zoomScale > 2) {
+      const sortedLeaves = [...leafNodes].sort((a, b) => (b.value || 0) - (a.value || 0))
+      return [...categoryNodes, ...sortedLeaves.slice(0, targetCount - categoryNodes.length)]
+    }
+
+    // When moderately zoomed, group smaller articles by their parent category
+    const topLeaves = leafNodes
+      .sort((a, b) => (b.value || 0) - (a.value || 0))
+      .slice(0, Math.floor(targetCount * 0.7))
+
+    // The rest can be represented as aggregated nodes
+    const remainingLeaves = leafNodes
+      .sort((a, b) => (b.value || 0) - (a.value || 0))
+      .slice(Math.floor(targetCount * 0.7))
+
+    // Group by parent category
+    const groupedByCat: Record<string, d3.HierarchyRectangularNode<HierarchyNode>[]> = {}
+    remainingLeaves.forEach((node) => {
+      const category = node.parent?.data.name || 'Uncategorized'
+      if (!groupedByCat[category]) groupedByCat[category] = []
+      groupedByCat[category].push(node)
+    })
+
+    // Return the categories, top leaves, and grouped nodes
+    return [...categoryNodes, ...topLeaves]
+  }
+
+  // Calculate which nodes to display based on visible region
+  const getNodesInVisibleRegion = (zoomState: {
+    scale: number
+    centerX: number
+    centerY: number
+    visibleRegion: { x: number; y: number; width: number; height: number }
+  }) => {
+    if (!allNodesRef.current.length) return []
+
+    const { x, y, width, height } = zoomState.visibleRegion
+
+    // Find nodes that intersect with the visible region
+    const visibleNodes = allNodesRef.current.filter((node) => {
+      return node.x0 < x + width && node.x1 > x && node.y0 < y + height && node.y1 > y
+    })
+
+    // Limit the number of nodes to a reasonable density
+    return limitArticlesToTargetDensity(visibleNodes, TARGET_NODE_COUNT, zoomState.scale)
+  }
+
+  // Compute treemap layout for visible nodes
+  const computeVisibleTreemap = (visibleNodes: d3.HierarchyRectangularNode<HierarchyNode>[]) => {
+    if (!visibleNodes.length) return
+
+    // Get category nodes and leaf nodes
+    const categoryNodes = visibleNodes.filter((n) => n.depth === 1)
+    const leafNodes = visibleNodes.filter((n) => !n.children && n.depth > 1)
+
+    // Create a new temporary hierarchy for layout
+    const tempHierarchy: HierarchyNode = {
+      name: 'Visible Articles',
+      children: categoryNodes
+        .map((catNode) => ({
+          name: catNode.data.name,
+          children: leafNodes
+            .filter((leaf) => leaf.parent?.data.name === catNode.data.name)
+            .map((leaf) => leaf.data),
+        }))
+        .filter((cat) => cat.children && cat.children.length > 0),
+    }
+
+    // Create a new hierarchy and compute the treemap
     const root = d3
-      .hierarchy<HierarchyNode>(hierarchyData)
+      .hierarchy<HierarchyNode>(tempHierarchy)
       .sum((d) => (!d.children ? d[sizeMetric] || 0 : 0))
       .sort((a, b) => (b.value || 0) - (a.value || 0))
 
@@ -118,19 +200,75 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
       .treemap<HierarchyNode>()
       .size([dimensions.width, dimensions.height])
       .paddingOuter(3)
-      .paddingTop(19)
+      .paddingTop(22)
       .paddingInner(1)
       .round(true)
+
     treemapLayout(root)
 
+    // Store the new layout
     treemapNodesRef.current = root.descendants() as d3.HierarchyRectangularNode<HierarchyNode>[]
+  }
 
-    // After computing the layout, draw the treemap.
+  // Initial computation of the full treemap
+  useEffect(() => {
+    if (!hierarchyData.children || hierarchyData.children.length === 0) return
+
+    // Create the full hierarchy
+    const root = d3
+      .hierarchy<HierarchyNode>(hierarchyData)
+      .sum((d) => (!d.children ? d[sizeMetric] || 0 : 0))
+      .sort((a, b) => (b.value || 0) - (a.value || 0))
+
+    hierarchyRootRef.current = root
+
+    // Compute the initial treemap for all nodes
+    const treemapLayout = d3
+      .treemap<HierarchyNode>()
+      .size([dimensions.width, dimensions.height])
+      .paddingOuter(3)
+      .paddingTop(22)
+      .paddingInner(1)
+      .round(true)
+
+    treemapLayout(root)
+
+    // Store all nodes for reference
+    allNodesRef.current = root.descendants() as d3.HierarchyRectangularNode<HierarchyNode>[]
+    treemapNodesRef.current = allNodesRef.current
+
+    // Update visible region based on dimensions
+    setZoomState((prev) => ({
+      ...prev,
+      visibleRegion: {
+        x: 0,
+        y: 0,
+        width: dimensions.width,
+        height: dimensions.height,
+      },
+    }))
+
+    // After computing the layout, draw the treemap
     draw()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hierarchyData, sizeMetric, transform, dimensions])
+  }, [hierarchyData, sizeMetric, dimensions])
 
-  // Cache constant render parameters (palette, color scales, etc.)
+  // When zoom state changes, recalculate visible nodes
+  useEffect(() => {
+    if (allNodesRef.current.length === 0) return
+
+    const visibleNodes = getNodesInVisibleRegion(zoomState)
+
+    if (zoomState.scale > 1.2) {
+      // When zoomed in enough, compute a new treemap layout for just the visible nodes
+      computeVisibleTreemap(visibleNodes)
+    } else {
+      // When at default zoom, use the full treemap
+      treemapNodesRef.current = allNodesRef.current
+    }
+
+    draw()
+  }, [zoomState])
+
   const renderConstants = useMemo(() => {
     if (!treemapNodesRef.current.length) {
       return null
@@ -156,10 +294,9 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
       categoryMax[catNode.data.name] = maxVal
     })
     return { palette, predefinedColors, categoryNodes, ordinal, categoryMax }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [treemapNodesRef.current.length, sizeMetric])
 
-  // Optimize canvas setup: Resize the canvas only once (or when needed).
+  // Optimize the canvas setup
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -176,7 +313,7 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
     }
   }, [dimensions])
 
-  // `draw` renders the entire treemap on the canvas.
+  // Draw the treemap
   const draw = () => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -186,10 +323,6 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
 
     context.save()
     context.clearRect(0, 0, canvas.width, canvas.height)
-
-    // Apply zoom transform.
-    context.translate(transform.x, transform.y)
-    context.scale(transform.k, transform.k)
 
     const rc = renderConstants
     if (!rc) {
@@ -205,15 +338,20 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
         h = d.y1 - d.y0
       if (w <= 0 || h <= 0) return
 
-      // Set fill color: Use a subtle fill for category nodes.
+      // Use different fills based on node type
       if (d.children) {
-        context.fillStyle = 'rgba(255,255,255,0.1)'
+        // Category node with a colored background
+        const categoryName = d.data.name
+        const baseColor = predefinedColors[categoryName] || ordinal(categoryName) || '#333333'
+        context.fillStyle = d3.color(baseColor)?.copy({ opacity: 0.7 })?.toString() || baseColor
       } else {
+        // Article node
         const cat = d.parent?.data.name || 'Uncategorized'
         const baseColor = predefinedColors[cat] || ordinal(cat)
         const maxVal = categoryMax[cat] || 1
         context.fillStyle = getShade(baseColor, d.data[sizeMetric] || 0, maxVal)
       }
+
       context.strokeStyle = '#fff'
       context.lineWidth = 1
       context.beginPath()
@@ -230,84 +368,154 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
         context.restore()
       }
 
-      // Draw text for leaf nodes.
-      context.font = '12px sans-serif'
-      context.textBaseline = 'top'
-      context.fillStyle = '#fff'
-      if (!d.children && w > 30 && h > 20) {
-        let text = d.data.name || ''
-        while (context.measureText(text).width > w - 10 && text.length > 1) {
-          text = text.slice(0, -1)
-        }
-        if (text !== d.data.name) text += '...'
-        context.fillText(text, x + 5, y + 5)
+      // Draw text based on available space
+      if (d.children) {
+        // Category nodes
+        if (w > 50 && h > 25) {
+          context.font = 'bold 14px sans-serif'
+          context.textBaseline = 'top'
+          context.fillStyle = '#fff'
 
-        context.font = '10px sans-serif'
-        const value = d.data[sizeMetric]
-        const valueText = sizeMetric === 'clickRate' ? `${value}%` : value?.toLocaleString() || ''
-        context.fillText(valueText, x + 5, y + 20)
-      }
-
-      // Draw text for category nodes if space allows.
-      if (d.children && w > 50 && h > 25) {
-        context.font = '14px sans-serif'
-        context.fillStyle = '#fff'
-        let catText = d.data.name || ''
-        while (context.measureText(catText).width > w - 10 && catText.length > 1) {
-          catText = catText.slice(0, -1)
+          let catText = d.data.name || ''
+          while (context.measureText(catText).width > w - 10 && catText.length > 1) {
+            catText = catText.slice(0, -1)
+          }
+          if (catText !== d.data.name) catText += '...'
+          context.fillText(catText, x + 5, y + 5)
         }
-        if (catText !== d.data.name) catText += '...'
-        context.fillText(catText, x + 5, y + 5)
+      } else {
+        // Article nodes - size-based rendering
+        if (w > 80 && h > 45) {
+          // Large articles - show title and value
+          context.font = '12px sans-serif'
+          context.textBaseline = 'top'
+          context.fillStyle = '#fff'
+
+          let text = d.data.name || ''
+          while (context.measureText(text).width > w - 10 && text.length > 1) {
+            text = text.slice(0, -1)
+          }
+          if (text !== d.data.name) text += '...'
+          context.fillText(text, x + 5, y + 5)
+
+          context.font = '10px sans-serif'
+          const value = d.data[sizeMetric]
+          const valueText = sizeMetric === 'clickRate' ? `${value}%` : value?.toLocaleString() || ''
+          context.fillText(valueText, x + 5, y + 20)
+        } else if (w > 40 && h > 25) {
+          // Medium articles - just show title
+          context.font = '11px sans-serif'
+          context.textBaseline = 'top'
+          context.fillStyle = '#fff'
+
+          let text = d.data.name || ''
+          while (context.measureText(text).width > w - 8 && text.length > 1) {
+            text = text.slice(0, -1)
+          }
+          if (text !== d.data.name) text += '...'
+          context.fillText(text, x + 4, y + 4)
+        } else if (w > 20 && h > 15) {
+          // Small articles - just show a truncated title
+          context.font = '9px sans-serif'
+          context.textBaseline = 'top'
+          context.fillStyle = '#fff'
+
+          let text = d.data.name?.substring(0, 5) || ''
+          if (text.length < d.data.name?.length) text += '...'
+          context.fillText(text, x + 3, y + 3)
+        } else if (w > 10 && h > 10) {
+          // Tiny articles - just show a dot
+          context.fillStyle = '#fff'
+          context.beginPath()
+          context.arc(x + w / 2, y + h / 2, 2, 0, 2 * Math.PI)
+          context.fill()
+        }
+        // For very tiny articles, just the colored rectangle is visible
       }
     })
 
     context.restore()
   }
 
-  // Set up zoom behavior on the canvas.
+  // Handle semantic zooming
+  const handleZoom = (event: d3.D3ZoomEvent<HTMLCanvasElement, unknown>) => {
+    if (isTransitioning) return
+
+    setIsTransitioning(true)
+
+    const canvas = canvasRef.current
+    if (!canvas) {
+      setIsTransitioning(false)
+      return
+    }
+
+    // Get mouse position in canvas coordinates
+    const [pointerX, pointerY] = d3.pointer(event, canvas)
+
+    // Calculate the new scale and transform
+    const newScale = event.transform.k
+
+    // Calculate visible region in the original treemap coordinates
+    const visibleWidth = dimensions.width / newScale
+    const visibleHeight = dimensions.height / newScale
+
+    // Center on mouse position
+    const visibleX = pointerX - visibleWidth / 2
+    const visibleY = pointerY - visibleHeight / 2
+
+    // Update zoom state
+    setZoomState({
+      scale: newScale,
+      centerX: pointerX,
+      centerY: pointerY,
+      visibleRegion: {
+        x: visibleX,
+        y: visibleY,
+        width: visibleWidth,
+        height: visibleHeight,
+      },
+    })
+
+    setTimeout(() => setIsTransitioning(false), 300)
+  }
+
+  // Set up zoom behavior
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const zoom = d3
-      .zoom<HTMLCanvasElement, unknown>()
-      .scaleExtent([1, 8])
-      .on('zoom', (event) => {
-        const [pointerX, pointerY] = d3.pointer(event, canvas)
-        const k = event.transform.k
-        const tx = -pointerX * (k - 1)
-        const ty = -pointerY * (k - 1)
-        setTransform(d3.zoomIdentity.translate(tx, ty).scale(k))
-      })
+    const zoom = d3.zoom<HTMLCanvasElement, unknown>().scaleExtent([1, 8]).on('zoom', handleZoom)
+
     d3.select(canvas).call(zoom)
-  }, [])
+  }, [dimensions, isTransitioning])
 
-  // Add mouse event listeners to support hit detection (hover and click).
+  // Find node at position
+  const findNodeAtPosition = (x: number, y: number) => {
+    for (const node of treemapNodesRef.current) {
+      if (x >= node.x0 && x <= node.x1 && y >= node.y0 && y <= node.y1) {
+        if (!node.children) {
+          return node
+        }
+      }
+    }
+    return null
+  }
+
+  // Add mouse event listeners
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const getHitNode = (event: MouseEvent) => {
+    const handleMouseMove = (event: MouseEvent) => {
       const rect = canvas.getBoundingClientRect()
       const mouseX = event.clientX - rect.left
       const mouseY = event.clientY - rect.top
-      const x = (mouseX - transform.x) / transform.k
-      const y = (mouseY - transform.y) / transform.k
-      let hit: d3.HierarchyRectangularNode<HierarchyNode> | null = null
-      for (const d of treemapNodesRef.current) {
-        if (x >= d.x0 && x <= d.x1 && y >= d.y0 && y <= d.y1) {
-          if (!d.children) {
-            hit = d
-            break
-          }
-        }
-      }
-      return hit
-    }
 
-    const handleMouseMove = (event: MouseEvent) => {
-      const hit = getHitNode(event)
+      const hit = findNodeAtPosition(mouseX, mouseY)
       setHoveredNode(hit)
+
+      // Set cursor style
+      canvas.style.cursor = hit ? 'pointer' : 'default'
 
       if (hit && tooltipRef.current) {
         tooltipRef.current.style.opacity = '1'
@@ -334,17 +542,18 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
     }
 
     const handleClick = (event: MouseEvent) => {
-      const hit = getHitNode(event)
+      const rect = canvas.getBoundingClientRect()
+      const mouseX = event.clientX - rect.left
+      const mouseY = event.clientY - rect.top
+
+      const hit = findNodeAtPosition(mouseX, mouseY)
       if (hit && !hit.children && hit.data.url) {
-        // send to google analytics
         window.gtag('event', 'article_click', {
           event_category: hit.parent?.data.name || 'Uncategorized',
           event_label: hit.data.name,
           event_link: hit.data.url,
-          value: hit.data[sizeMetric],
           transport_type: 'beacon',
         })
-
         window.open(hit.data.url, '_blank')
       }
     }
@@ -355,17 +564,40 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
       canvas.removeEventListener('mousemove', handleMouseMove)
       canvas.removeEventListener('click', handleClick)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transform])
+  }, [])
 
+  // Reset zoom
+  const handleResetZoom = () => {
+    if (isTransitioning) return
+
+    setIsTransitioning(true)
+    setZoomState({
+      scale: 1,
+      centerX: dimensions.width / 2,
+      centerY: dimensions.height / 2,
+      visibleRegion: {
+        x: 0,
+        y: 0,
+        width: dimensions.width,
+        height: dimensions.height,
+      },
+    })
+
+    // Reset to the full treemap
+    treemapNodesRef.current = allNodesRef.current
+    draw()
+
+    setTimeout(() => setIsTransitioning(false), 300)
+  }
+
+  // Re-draw when hovered node changes
   useEffect(() => {
     draw()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hoveredNode])
 
   return (
-    <main className="flex flex-col w-full h-full" role="main">
-      {/* SEO and accessibility: Detailed article information available to crawlers and screen readers */}
+    <main className="flex flex-col w-full h-full relative" role="main">
+      {/* SEO and accessibility block */}
       <section className="sr-only" aria-label="Detailed article information for SEO">
         {postsWithMetrics.map((post) => (
           <article key={post.id} role="article">
@@ -373,7 +605,11 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
             <p>{post.shortDescription ?? ''}</p>
             <p>{post.meta?.description ?? ''}</p>
             <p>
-              {(post.content?.root?.children?.[0]?.children?.[0] as { text: string })?.text ?? ''}
+              {(
+                post.content?.root?.children?.[0]?.children?.[0] as {
+                  text: string
+                }
+              )?.text ?? ''}
             </p>
             <ul>{post.category_titles?.map((category) => <li key={category}>{category}</li>)}</ul>
             <a href={post.url}>Read more</a>
@@ -381,7 +617,7 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
         ))}
       </section>
 
-      {/* Interactive treemap visualization */}
+      {/* The interactive treemap */}
       <section
         className="relative flex-1 overflow-hidden"
         aria-label="Interactive articles treemap"
@@ -400,7 +636,95 @@ export const ArticleAnalyzer: React.FC<ArticleAnalyzerProps> = ({ posts }) => {
           aria-live="polite"
           className="absolute p-3 bg-white bg-opacity-95 border border-gray-300 rounded shadow-lg pointer-events-none opacity-0 transition-opacity duration-200 z-10 max-w-xs"
         />
+
+        {/* Zoom controls */}
+        <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow p-2 flex space-x-2">
+          <button
+            className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50"
+            onClick={handleResetZoom}
+            disabled={isTransitioning || zoomState.scale === 1}
+            aria-label="Reset zoom"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+
+        {/* Zoom level indicator */}
+        <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow px-3 py-2 text-xs text-gray-600">
+          <div className="flex items-center">
+            <span>Zoom: {Math.round(zoomState.scale * 100)}%</span>
+          </div>
+        </div>
       </section>
     </main>
+  )
+}
+
+/*––––––––––––––––––––––––––––––––––––––
+  SEARCH INPUT & PARENT INTEGRATION (Snippet 1)
+–––––––––––––––––––––––––––––––––––––––––*/
+
+/**
+ * A simple search input that accepts text and calls onChange.
+ */
+const SearchInput: FC<{
+  value: string
+  onChange: (value: string) => void
+}> = ({ value, onChange }) => {
+  return (
+    <div className="search-input" style={{ margin: '0.5rem' }}>
+      <input
+        type="text"
+        placeholder="Search posts..."
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          padding: '8px',
+          width: '100%',
+          fontSize: '16px',
+          borderRadius: '4px',
+          border: '1px solid #ccc',
+        }}
+      />
+    </div>
+  )
+}
+
+/**
+ * This parent component integrates the search input with the treemap.
+ * It filters the posts (by title in this example) and passes the filtered
+ * posts to the ArticleAnalyzer.
+ */
+export const ArticleAnalyzer: FC<{
+  posts: Post[]
+}> = ({ posts }) => {
+  const [searchString, setSearchString] = useState<string>('')
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>(posts)
+
+  useEffect(() => {
+    if (!searchString) {
+      setFilteredPosts(posts)
+    } else {
+      const lowerQuery = searchString.toLowerCase()
+      setFilteredPosts(posts.filter((post) => post.title.toLowerCase().includes(lowerQuery)))
+    }
+  }, [searchString, posts])
+
+  return (
+    <div>
+      <SearchInput value={searchString} onChange={setSearchString} />
+      <ArticleTreeMap posts={filteredPosts} />
+    </div>
   )
 }

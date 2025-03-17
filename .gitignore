@@ -54,3 +54,4 @@ public/sitemap*.xml
 scripts/**.json
 scripts/seed-blog-posts.ts
 scripts/seeds
+scripts/getCategories.ts
