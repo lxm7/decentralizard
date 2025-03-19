@@ -7,7 +7,7 @@ import { PostWithMetrics, HierarchyNode, SizeMetric } from './types'
 import { useCanvasStore } from '@/store/useCanvasStore'
 
 const headerHeight = 60
-const TARGET_NODE_COUNT = 30 // Target number of articles to display at any zoom level
+const TARGET_NODE_COUNT = 40 // Target number of articles to display at any zoom level
 
 /**
  * A helper function that returns a shade of the base color.
@@ -294,6 +294,7 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
       categoryMax[catNode.data.name] = maxVal
     })
     return { palette, predefinedColors, categoryNodes, ordinal, categoryMax }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [treemapNodesRef.current.length, sizeMetric])
 
   // Optimize the canvas setup
@@ -441,6 +442,8 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
   const handleZoom = (event: d3.D3ZoomEvent<HTMLCanvasElement, unknown>) => {
     if (isTransitioning) return
 
+    // Throttle zoom events to reduce frequency
+    if (!throttleZoom()) return
     setIsTransitioning(true)
 
     const canvas = canvasRef.current
@@ -479,14 +482,58 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
     setTimeout(() => setIsTransitioning(false), 300)
   }
 
-  // Set up zoom behavior
+  const throttleZoom = (() => {
+    let lastCall = 0
+    const threshold = 25 // ms between zoom updates
+    return () => {
+      const now = Date.now()
+      if (now - lastCall < threshold) return false
+      lastCall = now
+      return true
+    }
+  })()
+
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const zoom = d3.zoom<HTMLCanvasElement, unknown>().scaleExtent([1, 8]).on('zoom', handleZoom)
+    const zoom = d3
+      .zoom<HTMLCanvasElement, unknown>()
+      .scaleExtent([1, 8])
+      .wheelDelta((event) => {
+        // Reduce scroll sensitivity
+        return -event.deltaY * 0.004
+      })
+      .filter((event) => {
+        // IMPORTANT: Allow pinch events by removing the filter on ctrlKey
+        // This was blocking pinch gestures on touch devices
+        return !(event.button && event.type === 'mousedown')
+      })
+      .interpolate(d3.interpolateZoom)
+      .on('zoom', function (event) {
+        // Round scale to nearest 0.25 increment
+        const k = Math.round(event.transform.k * 4) / 4
+        const transform = d3.zoomIdentity.scale(k)
+        handleZoom({ ...event, transform })
+      })
 
-    d3.select(canvas).call(zoom)
+    d3.select(canvas)
+      .call(zoom)
+      .on('dblclick.zoom', null)
+      // Use touchstart with { passive: false } to prevent scrolling
+      // when performing touch gestures
+      .on(
+        'touchstart',
+        function (event) {
+          event.preventDefault()
+        },
+        { passive: false },
+      )
+
+    // Optional: Set initial zoom transform if needed
+    // d3.select(canvas).call(zoom.transform, d3.zoomIdentity)
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dimensions, isTransitioning])
 
   // Find node at position
@@ -593,6 +640,7 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
   // Re-draw when hovered node changes
   useEffect(() => {
     draw()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hoveredNode])
 
   return (
