@@ -11,6 +11,7 @@ jobs:
       DOCKER_BUILDKIT: 1
       BUILDKIT_PROGRESS: plain
       SUPABASE_PROJECT_ID: xqhhhtucxbbnapliboaa
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
 
     steps:
       # All your existing steps here
