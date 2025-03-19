@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+/* eslint-disable import/no-anonymous-default-export */
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -90,10 +92,7 @@ export default {
         error: 'hsl(var(--error))',
         warning: 'hsl(var(--warning))',
       },
-      fontFamily: {
-        mono: ['var(--font-geist-mono)'],
-        sans: ['var(--font-geist-sans)'],
-      },
+      fontFamily: ['var(--font-rubik)'],
       keyframes: {
         'accordion-down': {
           from: { height: '0' },

@@ -10,6 +10,7 @@ import { RenderBlocks } from '@/blocks/RenderBlocks'
 // import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
+import NewsletterManager from '@/components/NewsletterModal/manager'
 import { homeStatic } from '@/endpoints/seed/home-static'
 import PageClient from './[slug]/page.client'
 
@@ -87,6 +88,7 @@ export default async function HomePage() {
           <ArticleAnalyzer posts={recentPosts} />
         </main>
       )}
+      <NewsletterManager />
     </article>
   )
 }

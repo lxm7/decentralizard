@@ -2,11 +2,8 @@ import React from 'react'
 import type { Metadata } from 'next'
 import { draftMode, headers } from 'next/headers'
 import Script from 'next/script'
+import { Rubik } from 'next/font/google'
 // import { GoogleAnalytics } from '@next/third-parties/google'
-
-import { cn } from '@/utilities/ui'
-import { GeistMono } from 'geist/font/mono'
-import { GeistSans } from 'geist/font/sans'
 
 import { AdminBar } from '@/components/AdminBar'
 // import { Footer } from '@/Footer/Component'
@@ -20,12 +17,24 @@ import { getServerSideURL } from '@/utilities/getURL'
 
 export const dynamic = 'force-dynamic'
 
+const rubik = Rubik({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  // display: 'swap',
+  variable: '--font-rubik',
+})
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { isEnabled } = await draftMode()
   const nonce = (await headers()).get('x-nonce') as string
 
   return (
-    <html className={cn(GeistSans.variable, GeistMono.variable)} lang="en" suppressHydrationWarning>
+    <html
+      className={`${rubik.className}`}
+      // className={cn(GeistSans.variable, GeistMono.variable, inter.className)}
+      lang="en"
+      suppressHydrationWarning
+    >
       <head>
         <InitTheme nonce={nonce} />
         <link href="/favicon.ico" rel="icon" sizes="32x32" />

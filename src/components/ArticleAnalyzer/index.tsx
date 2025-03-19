@@ -373,7 +373,7 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
       if (d.children) {
         // Category nodes
         if (w > 50 && h > 25) {
-          context.font = 'bold 14px sans-serif'
+          context.font = 'bold 14px "Rubik"'
           context.textBaseline = 'top'
           context.fillStyle = '#fff'
 
@@ -388,7 +388,7 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
         // Article nodes - size-based rendering
         if (w > 80 && h > 45) {
           // Large articles - show title and value
-          context.font = '12px sans-serif'
+          context.font = '12px "Rubik"'
           context.textBaseline = 'top'
           context.fillStyle = '#fff'
 
@@ -399,13 +399,13 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
           if (text !== d.data.name) text += '...'
           context.fillText(text, x + 5, y + 5)
 
-          context.font = '10px sans-serif'
+          context.font = '10px "Rubik"'
           const value = d.data[sizeMetric]
           const valueText = sizeMetric === 'clickRate' ? `${value}%` : value?.toLocaleString() || ''
           context.fillText(valueText, x + 5, y + 20)
         } else if (w > 40 && h > 25) {
           // Medium articles - just show title
-          context.font = '11px sans-serif'
+          context.font = '11px "Rubik"'
           context.textBaseline = 'top'
           context.fillStyle = '#fff'
 
@@ -417,7 +417,7 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
           context.fillText(text, x + 4, y + 4)
         } else if (w > 20 && h > 15) {
           // Small articles - just show a truncated title
-          context.font = '9px sans-serif'
+          context.font = '9px "Rubik"'
           context.textBaseline = 'top'
           context.fillStyle = '#fff'
 
