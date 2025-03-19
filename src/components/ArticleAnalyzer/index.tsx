@@ -689,13 +689,7 @@ const SearchInput: FC<{
         placeholder="Search posts..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        style={{
-          padding: '8px',
-          width: '100%',
-          fontSize: '16px',
-          borderRadius: '4px',
-          border: '1px solid #ccc',
-        }}
+        className="p-2 w-full text-base rounded border border-gray-300 text-black"
       />
     </div>
   )
