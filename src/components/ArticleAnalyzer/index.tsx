@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useMemo, useRef, FC } from 'react'
 import * as d3 from 'd3'
+import Image from 'next/image'
+
 import { Post } from '@/payload-types'
 import { PostWithMetrics, HierarchyNode, SizeMetric } from './types'
 import { useCanvasStore } from '@/store/useCanvasStore'
@@ -753,20 +755,63 @@ export const ArticleAnalyzer: FC<{
 }> = ({ posts }) => {
   const [searchString, setSearchString] = useState<string>('')
   const [filteredPosts, setFilteredPosts] = useState<Post[]>(posts)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [noResults, setNoResults] = useState<boolean>(false)
 
   useEffect(() => {
     if (!searchString) {
       setFilteredPosts(posts)
+      setNoResults(false)
+      return
+    }
+    const lowerQuery = searchString.toLowerCase()
+    const filtered = posts.filter((post) => post.title.toLowerCase().includes(lowerQuery))
+    // If the search term is a complete word and there are no matches
+    if (filtered.length === 0 && searchString.trim().includes(' ') === false) {
+      setNoResults(true)
+      setIsLoading(true)
+
+      // Mock API call delay
+      const timer = setTimeout(() => {
+        setIsLoading(false)
+      }, 3000) // 3 seconds loading time
+
+      return () => clearTimeout(timer)
     } else {
-      const lowerQuery = searchString.toLowerCase()
-      setFilteredPosts(posts.filter((post) => post.title.toLowerCase().includes(lowerQuery)))
+      setNoResults(false)
+      setIsLoading(false)
+      setFilteredPosts(filtered)
     }
   }, [searchString, posts])
 
   return (
     <div>
       <SearchInput value={searchString} onChange={setSearchString} />
-      <ArticleTreeMap posts={filteredPosts} />
+      {isLoading ? (
+        <div className="fixed inset-0 flex justify-center items-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="text-base text-gray-500">Searching with AI...</div>
+            <div className="relative w-32 h-8">
+              <Image
+                src="/images/logo2-white-loader-colour.svg"
+                alt="Loading"
+                fill
+                className="ml-[-10px]"
+              />
+            </div>
+          </div>
+        </div>
+      ) : noResults ? (
+        <div className="fixed inset-0 flex justify-center items-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex justify-center items-center w-full text-base text-gray-500">
+              No articles found for &quot;{searchString}&quot;
+            </div>
+          </div>
+        </div>
+      ) : (
+        <ArticleTreeMap posts={filteredPosts} />
+      )}
     </div>
   )
 }
