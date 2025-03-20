@@ -1,15 +1,12 @@
-import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
+// api/newsletter/confirm/route.ts
+import { NextRequest, NextResponse } from 'next/server'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY as string,
-)
-
-export async function GET(req) {
-  // Extract token from search parameters.
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const token = searchParams.get('token')
+  console.log('INIT', { token })
 
   if (!token) {
     return new NextResponse(getHtmlResponse('Missing confirmation token', false), {
@@ -19,17 +16,19 @@ export async function GET(req) {
   }
 
   try {
-    // Find and update the subscriber
-    const { data, error } = await supabase
-      .from('newsletter_subscribers')
-      .update({
-        confirmed: true,
-        confirmation_token: null,
-      })
-      .eq('confirmation_token', token)
-      .select('email')
+    const payload = await getPayload({ config: configPromise })
 
-    if (error || !data || data.length === 0) {
+    // Find subscriber by confirmation token
+    const subscribers = await payload.find({
+      collection: 'newsletter-subscribers',
+      where: {
+        confirmationToken: { equals: token },
+      },
+    })
+
+    console.log({ token, subscribers })
+
+    if (!subscribers.docs.length) {
       return new NextResponse(
         getHtmlResponse(
           'Invalid or expired confirmation link. Please try signing up again.',
@@ -42,9 +41,20 @@ export async function GET(req) {
       )
     }
 
+    // Update subscriber to confirmed
+    const subscriber = subscribers.docs[0]
+    await payload.update({
+      collection: 'newsletter-subscribers',
+      id: subscriber.id,
+      data: {
+        confirmed: true,
+        confirmationToken: null,
+      },
+    })
+
     return new NextResponse(
       getHtmlResponse(
-        `You're now subscribed to our newsletter! We'll send updates to ${data[0].email}`,
+        `You're now subscribed to our newsletter! We'll send updates to ${subscriber.email}`,
         true,
       ),
       {
@@ -68,6 +78,8 @@ export async function GET(req) {
 }
 
 function getHtmlResponse(message, success) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://decentralizard.com'
+
   return `
     <!DOCTYPE html>
     <html>
@@ -106,7 +118,7 @@ function getHtmlResponse(message, success) {
             margin-top: 20px;
           }
         </style>
-        <meta http-equiv="refresh" content="5;url=${process.env.NEXT_PUBLIC_SITE_URL}" />
+        <meta http-equiv="refresh" content="5;url=${siteUrl}" />
       </head>
       <body>
         <div class="container">
@@ -115,7 +127,7 @@ function getHtmlResponse(message, success) {
           </h1>
           <p>${message}</p>
           <p>Redirecting you to our homepage in 5 seconds...</p>
-          <a href="${process.env.NEXT_PUBLIC_SITE_URL}" class="button">Return to Homepage</a>
+          <a href="${siteUrl}" class="button">Return to Homepage</a>
         </div>
       </body>
     </html>

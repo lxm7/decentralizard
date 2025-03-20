@@ -1,12 +1,8 @@
-import { createClient } from '@supabase/supabase-js'
 import { v4 as uuidv4 } from 'uuid'
 import nodemailer from 'nodemailer'
 import { NextResponse, NextRequest } from 'next/server'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY as string,
-)
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 // Email transporter setup
 const transporter = nodemailer.createTransport({
@@ -27,16 +23,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Valid email is required' }, { status: 400 })
     }
 
-    // Check if email already exists
-    const { data: existingSubscriber } = await supabase
-      .from('newsletter_subscribers')
-      .select('id, confirmed')
-      .eq('email', email)
-      .single()
+    const payload = await getPayload({ config: configPromise })
 
-    let confirmationToken
+    const existingSubscribers = await payload.find({
+      collection: 'newsletter-subscribers',
+      where: {
+        email: { equals: email },
+      },
+    })
 
-    if (existingSubscriber) {
+    const confirmationToken = uuidv4()
+
+    if (existingSubscribers.docs.length > 0) {
+      const existingSubscriber = existingSubscribers.docs[0]
+
       if (existingSubscriber.confirmed) {
         return NextResponse.json({
           message: "You're already subscribed to our newsletter",
@@ -44,24 +44,24 @@ export async function POST(request: NextRequest) {
       }
 
       // Update existing unconfirmed subscription
-      confirmationToken = uuidv4()
-      await supabase
-        .from('newsletter_subscribers')
-        .update({ confirmation_token: confirmationToken })
-        .eq('email', email)
+      await payload.update({
+        collection: 'newsletter-subscribers',
+        id: existingSubscriber.id,
+        data: { confirmationToken },
+      })
     } else {
-      // Create new subscription
-      confirmationToken = uuidv4()
-      await supabase.from('newsletter_subscribers').insert([
-        {
+      // Create new subscription using PayloadCMS
+      await payload.create({
+        collection: 'newsletter-subscribers',
+        data: {
           email,
-          confirmation_token: confirmationToken,
+          confirmationToken,
           metadata: {
             source: 'website_popup',
             referrer: request.headers.get('referer') || null,
           },
         },
-      ])
+      })
     }
 
     // Send confirmation email
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
           <h2>Just one more step!</h2>
           <p>Thanks for signing up for our newsletter. To complete your subscription, please confirm your email address:</p>
           <p style="text-align: center;">
-            <a href="${confirmUrl}" style="display: inline-block; background-color: #9933ff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+            <a href="${confirmUrl}" style="display: inline-block; background-color: #FF0066; background-image: linear-gradient(to top right, #FF0066, #56CCF2); color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
               Confirm Subscription
             </a>
           </p>
