@@ -3,8 +3,13 @@ services:
     image: 'nginx:1.27.0-bookworm'
     volumes:
       - ./nginx/production.conf:/etc/nginx/nginx.conf
-      - ./certs:/certs
-      - ./certs:/etc/nginx/certs
+      # - ./certs:/certs
+      - ./certs:/etc/nginx/certs:ro # Origin CA cert
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # - /etc/letsencrypt:/etc/letsencrypt:ro
+      # - /etc/nginx/nginx.conf:/etc/nginx:ro
+      # Optional dhparams mount if needed at a specific path
+      # - /etc/letsencrypt/ssl-dhparams.pem:/etc/ssl/certs/dhparam.pem:ro
     command: ['nginx', '-g', 'daemon off;']
     restart: always
     ports:
