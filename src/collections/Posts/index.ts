@@ -77,7 +77,8 @@ export const Posts: CollectionConfig<'posts'> = {
     {
       name: 'url',
       type: 'text',
-      required: true,
+      required: false,
+      label: 'Source URL',
     },
     {
       name: 'shortDescription',

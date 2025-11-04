@@ -3,12 +3,13 @@ import React from 'react'
 
 import type { Post } from '@/payload-types'
 
-import { Media } from '@/components/Media'
+import Image from 'next/image'
 import { formatAuthors } from '@/utilities/formatAuthors'
 
 export const PostHero: React.FC<{
   post: Post
 }> = ({ post }) => {
+  // Photo by MAHMOUD RAMADAN ETMAN: https://www.pexels.com/photo/abstract-waves-in-soft-coral-and-purple-tones-31216391/
   const { categories, heroImage, populatedAuthors, publishedAt, title } = post
 
   const hasAuthors =
@@ -62,10 +63,13 @@ export const PostHero: React.FC<{
           </div>
         </div>
       </div>
+
       <div className="min-h-[80vh] select-none">
-        {heroImage && typeof heroImage !== 'string' && (
+        {/* {heroImage && typeof heroImage !== 'string' ? (
           <Media fill priority imgClassName="-z-10 object-cover" resource={heroImage} />
-        )}
+        ) : ( */}
+        <Image fill alt="bg image" priority src="/images/pexels-mahmoudramadan-31216391.jpg" />
+        {/* )} */}
         <div className="absolute pointer-events-none left-0 bottom-0 w-full h-1/2 bg-gradient-to-t from-black to-transparent" />
       </div>
     </div>

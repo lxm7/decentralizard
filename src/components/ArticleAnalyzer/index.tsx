@@ -89,18 +89,24 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
       if (!categorized[category]) categorized[category] = []
       categorized[category].push(post)
     })
+
     return {
       name: 'Articles',
       children: Object.keys(categorized).map((category) => ({
         name: category,
-        children: categorized[category].map((post) => ({
-          name: post.title.replace(/\n\s*/g, ' '),
-          clicks: post.clicks,
-          uniqueClicks: post.uniqueClicks,
-          clickRate: post.clickRate,
-          url: post.url,
-          id: post.id,
-        })),
+        children: categorized[category].map((post) => {
+          // Generate internal URL if external URL not available
+          const postUrl = post.url || `/posts/${post.slug}` // or use slug if available
+
+          return {
+            name: post.title.replace(/\n\s*/g, ' '),
+            clicks: post.clicks,
+            uniqueClicks: post.uniqueClicks,
+            clickRate: post.clickRate,
+            url: postUrl,
+            id: post.id,
+          }
+        }),
       })),
     }
   }, [postsWithMetrics])
@@ -252,6 +258,7 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
 
     // After computing the layout, draw the treemap
     draw()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hierarchyData, sizeMetric, dimensions])
 
   // When zoom state changes, recalculate visible nodes
@@ -269,6 +276,7 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
     }
 
     draw()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zoomState])
 
   const renderConstants = useMemo(() => {
@@ -662,7 +670,7 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
               )?.text ?? ''}
             </p>
             <ul>{post.category_titles?.map((category) => <li key={category}>{category}</li>)}</ul>
-            <a href={post.url}>Read more</a>
+            <a href={post.url || ''}>Read more</a>
           </article>
         ))}
       </section>
@@ -733,7 +741,7 @@ const SearchInput: FC<{
   onChange: (value: string) => void
 }> = ({ value, onChange }) => {
   return (
-    <div className="search-input" style={{ margin: '0.5rem' }}>
+    <div className="search-input relative z-[1] m-2">
       <input
         type="text"
         placeholder="Search posts..."

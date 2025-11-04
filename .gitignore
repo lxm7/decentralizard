@@ -55,3 +55,4 @@ scripts/**.json
 scripts/seed-blog-posts.ts
 scripts/seeds
 scripts/getCategories.ts
+scripts/**/*.txt

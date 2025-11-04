@@ -71,7 +71,46 @@ export default buildConfig({
         rejectUnauthorized: true,
       },
     },
+    afterSchemaInit: [
+      ({ schema }) => {
+        // Enable RLS for all tables
+        Object.values(schema.tables).forEach((table) => table.enableRLS())
+        return schema
+      },
+    ],
   }),
+  onInit: async (payload) => {
+    // Only run in server runtime, not during build
+    if (typeof window !== 'undefined' || !payload.db) {
+      return
+    }
+
+    try {
+      await payload.db.execute({
+        raw: `
+        DO $$
+        DECLARE
+            t record;
+        BEGIN
+            FOR t IN 
+                SELECT tablename 
+                FROM pg_tables 
+                WHERE schemaname = 'public'
+            LOOP
+                EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', t.tablename);
+            END LOOP;
+        END $$;
+      `,
+      })
+
+      payload.logger.info('RLS enabled on all tables')
+    } catch (error) {
+      // Silently fail during build, log in runtime
+      if (process.env.NODE_ENV === 'production') {
+        payload.logger.error('Failed to enable RLS:', error)
+      }
+    }
+  },
   collections: [Pages, Posts, Media, Categories, Users, NewsletterSubscribers],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
