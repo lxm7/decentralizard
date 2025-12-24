@@ -69,27 +69,16 @@ jobs:
           mkdir ~/.ssh/ && touch ~/.ssh/known_hosts
           echo "${{ secrets.VPS_SSH_HOST_KEYS }}" | base64 -d >> ~/.ssh/known_hosts
 
-      - name: Start the deployment of the latest version in the background
+      - name: Deploy to VPS
         run: |
-          DATE=$(date "+%Y%m%d%H%M%S")
           ssh -i vps_key.pem "${{ secrets.VPS_SSH_USERNAME }}@${{ secrets.VPS_IP }}" bash -s <<'EOF'
           set -eo pipefail
           trap 'echo "Error on line $LINENO"; exit 1' ERR
           cd decentralizard
           git fetch origin
           git reset --hard origin/main
-          # Set version
-          export DEPLOYMENT_VERSION=$(date +%s)
-          # Cleanup and build cache
+          # Cleanup build cache
           docker builder prune -af
-          # Start new container
-          DEPLOYMENT_VERSION=$DEPLOYMENT_VERSION docker compose -f docker-compose.production.yml up -d --force-recreate --build \
-            --no-deps \
-            --scale app=2
-          # Wait for new container healthcheck
-          NEW_CONTAINER_ID=$(docker ps -q --filter "label=deployment.version=$DEPLOYMENT_VERSION")
-          timeout 300 bash -c "while ! docker exec $NEW_CONTAINER_ID curl -fs http://localhost:3000/api/health; do sleep 5; done"
-          # Stop old containers
-          OLD_CONTAINERS=$(docker ps -q --filter "label=deployment.version!=$DEPLOYMENT_VERSION")
-          [ -z "$OLD_CONTAINERS" ] || docker stop $OLD_CONTAINERS
+          # Run deployment script
+          bash scripts/production.sh
           EOF
