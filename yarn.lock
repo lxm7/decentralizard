@@ -3045,38 +3045,38 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@payloadcms/db-postgres@npm:^3.18.0":
-  version: 3.63.0
-  resolution: "@payloadcms/db-postgres@npm:3.63.0"
+"@payloadcms/db-postgres@npm:3.69.0":
+  version: 3.69.0
+  resolution: "@payloadcms/db-postgres@npm:3.69.0"
   dependencies:
-    "@payloadcms/drizzle": "npm:3.63.0"
+    "@payloadcms/drizzle": "npm:3.69.0"
     "@types/pg": "npm:8.10.2"
     console-table-printer: "npm:2.12.1"
-    drizzle-kit: "npm:0.31.5"
-    drizzle-orm: "npm:0.44.6"
+    drizzle-kit: "npm:0.31.7"
+    drizzle-orm: "npm:0.44.7"
     pg: "npm:8.16.3"
     prompts: "npm:2.4.2"
     to-snake-case: "npm:1.0.0"
     uuid: "npm:10.0.0"
   peerDependencies:
-    payload: 3.63.0
-  checksum: 10c0/9d6264ba34b8fe06d6b4056cfe7b412f958604c321009cf867aca35bef895ad579ab152ab949f6bd86028137da33cfa5adda808a27bae17ffdbc38084b367f68
+    payload: 3.69.0
+  checksum: 10c0/f512fe848f7d0886e2b6b8e7403f175d39fc622fd29f96cad196eab1a981e2cf66fd45df788b265c1367db836b9c917ddbcb0081d9fe0b4b06e3a294e60f59c2
   languageName: node
   linkType: hard
 
-"@payloadcms/drizzle@npm:3.63.0":
-  version: 3.63.0
-  resolution: "@payloadcms/drizzle@npm:3.63.0"
+"@payloadcms/drizzle@npm:3.69.0":
+  version: 3.69.0
+  resolution: "@payloadcms/drizzle@npm:3.69.0"
   dependencies:
     console-table-printer: "npm:2.12.1"
     dequal: "npm:2.0.3"
-    drizzle-orm: "npm:0.44.6"
+    drizzle-orm: "npm:0.44.7"
     prompts: "npm:2.4.2"
     to-snake-case: "npm:1.0.0"
     uuid: "npm:9.0.0"
   peerDependencies:
-    payload: 3.63.0
-  checksum: 10c0/645c3e9415eb9eabf757adb3a9b31c4a9001b677fb9a50aad2ccfc8a9c70b4bb3f68d54af4e9135de980c2759cdf031a425bb8f27ffea34556157a275d2e8c48
+    payload: 3.69.0
+  checksum: 10c0/edc4bde82719d31dd9b5e9965f213ac7783732e68189b9861a43c136e5a29127f253477bdeef49e271656c5183c9588dc8066599072dbaec38a16338e3b67411
   languageName: node
   linkType: hard
 
@@ -7269,7 +7269,7 @@ __metadata:
   resolution: "decentralizard@workspace:."
   dependencies:
     "@eslint/eslintrc": "npm:^3.2.0"
-    "@payloadcms/db-postgres": "npm:^3.18.0"
+    "@payloadcms/db-postgres": "npm:3.69.0"
     "@payloadcms/live-preview-react": "npm:^3.18.0"
     "@payloadcms/next": "npm:^3.18.0"
     "@payloadcms/payload-cloud": "npm:^3.18.0"
@@ -7318,6 +7318,7 @@ __metadata:
     payload-admin-bar: "npm:^1.0.6"
     postcss: "npm:^8.4.38"
     prettier: "npm:^3.4.2"
+    prettier-plugin-tailwindcss: "npm:^0.7.2"
     prism-react-renderer: "npm:^2.3.1"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
@@ -7536,9 +7537,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"drizzle-kit@npm:0.31.5":
-  version: 0.31.5
-  resolution: "drizzle-kit@npm:0.31.5"
+"drizzle-kit@npm:0.31.7":
+  version: 0.31.7
+  resolution: "drizzle-kit@npm:0.31.7"
   dependencies:
     "@drizzle-team/brocli": "npm:^0.10.2"
     "@esbuild-kit/esm-loader": "npm:^2.5.5"
@@ -7546,13 +7547,13 @@ __metadata:
     esbuild-register: "npm:^3.5.0"
   bin:
     drizzle-kit: bin.cjs
-  checksum: 10c0/7f172b1ba8cecf85b32e85621043d4ada867080e9ea2767c60b20ef2adb0292ff16832d8c8eae5d1bc9504d8165a58c449c9a25ab56c8ec30f1c3c8cb12ef6ad
+  checksum: 10c0/ccb36a23a2e107d440ca7a2c06f81f12c07fe8b62f5a3512eea877bcf4ab43422fc66ddcc9de8825e418dbc138cb56679de9bddd3ce8f769865f0267c19343ad
   languageName: node
   linkType: hard
 
-"drizzle-orm@npm:0.44.6":
-  version: 0.44.6
-  resolution: "drizzle-orm@npm:0.44.6"
+"drizzle-orm@npm:0.44.7":
+  version: 0.44.7
+  resolution: "drizzle-orm@npm:0.44.7"
   peerDependencies:
     "@aws-sdk/client-rds-data": ">=3"
     "@cloudflare/workers-types": ">=4"
@@ -7641,7 +7642,7 @@ __metadata:
       optional: true
     sqlite3:
       optional: true
-  checksum: 10c0/b9629fd8894f08a33661a33b9e1bd39dc2685df29bb254bb9b0dad2d447464eafbd9d089c92b8977a463c0e9f399d7991273ad369df9d8a5f356fa0493859660
+  checksum: 10c0/6adfe19179c83be397490c21573433e38ed7eff890bbb1c3b39157ec57d6b7420e9dcfebb8fe0e6ea534b29a53a33b2ec75c77dd2ac6b474b7055965ee7df00d
   languageName: node
   linkType: hard
 
@@ -12300,6 +12301,64 @@ __metadata:
   version: 1.2.1
   resolution: "prelude-ls@npm:1.2.1"
   checksum: 10c0/b00d617431e7886c520a6f498a2e14c75ec58f6d93ba48c3b639cf241b54232d90daa05d83a9e9b9fef6baa63cb7e1e4602c2372fea5bc169668401eb127d0cd
+  languageName: node
+  linkType: hard
+
+"prettier-plugin-tailwindcss@npm:^0.7.2":
+  version: 0.7.2
+  resolution: "prettier-plugin-tailwindcss@npm:0.7.2"
+  peerDependencies:
+    "@ianvs/prettier-plugin-sort-imports": "*"
+    "@prettier/plugin-hermes": "*"
+    "@prettier/plugin-oxc": "*"
+    "@prettier/plugin-pug": "*"
+    "@shopify/prettier-plugin-liquid": "*"
+    "@trivago/prettier-plugin-sort-imports": "*"
+    "@zackad/prettier-plugin-twig": "*"
+    prettier: ^3.0
+    prettier-plugin-astro: "*"
+    prettier-plugin-css-order: "*"
+    prettier-plugin-jsdoc: "*"
+    prettier-plugin-marko: "*"
+    prettier-plugin-multiline-arrays: "*"
+    prettier-plugin-organize-attributes: "*"
+    prettier-plugin-organize-imports: "*"
+    prettier-plugin-sort-imports: "*"
+    prettier-plugin-svelte: "*"
+  peerDependenciesMeta:
+    "@ianvs/prettier-plugin-sort-imports":
+      optional: true
+    "@prettier/plugin-hermes":
+      optional: true
+    "@prettier/plugin-oxc":
+      optional: true
+    "@prettier/plugin-pug":
+      optional: true
+    "@shopify/prettier-plugin-liquid":
+      optional: true
+    "@trivago/prettier-plugin-sort-imports":
+      optional: true
+    "@zackad/prettier-plugin-twig":
+      optional: true
+    prettier-plugin-astro:
+      optional: true
+    prettier-plugin-css-order:
+      optional: true
+    prettier-plugin-jsdoc:
+      optional: true
+    prettier-plugin-marko:
+      optional: true
+    prettier-plugin-multiline-arrays:
+      optional: true
+    prettier-plugin-organize-attributes:
+      optional: true
+    prettier-plugin-organize-imports:
+      optional: true
+    prettier-plugin-sort-imports:
+      optional: true
+    prettier-plugin-svelte:
+      optional: true
+  checksum: 10c0/072fb79be58ba6b9743eb4b85be7da06f7d719764e293fdaf6515f15b21af2d22ab0e6476c636c69983949e42c4382e9566b17e3b123a2df6cf5100336729f3c
   languageName: node
   linkType: hard
 
