@@ -646,7 +646,7 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
   }, [hoveredNode])
 
   return (
-    <main className="flex flex-col w-full h-full relative" role="main">
+    <main className="relative flex h-full w-full flex-col" role="main">
       {/* SEO and accessibility block */}
       <section className="sr-only" aria-label="Detailed article information for SEO">
         {postsWithMetrics.map((post) => (
@@ -661,7 +661,11 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
                 }
               )?.text ?? ''}
             </p>
-            <ul>{post.category_titles?.map((category) => <li key={category}>{category}</li>)}</ul>
+            <ul>
+              {post.category_titles?.map((category) => (
+                <li key={category}>{category}</li>
+              ))}
+            </ul>
             <a href={post.url}>Read more</a>
           </article>
         ))}
@@ -677,20 +681,20 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
           ref={canvasRef}
           width={dimensions.width}
           height={dimensions.height}
-          className="w-full h-full block"
+          className="block h-full w-full"
           aria-label="Interactive treemap visualization of articles. Use scroll to zoom."
         />
         <div
           ref={tooltipRef}
           role="tooltip"
           aria-live="polite"
-          className="absolute p-3 bg-white bg-opacity-95 border border-gray-300 rounded shadow-lg pointer-events-none opacity-0 transition-opacity duration-200 z-10 max-w-xs"
+          className="pointer-events-none absolute z-10 max-w-xs rounded border border-gray-300 bg-white bg-opacity-95 p-3 opacity-0 shadow-lg transition-opacity duration-200"
         />
 
         {/* Zoom controls */}
-        <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow p-2 flex space-x-2">
+        <div className="absolute bottom-4 right-4 flex space-x-2 rounded-lg bg-white p-2 shadow">
           <button
-            className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50"
+            className="flex h-8 w-8 items-center justify-center rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
             onClick={handleResetZoom}
             disabled={isTransitioning || zoomState.scale === 1}
             aria-label="Reset zoom"
@@ -711,7 +715,7 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
         </div>
 
         {/* Zoom level indicator */}
-        <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow px-3 py-2 text-xs text-gray-600">
+        <div className="absolute bottom-4 left-4 rounded-lg bg-white px-3 py-2 text-xs text-gray-600 shadow">
           <div className="flex items-center">
             <span>Zoom: {Math.round(zoomState.scale * 100)}%</span>
           </div>
@@ -739,8 +743,115 @@ const SearchInput: FC<{
         placeholder="Search posts..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="p-2 w-full text-base rounded border border-gray-300 text-black"
+        className="w-full rounded border border-gray-300 p-2 text-base text-black"
       />
+    </div>
+  )
+}
+
+/**
+ * Mobile-friendly list view for articles
+ */
+const ArticleMobileList: FC<{ posts: Post[] }> = ({ posts }) => {
+  const postsWithMetrics = useMemo(() => {
+    return posts.map((post) => {
+      const clicks = Math.floor(Math.random() * 2000) + 100
+      const uniqueClicks = Math.floor(clicks * (0.7 + Math.random() * 0.2))
+      const clickRate = +((uniqueClicks / clicks) * 10 + Math.random() * 2).toFixed(1)
+      return { ...post, clicks, uniqueClicks, clickRate }
+    })
+  }, [posts])
+
+  // Group posts by category and sort by clicks
+  const categorizedPosts = useMemo(() => {
+    const categorized: Record<string, PostWithMetrics[]> = {}
+    postsWithMetrics.forEach((post) => {
+      const category =
+        post.category_titles && post.category_titles.length > 0
+          ? post.category_titles[0]
+          : 'Uncategorized'
+      if (!categorized[category]) categorized[category] = []
+      categorized[category].push(post)
+    })
+    // Sort articles within each category by clicks (descending)
+    Object.keys(categorized).forEach((category) => {
+      categorized[category].sort((a, b) => b.clicks - a.clicks)
+    })
+    return categorized
+  }, [postsWithMetrics])
+
+  const palette = ['#6A0DAD', '#228B22', '#FF5733', '#3498DB', '#F1C40F', '#9B59B6']
+  const predefinedColors: Record<string, string> = {
+    AI: palette[0],
+    Earth: palette[1],
+  }
+
+  const getCategoryColor = (category: string) => {
+    if (predefinedColors[category]) return predefinedColors[category]
+    const index = Object.keys(categorizedPosts).indexOf(category) % palette.length
+    return palette[index]
+  }
+
+  // Calculate max clicks per category for color gradient
+  const categoryMaxClicks = useMemo(() => {
+    const maxClicks: Record<string, number> = {}
+    Object.entries(categorizedPosts).forEach(([category, posts]) => {
+      maxClicks[category] = Math.max(...posts.map((p) => p.clicks))
+    })
+    return maxClicks
+  }, [categorizedPosts])
+
+  // Get shade color for article based on clicks
+  const getArticleColor = (category: string, clicks: number) => {
+    const baseColor = getCategoryColor(category)
+    const maxClicks = categoryMaxClicks[category] || 1
+    return getShade(baseColor, clicks, maxClicks)
+  }
+
+  return (
+    <div className="w-full overflow-y-auto" style={{ height: `calc(100vh - ${headerHeight}px)` }}>
+      {Object.entries(categorizedPosts).map(([category, categoryPosts]) => (
+        <div key={category}>
+          {/* Category Header */}
+          <div
+            className="sticky top-0 z-10 px-4 py-2 text-sm font-bold text-white"
+            style={{ backgroundColor: getCategoryColor(category) }}
+          >
+            {category} ({categoryPosts.length})
+          </div>
+
+          {/* Articles in this category */}
+          <div className="flex flex-col">
+            {categoryPosts.map((post) => (
+              <a
+                key={post.id}
+                href={post.url || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-[70px] items-center justify-between border-b border-white px-4 no-underline transition-all hover:brightness-110"
+                style={{ backgroundColor: getArticleColor(category, post.clicks) }}
+                onClick={() => {
+                  if (post.url) {
+                    window.gtag('event', 'article_click', {
+                      event_category: category,
+                      event_label: post.title,
+                      event_link: post.url,
+                      transport_type: 'beacon',
+                    })
+                  }
+                }}
+              >
+                <span className="mr-3 flex-1 truncate text-sm font-medium text-white">
+                  {post.title.replace(/\n\s*/g, ' ')}
+                </span>
+                <span className="whitespace-nowrap text-xs text-white/80">
+                  {post.clicks?.toLocaleString()} clicks
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -788,10 +899,10 @@ export const ArticleAnalyzer: FC<{
     <div>
       <SearchInput value={searchString} onChange={setSearchString} />
       {isLoading ? (
-        <div className="fixed inset-0 flex justify-center items-center">
+        <div className="fixed inset-0 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <div className="text-base text-gray-500">Searching with AI...</div>
-            <div className="relative w-32 h-8">
+            <div className="relative h-8 w-32">
               <Image
                 src="/images/logo2-white-loader-colour.svg"
                 alt="Loading"
@@ -802,15 +913,25 @@ export const ArticleAnalyzer: FC<{
           </div>
         </div>
       ) : noResults ? (
-        <div className="fixed inset-0 flex justify-center items-center">
+        <div className="fixed inset-0 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
-            <div className="flex justify-center items-center w-full text-base text-gray-500">
+            <div className="flex w-full items-center justify-center text-base text-gray-500">
               No articles found for &quot;{searchString}&quot;
             </div>
           </div>
         </div>
       ) : (
-        <ArticleTreeMap posts={filteredPosts} />
+        <>
+          {/* Mobile list view - shown on screens < 768px */}
+          <div className="block md:hidden">
+            <ArticleMobileList posts={filteredPosts} />
+          </div>
+
+          {/* Desktop treemap view - shown on screens >= 768px */}
+          <div className="hidden md:block">
+            <ArticleTreeMap posts={filteredPosts} />
+          </div>
+        </>
       )}
     </div>
   )

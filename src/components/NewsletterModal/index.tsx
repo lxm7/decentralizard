@@ -40,23 +40,23 @@ export default function NewsletterModal({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/75 flex justify-center items-center z-[1000]">
-      <div className="flex max-w-[700px] w-[90%] bg-white rounded relative md:flex-row flex-col">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/75 p-4">
+      <div className="relative flex max-h-[90vh] w-full max-w-[700px] flex-col overflow-hidden rounded bg-white md:flex-row">
         <button
-          className="absolute top-1 right-2.5 bg-transparent border-none text-3xl cursor-pointer z-10 text-black"
+          className="absolute right-2.5 top-1 z-10 cursor-pointer border-none bg-transparent text-3xl text-black"
           onClick={onClose}
           aria-label="Close"
         >
           ×
         </button>
 
-        <div className="flex-1 bg-[#f06] bg-gradient-to-tr from-[#f06] to-[#56CCF2] min-h-[200px] md:min-h-[400px]"></div>
+        <div className="min-h-[200px] flex-1 bg-[#f06] bg-gradient-to-tr from-[#f06] to-[#56CCF2] md:min-h-[400px]"></div>
 
-        <div className="flex-1 p-[40px_30px] flex flex-col">
-          <h2 className="text-[38px] font-black m-0 mb-5">Decentralizard</h2>
+        <div className="flex flex-1 flex-col overflow-y-auto p-[40px_30px]">
+          <h2 className="m-0 mb-5 text-[38px] font-black text-black">Decentralizard</h2>
 
           <div>
-            <h3 className="text-[22px] font-semibold mb-4 leading-snug">
+            <h3 className="mb-4 text-[22px] font-semibold leading-snug text-black">
               Weekly updates sourcing the
               <br />
               best content for your niche,
@@ -64,7 +64,7 @@ export default function NewsletterModal({ onClose }) {
               audience and business
             </h3>
 
-            <p className="text-lg mb-8 leading-relaxed">
+            <p className="mb-8 text-lg leading-relaxed text-gray-800">
               Subscribe to the
               <br />
               Decentralizard newsletter.
@@ -79,26 +79,26 @@ export default function NewsletterModal({ onClose }) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="youremail@gmail.com"
                 required
-                className="w-full p-3 border border-gray-300 rounded text-base mb-4"
+                className="mb-4 w-full rounded border border-gray-300 p-3 text-base text-black placeholder:text-gray-500"
               />
 
               <button
                 type="submit"
-                className="w-full p-3 bg-[#ff56cc] bg-gradient-to-r from-[#f06] to-[#56CCF2] hover:bg-[#e04eb8] text-white border-none rounded text-base font-semibold cursor-pointer transition-colors duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="w-full cursor-pointer rounded border-none bg-[#ff56cc] bg-gradient-to-r from-[#f06] to-[#56CCF2] p-3 text-base font-semibold text-white transition-colors duration-200 hover:bg-[#e04eb8] disabled:cursor-not-allowed disabled:bg-gray-300"
                 disabled={loading}
               >
                 {loading ? 'SIGNING UP...' : 'SIGN UP'}
               </button>
 
-              {error && <p className="text-red-500 my-2.5">{error}</p>}
+              {error && <p className="my-2.5 text-red-500">{error}</p>}
             </form>
           ) : (
-            <p className="text-green-600 my-2.5">
+            <p className="my-2.5 text-green-600">
               Thanks! Please check your email to confirm your subscription.
             </p>
           )}
 
-          <div className="mt-5 text-sm text-center">
+          <div className="mt-5 text-center text-sm">
             <Link href="/terms" className="text-gray-800 no-underline hover:underline">
               Terms & Conditions
             </Link>
