@@ -40,8 +40,8 @@ export default function NewsletterModal({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/75 flex justify-center items-center z-[1000]">
-      <div className="flex max-w-[700px] w-[90%] bg-white rounded relative md:flex-row flex-col">
+    <div className="fixed inset-0 bg-black/75 flex justify-center items-center z-[1000] p-4">
+      <div className="flex max-w-[700px] w-full max-h-[90vh] bg-white rounded relative md:flex-row flex-col overflow-hidden">
         <button
           className="absolute top-1 right-2.5 bg-transparent border-none text-3xl cursor-pointer z-10 text-black"
           onClick={onClose}
@@ -52,11 +52,11 @@ export default function NewsletterModal({ onClose }) {
 
         <div className="flex-1 bg-[#f06] bg-gradient-to-tr from-[#f06] to-[#56CCF2] min-h-[200px] md:min-h-[400px]"></div>
 
-        <div className="flex-1 p-[40px_30px] flex flex-col">
-          <h2 className="text-[38px] font-black m-0 mb-5">Decentralizard</h2>
+        <div className="flex-1 p-[40px_30px] flex flex-col overflow-y-auto">
+          <h2 className="text-[38px] font-black m-0 mb-5 text-black">Decentralizard</h2>
 
           <div>
-            <h3 className="text-[22px] font-semibold mb-4 leading-snug">
+            <h3 className="text-[22px] font-semibold mb-4 leading-snug text-black">
               Weekly updates sourcing the
               <br />
               best content for your niche,
@@ -64,7 +64,7 @@ export default function NewsletterModal({ onClose }) {
               audience and business
             </h3>
 
-            <p className="text-lg mb-8 leading-relaxed">
+            <p className="text-lg mb-8 leading-relaxed text-gray-800">
               Subscribe to the
               <br />
               Decentralizard newsletter.
@@ -79,7 +79,7 @@ export default function NewsletterModal({ onClose }) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="youremail@gmail.com"
                 required
-                className="w-full p-3 border border-gray-300 rounded text-base mb-4"
+                className="w-full p-3 border border-gray-300 rounded text-base mb-4 text-black placeholder:text-gray-500"
               />
 
               <button
