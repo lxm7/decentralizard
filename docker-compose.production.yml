@@ -1,5 +1,6 @@
 services:
   nginx:
+    container_name: decentralizard-nginx
     image: 'nginx:1.27.0-bookworm'
     volumes:
       - ./nginx/production.conf:/etc/nginx/nginx.conf
@@ -16,9 +17,6 @@ services:
       - 443:443
     networks:
       - public
-    depends_on:
-      app:
-        condition: service_healthy
     healthcheck:
       test: ['CMD', 'service', 'nginx', 'status']
       interval: 30s
