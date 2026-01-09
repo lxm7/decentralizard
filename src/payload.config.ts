@@ -71,6 +71,13 @@ export default buildConfig({
         rejectUnauthorized: true,
       },
     },
+    afterSchemaInit: [
+      ({ schema }) => {
+        // Enable RLS for all tables
+        Object.values(schema.tables).forEach((table) => table.enableRLS())
+        return schema
+      },
+    ],
   }),
   collections: [Pages, Posts, Media, Categories, Users, NewsletterSubscribers],
   cors: [getServerSideURL()].filter(Boolean),
