@@ -3,13 +3,22 @@
 import React, { useState, useEffect, useMemo, useRef, FC } from 'react'
 import * as d3 from 'd3'
 import Image from 'next/image'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 import { Post } from '@/payload-types'
 import { PostWithMetrics, HierarchyNode, SizeMetric } from './types'
 import { useCanvasStore } from '@/store/useCanvasStore'
+import { cn } from '@/utilities/ui'
 
 const headerHeight = 60
 const TARGET_NODE_COUNT = 40 // Target number of articles to display at any zoom level
+
+// Simple seeded random number generator for consistent SSR/client results
+const seededRandom = (seed: number) => {
+  const x = Math.sin(seed) * 10000
+  return x - Math.floor(x)
+}
 
 /**
  * A helper function that returns a shade of the base color.
@@ -27,6 +36,7 @@ function getShade(baseColor: string, value: number, max: number, variation: numb
 –––––––––––––––––––––––––––––––––––––––––*/
 
 export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
+  const router = useRouter()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
   const [sizeMetric] = useState<SizeMetric>('clicks')
@@ -67,12 +77,14 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
     return () => window.removeEventListener('resize', handleResize)
   }, [setDimensions])
 
-  // Enrich posts with random metrics
+  // Enrich posts with deterministic metrics (consistent across SSR and client)
   useEffect(() => {
     const enriched = posts.map((post) => {
-      const clicks = Math.floor(Math.random() * 2000) + 100
-      const uniqueClicks = Math.floor(clicks * (0.7 + Math.random() * 0.2))
-      const clickRate = +((uniqueClicks / clicks) * 10 + Math.random() * 2).toFixed(1)
+      // Use post ID as seed for consistent random values
+      const seed = typeof post.id === 'number' ? post.id : parseInt(String(post.id), 10) || 0
+      const clicks = Math.floor(seededRandom(seed) * 2000) + 100
+      const uniqueClicks = Math.floor(clicks * (0.7 + seededRandom(seed + 1) * 0.2))
+      const clickRate = +((uniqueClicks / clicks) * 10 + seededRandom(seed + 2) * 2).toFixed(1)
       return { ...post, clicks, uniqueClicks, clickRate }
     })
     setPostsWithMetrics(enriched)
@@ -98,7 +110,7 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
           clicks: post.clicks,
           uniqueClicks: post.uniqueClicks,
           clickRate: post.clickRate,
-          url: post.url,
+          slug: post.slug,
           id: post.id,
         })),
       })),
@@ -596,14 +608,14 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
       const mouseY = event.clientY - rect.top
 
       const hit = findNodeAtPosition(mouseX, mouseY)
-      if (hit && !hit.children && hit.data.url) {
+      if (hit && !hit.children && hit.data.slug) {
         window.gtag('event', 'article_click', {
           event_category: hit.parent?.data.name || 'Uncategorized',
           event_label: hit.data.name,
-          event_link: hit.data.url,
+          event_link: `/posts/${hit.data.slug}`,
           transport_type: 'beacon',
         })
-        window.open(hit.data.url, '_blank')
+        router.push(`/posts/${hit.data.slug}`)
       }
     }
 
@@ -666,7 +678,7 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
                 <li key={category}>{category}</li>
               ))}
             </ul>
-            <a href={post.url}>Read more</a>
+            {post.slug && <a href={`/posts/${post.slug}`}>Read more</a>}
           </article>
         ))}
       </section>
@@ -737,13 +749,34 @@ const SearchInput: FC<{
   onChange: (value: string) => void
 }> = ({ value, onChange }) => {
   return (
-    <div className="search-input" style={{ margin: '0.5rem' }}>
+    <div className="relative">
+      <label htmlFor="article-search" className="sr-only">
+        Search articles
+      </label>
+      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg
+          className="h-5 w-5 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+      </div>
       <input
-        type="text"
-        placeholder="Search posts..."
+        id="article-search"
+        type="search"
+        placeholder="Search articles by title..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded border border-gray-300 p-2 text-base text-black"
+        className="w-full pl-10 pr-4 py-2.5 text-base text-gray-900 bg-white border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+        aria-label="Search articles by title"
       />
     </div>
   )
@@ -755,9 +788,11 @@ const SearchInput: FC<{
 const ArticleMobileList: FC<{ posts: Post[] }> = ({ posts }) => {
   const postsWithMetrics = useMemo(() => {
     return posts.map((post) => {
-      const clicks = Math.floor(Math.random() * 2000) + 100
-      const uniqueClicks = Math.floor(clicks * (0.7 + Math.random() * 0.2))
-      const clickRate = +((uniqueClicks / clicks) * 10 + Math.random() * 2).toFixed(1)
+      // Use post ID as seed for consistent random values across SSR and client
+      const seed = typeof post.id === 'number' ? post.id : parseInt(String(post.id), 10) || 0
+      const clicks = Math.floor(seededRandom(seed) * 2000) + 100
+      const uniqueClicks = Math.floor(clicks * (0.7 + seededRandom(seed + 1) * 0.2))
+      const clickRate = +((uniqueClicks / clicks) * 10 + seededRandom(seed + 2) * 2).toFixed(1)
       return { ...post, clicks, uniqueClicks, clickRate }
     })
   }, [posts])
@@ -823,19 +858,17 @@ const ArticleMobileList: FC<{ posts: Post[] }> = ({ posts }) => {
           {/* Articles in this category */}
           <div className="flex flex-col">
             {categoryPosts.map((post) => (
-              <a
+              <Link
                 key={post.id}
-                href={post.url || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={post.slug ? `/posts/${post.slug}` : '#'}
                 className="flex h-[70px] items-center justify-between border-b border-white px-4 no-underline transition-all hover:brightness-110"
                 style={{ backgroundColor: getArticleColor(category, post.clicks) }}
                 onClick={() => {
-                  if (post.url) {
+                  if (post.slug) {
                     window.gtag('event', 'article_click', {
                       event_category: category,
                       event_label: post.title,
-                      event_link: post.url,
+                      event_link: `/posts/${post.slug}`,
                       transport_type: 'beacon',
                     })
                   }
@@ -847,7 +880,7 @@ const ArticleMobileList: FC<{ posts: Post[] }> = ({ posts }) => {
                 <span className="whitespace-nowrap text-xs text-white/80">
                   {post.clicks?.toLocaleString()} clicks
                 </span>
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -855,6 +888,8 @@ const ArticleMobileList: FC<{ posts: Post[] }> = ({ posts }) => {
     </div>
   )
 }
+
+type TimeFilter = 'all' | 'today' | 'week' | 'month' | 'year'
 
 /**
  * This parent component integrates the search input with the treemap.
@@ -865,18 +900,54 @@ export const ArticleAnalyzer: FC<{
   posts: Post[]
 }> = ({ posts }) => {
   const [searchString, setSearchString] = useState<string>('')
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
   const [filteredPosts, setFilteredPosts] = useState<Post[]>(posts)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [noResults, setNoResults] = useState<boolean>(false)
 
+  // Apply time filtering
+  const timeFilteredPosts = useMemo(() => {
+    if (timeFilter === 'all') return posts
+
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+    return posts.filter((post) => {
+      if (!post.publishedAt) return false
+      const publishedDate = new Date(post.publishedAt)
+
+      switch (timeFilter) {
+        case 'today':
+          return publishedDate >= today
+        case 'week': {
+          const weekAgo = new Date(today)
+          weekAgo.setDate(weekAgo.getDate() - 7)
+          return publishedDate >= weekAgo
+        }
+        case 'month': {
+          const monthAgo = new Date(today)
+          monthAgo.setMonth(monthAgo.getMonth() - 1)
+          return publishedDate >= monthAgo
+        }
+        case 'year': {
+          const yearAgo = new Date(today)
+          yearAgo.setFullYear(yearAgo.getFullYear() - 1)
+          return publishedDate >= yearAgo
+        }
+        default:
+          return true
+      }
+    })
+  }, [posts, timeFilter])
+
   useEffect(() => {
     if (!searchString) {
-      setFilteredPosts(posts)
+      setFilteredPosts(timeFilteredPosts)
       setNoResults(false)
       return
     }
     const lowerQuery = searchString.toLowerCase()
-    const filtered = posts.filter((post) => post.title.toLowerCase().includes(lowerQuery))
+    const filtered = timeFilteredPosts.filter((post) => post.title.toLowerCase().includes(lowerQuery))
     // If the search term is a complete word and there are no matches
     if (filtered.length === 0 && searchString.trim().includes(' ') === false) {
       setNoResults(true)
@@ -893,11 +964,60 @@ export const ArticleAnalyzer: FC<{
       setIsLoading(false)
       setFilteredPosts(filtered)
     }
-  }, [searchString, posts])
+  }, [searchString, timeFilteredPosts])
 
   return (
     <div>
-      <SearchInput value={searchString} onChange={setSearchString} />
+      {/* Search and filter container - row on desktop, stack on mobile */}
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 shadow-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex-1 md:max-w-md">
+              <SearchInput value={searchString} onChange={setSearchString} />
+            </div>
+
+            {/* Time filter radio buttons */}
+            <div className="flex flex-col gap-2" role="radiogroup" aria-label="Filter articles by time period">
+              <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                Time Period
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {(['all', 'today', 'week', 'month', 'year'] as const).map((filter) => (
+                  <label
+                    key={filter}
+                    className={cn(
+                      'flex cursor-pointer items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all',
+                      'border-2 hover:shadow-sm',
+                      timeFilter === filter
+                        ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+                        : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="timeFilter"
+                      value={filter}
+                      checked={timeFilter === filter}
+                      onChange={(e) => setTimeFilter(e.target.value as TimeFilter)}
+                      className="sr-only"
+                      aria-label={filter === 'all' ? 'All articles' : filter === 'today' ? 'Articles from today' : filter === 'week' ? 'Articles from this week' : filter === 'month' ? 'Articles from this month' : 'Articles from this year'}
+                    />
+                    <span>
+                      {filter === 'all' ? 'All' : filter === 'today' ? 'Today' : filter === 'week' ? 'This Week' : filter === 'month' ? 'This Month' : 'This Year'}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Results count */}
+          <div className="mt-3 text-sm text-gray-600">
+            Showing <span className="font-semibold">{filteredPosts.length}</span> {filteredPosts.length === 1 ? 'article' : 'articles'}
+          </div>
+        </div>
+      </div>
+
       {isLoading ? (
         <div className="fixed inset-0 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">

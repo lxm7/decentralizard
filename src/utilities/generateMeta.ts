@@ -39,33 +39,71 @@ export const generateMeta = async (args: {
     getServerSideURL() +
     (doc?.slug ? (Array.isArray(doc.slug) ? '/' + doc.slug.join('/') : `/${doc.slug}`) : '')
 
+  // Extract author information for posts
+  const isPost = doc && typeof doc === 'object' && 'publishedAt' in doc
+  const authors =
+    isPost && 'populatedAuthors' in doc && doc.populatedAuthors
+      ? doc.populatedAuthors
+          .filter((author: any) => author?.name)
+          .map((author: any) => ({ name: author.name }))
+      : undefined
+
   return {
     title,
     alternates: { canonical },
-    description: doc?.meta?.description,
+    description: doc?.meta?.description || description,
+    authors,
     openGraph: mergeOpenGraph({
       description: doc?.meta?.description || description || '',
       images: ogImage
         ? [
             {
               url: ogImage,
+              width: 1200,
+              height: 630,
+              alt: doc?.meta?.title || title,
             },
           ]
         : undefined,
       title,
       url: Array.isArray(doc?.slug) ? doc?.slug.join('/') : '/',
+      type: isPost ? 'article' : 'website',
+      ...(isPost &&
+        doc &&
+        'publishedAt' in doc &&
+        doc.publishedAt && {
+          article: {
+            publishedTime: doc.publishedAt,
+            modifiedTime: 'updatedAt' in doc ? doc.updatedAt : undefined,
+            authors:
+              authors && authors.length > 0 ? authors.map((a: any) => a.name) : ['Decentralizard'],
+            section:
+              'categories' in doc &&
+              doc.categories &&
+              Array.isArray(doc.categories) &&
+              doc.categories.length > 0 &&
+              typeof doc.categories[0] === 'object' &&
+              doc.categories[0] !== null &&
+              'title' in doc.categories[0]
+                ? doc.categories[0].title
+                : undefined,
+          },
+        }),
     }),
     twitter: {
       card: 'summary_large_image',
       title,
-      description,
+      description: doc?.meta?.description || description,
       images: ogImage
         ? [
             {
               url: ogImage,
+              alt: doc?.meta?.title || title,
             },
           ]
         : undefined,
+      creator: '@decentralizard',
+      site: '@decentralizard',
     },
     robots: {
       index: true,

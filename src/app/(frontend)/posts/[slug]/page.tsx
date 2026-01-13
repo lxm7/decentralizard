@@ -12,6 +12,10 @@ import type { Post } from '@/payload-types'
 
 import { PostHero } from '@/heros/PostHero'
 import { generateMeta } from '@/utilities/generateMeta'
+import {
+  generateArticleStructuredData,
+  generateBreadcrumbStructuredData,
+} from '@/utilities/generateStructuredData'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 
@@ -49,29 +53,79 @@ export default async function Post({ params: paramsPromise }: Args) {
 
   if (!post) return <PayloadRedirects url={url} />
 
+  // Generate structured data for SEO
+  const articleStructuredData = generateArticleStructuredData(post)
+
+  const breadcrumbItems = [
+    { name: 'Home', url: '/' },
+    { name: 'Articles', url: '/posts' },
+  ]
+
+  if (post.categories && post.categories.length > 0) {
+    const firstCategory = post.categories[0]
+    if (typeof firstCategory === 'object' && firstCategory?.title) {
+      breadcrumbItems.push({
+        name: firstCategory.title,
+        url: `/posts?category=${firstCategory.slug}`,
+      })
+    }
+  }
+
+  breadcrumbItems.push({ name: post.title, url: `/posts/${post.slug}` })
+
+  const breadcrumbStructuredData = generateBreadcrumbStructuredData(breadcrumbItems)
+
   return (
-    <article className="pt-16 pb-16">
-      <PageClient />
+    <>
+      {/* Add JSON-LD structured data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleStructuredData) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbStructuredData) }}
+      />
 
-      {/* Allows redirects for valid pages too */}
-      <PayloadRedirects disableNotFound url={url} />
+      <article className="pt-16 pb-16 bg-gradient-to-b from-gray-50 to-white">
+        <PageClient />
 
-      {draft && <LivePreviewListener />}
+        {/* Allows redirects for valid pages too */}
+        <PayloadRedirects disableNotFound url={url} />
 
-      <PostHero post={post} />
+        {draft && <LivePreviewListener />}
 
-      <div className="flex flex-col items-center gap-4 pt-8">
-        <div className="container">
-          <RichText className="max-w-[48rem] mx-auto" data={post.content} enableGutter={false} />
-          {post.relatedPosts && post.relatedPosts.length > 0 && (
-            <RelatedPosts
-              className="mt-12 max-w-[52rem] lg:grid lg:grid-cols-subgrid col-start-1 col-span-3 grid-rows-[2fr]"
-              docs={post.relatedPosts.filter((post) => typeof post === 'object')}
+        <PostHero post={post} />
+
+      {/* Main content area with improved readability */}
+      <div className="flex flex-col items-center gap-4 pt-12 pb-16">
+        <div className="container px-4">
+          {/* Content container with optimal reading width */}
+          <div className="max-w-[48rem] mx-auto bg-white rounded-lg shadow-lg p-8 md:p-12">
+            <RichText
+              className="prose prose-lg md:prose-xl prose-gray max-w-none"
+              data={post.content}
+              enableGutter={false}
+              enableProse={true}
             />
+          </div>
+
+          {/* Related posts section */}
+          {post.relatedPosts && post.relatedPosts.length > 0 && (
+            <div className="mt-16 max-w-[52rem] mx-auto">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">
+                Related Articles
+              </h2>
+              <RelatedPosts
+                className="lg:grid lg:grid-cols-subgrid col-start-1 col-span-3 grid-rows-[2fr]"
+                docs={post.relatedPosts.filter((post) => typeof post === 'object')}
+              />
+            </div>
           )}
         </div>
       </div>
     </article>
+    </>
   )
 }
 
