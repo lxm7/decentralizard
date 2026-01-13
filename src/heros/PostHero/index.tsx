@@ -1,6 +1,7 @@
 import { formatDateTime } from 'src/utilities/formatDateTime'
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 import type { Post } from '@/payload-types'
 
@@ -26,18 +27,17 @@ export const PostHero: React.FC<{
     populatedAuthors && populatedAuthors.length > 0 && formatAuthors(populatedAuthors) !== ''
 
   const readingTime = estimateReadingTime(content)
-
   return (
-    <div className="relative -mt-[10.4rem] flex items-end">
-      <div className="container z-10 relative lg:grid lg:grid-cols-[1fr_48rem_1fr] text-white pb-8">
-        <div className="col-start-1 col-span-1 md:col-start-2 md:col-span-2">
+    <div className="relative -mt-[10.4rem] flex items-end bg-gray-700">
+      <div className="container relative z-10 pb-8 text-white lg:grid lg:grid-cols-[1fr_48rem_1fr]">
+        <div className="col-span-1 col-start-1 md:col-span-2 md:col-start-2">
           {/* Breadcrumb navigation */}
           <nav aria-label="Breadcrumb" className="mb-6">
             <ol className="flex items-center space-x-2 text-sm">
               <li>
                 <Link
                   href="/"
-                  className="text-white/80 hover:text-white transition-colors underline"
+                  className="text-white/80 underline transition-colors hover:text-white"
                 >
                   Home
                 </Link>
@@ -46,7 +46,7 @@ export const PostHero: React.FC<{
               <li>
                 <Link
                   href="/posts"
-                  className="text-white/80 hover:text-white transition-colors underline"
+                  className="text-white/80 underline transition-colors hover:text-white"
                 >
                   Articles
                 </Link>
@@ -63,7 +63,7 @@ export const PostHero: React.FC<{
           </nav>
 
           {/* Categories as badges */}
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="mb-6 flex flex-wrap gap-2">
             {categories?.map((category, index) => {
               if (typeof category === 'object' && category !== null) {
                 const { title: categoryTitle } = category
@@ -73,7 +73,7 @@ export const PostHero: React.FC<{
                 return (
                   <span
                     key={index}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-sm text-white uppercase tracking-wide"
+                    className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white backdrop-blur-sm"
                   >
                     {titleToUse}
                   </span>
@@ -85,17 +85,17 @@ export const PostHero: React.FC<{
 
           {/* Title */}
           <div>
-            <h1 className="mb-6 text-3xl md:text-5xl lg:text-6xl font-bold leading-tight">
+            <h1 className="mb-6 text-3xl font-bold leading-tight md:text-5xl lg:text-6xl">
               {title}
             </h1>
           </div>
 
           {/* Metadata row */}
-          <div className="flex flex-wrap items-center gap-4 md:gap-6 text-sm">
+          <div className="flex flex-wrap items-center gap-4 text-sm md:gap-6">
             {hasAuthors && (
               <div className="flex items-center gap-2">
                 <svg
-                  className="w-5 h-5 text-white/80"
+                  className="h-5 w-5 text-white/80"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -109,7 +109,7 @@ export const PostHero: React.FC<{
                   />
                 </svg>
                 <div className="flex flex-col">
-                  <span className="text-white/70 text-xs">Author</span>
+                  <span className="text-xs text-white/70">Author</span>
                   <span className="font-medium">{formatAuthors(populatedAuthors)}</span>
                 </div>
               </div>
@@ -117,7 +117,7 @@ export const PostHero: React.FC<{
             {publishedAt && (
               <div className="flex items-center gap-2">
                 <svg
-                  className="w-5 h-5 text-white/80"
+                  className="h-5 w-5 text-white/80"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -131,7 +131,7 @@ export const PostHero: React.FC<{
                   />
                 </svg>
                 <div className="flex flex-col">
-                  <span className="text-white/70 text-xs">Published</span>
+                  <span className="text-xs text-white/70">Published</span>
                   <time dateTime={publishedAt} className="font-medium">
                     {formatDateTime(publishedAt)}
                   </time>
@@ -140,7 +140,7 @@ export const PostHero: React.FC<{
             )}
             <div className="flex items-center gap-2">
               <svg
-                className="w-5 h-5 text-white/80"
+                className="h-5 w-5 text-white/80"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -154,18 +154,27 @@ export const PostHero: React.FC<{
                 />
               </svg>
               <div className="flex flex-col">
-                <span className="text-white/70 text-xs">Reading time</span>
+                <span className="text-xs text-white/70">Reading time</span>
                 <span className="font-medium">{readingTime} min read</span>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div className="min-h-[80vh] select-none">
-        {heroImage && typeof heroImage !== 'string' && (
+      <div className="relative min-h-[80vh] select-none">
+        {heroImage && typeof heroImage !== 'string' ? (
           <Media fill priority imgClassName="-z-10 object-cover" resource={heroImage} />
+        ) : (
+          <Image
+            src="/images/hero-placeholder.jpg"
+            alt={title}
+            fill
+            priority
+            className="-z-10 object-cover"
+            sizes="100%"
+          />
         )}
-        <div className="absolute pointer-events-none left-0 bottom-0 w-full h-1/2 bg-gradient-to-t from-black to-transparent" />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-1/2 w-full bg-gradient-to-t from-black to-transparent" />
       </div>
     </div>
   )

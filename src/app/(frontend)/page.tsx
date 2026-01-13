@@ -16,6 +16,9 @@ import PageClient from './[slug]/page.client'
 
 import type { Page as PageType } from '@/payload-types'
 
+// Enable ISR - revalidate every 30 seconds in production
+export const revalidate = 30
+
 // This function is similar to the one in [slug]/page.tsx but specifically for the home page
 const queryHomePage = cache(async () => {
   const { isEnabled: draft } = await draftMode()

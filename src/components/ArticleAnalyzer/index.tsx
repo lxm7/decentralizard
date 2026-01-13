@@ -41,6 +41,8 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
   const tooltipRef = useRef<HTMLDivElement>(null)
   const [sizeMetric] = useState<SizeMetric>('clicks')
   const [postsWithMetrics, setPostsWithMetrics] = useState<PostWithMetrics[]>([])
+  const [isNavigating, setIsNavigating] = useState(false)
+  const [clickedArticle, setClickedArticle] = useState<string | null>(null)
 
   // Store the current zoom state
   const [zoomState, setZoomState] = useState({
@@ -609,6 +611,8 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
 
       const hit = findNodeAtPosition(mouseX, mouseY)
       if (hit && !hit.children && hit.data.slug) {
+        setIsNavigating(true)
+        setClickedArticle(hit.data.name)
         window.gtag('event', 'article_click', {
           event_category: hit.parent?.data.name || 'Uncategorized',
           event_label: hit.data.name,
@@ -659,6 +663,21 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
 
   return (
     <main className="relative flex h-full w-full flex-col" role="main">
+      {/* Loading overlay */}
+      {isNavigating && (
+        <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent" />
+            <div className="text-center">
+              <p className="text-lg font-semibold text-gray-900">Loading Article</p>
+              {clickedArticle && (
+                <p className="text-sm text-gray-600 mt-1 max-w-sm truncate">{clickedArticle}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* SEO and accessibility block */}
       <section className="sr-only" aria-label="Detailed article information for SEO">
         {postsWithMetrics.map((post) => (
@@ -786,6 +805,9 @@ const SearchInput: FC<{
  * Mobile-friendly list view for articles
  */
 const ArticleMobileList: FC<{ posts: Post[] }> = ({ posts }) => {
+  const router = useRouter()
+  const [loadingSlug, setLoadingSlug] = useState<string | null>(null)
+
   const postsWithMetrics = useMemo(() => {
     return posts.map((post) => {
       // Use post ID as seed for consistent random values across SSR and client
@@ -861,19 +883,27 @@ const ArticleMobileList: FC<{ posts: Post[] }> = ({ posts }) => {
               <Link
                 key={post.id}
                 href={post.slug ? `/posts/${post.slug}` : '#'}
-                className="flex h-[70px] items-center justify-between border-b border-white px-4 no-underline transition-all hover:brightness-110"
+                className="flex h-[70px] items-center justify-between border-b border-white px-4 no-underline transition-all hover:brightness-110 relative"
                 style={{ backgroundColor: getArticleColor(category, post.clicks) }}
-                onClick={() => {
+                onClick={(e) => {
                   if (post.slug) {
+                    e.preventDefault()
+                    setLoadingSlug(post.slug)
                     window.gtag('event', 'article_click', {
                       event_category: category,
                       event_label: post.title,
                       event_link: `/posts/${post.slug}`,
                       transport_type: 'beacon',
                     })
+                    router.push(`/posts/${post.slug}`)
                   }
                 }}
               >
+                {loadingSlug === post.slug && (
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center backdrop-blur-sm">
+                    <div className="animate-spin rounded-full h-8 w-8 border-4 border-white border-t-transparent" />
+                  </div>
+                )}
                 <span className="mr-3 flex-1 truncate text-sm font-medium text-white">
                   {post.title.replace(/\n\s*/g, ' ')}
                 </span>
