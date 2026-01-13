@@ -39,13 +39,23 @@ const queryHomePage = cache(async () => {
 
 // Function to fetch recent posts
 const fetchRecentPosts = cache(async () => {
+  const { isEnabled: draft } = await draftMode()
   const payload = await getPayload({ config: configPromise })
 
   const posts = await payload.find({
     collection: 'posts',
     limit: 1000,
-    sort: '-publishedDate', // Adjust based on your field name
+    sort: '-publishedAt', // Sort by most recent published date
     depth: 0,
+    draft, // Include drafts when in draft mode
+    overrideAccess: draft, // Override access when authenticated/in draft mode
+    where: draft
+      ? {} // Show all posts when authenticated
+      : {
+          _status: {
+            equals: 'published', // Only show published posts to public
+          },
+        },
   })
 
   return posts.docs || []

@@ -1,6 +1,22 @@
 import type { Post } from '@/payload-types'
 import { getServerSideURL } from './getURL'
 
+// Estimate reading time based on content
+const estimateReadingTime = (content: any): number => {
+  if (!content?.root?.children) return 5
+  const text = JSON.stringify(content)
+  const wordCount = text.split(/\s+/).length
+  const wordsPerMinute = 200
+  return Math.max(1, Math.ceil(wordCount / wordsPerMinute))
+}
+
+// Calculate word count
+const calculateWordCount = (content: any): number => {
+  if (!content?.root?.children) return 0
+  const text = JSON.stringify(content)
+  return text.split(/\s+/).length
+}
+
 export const generateArticleStructuredData = (post: Post) => {
   const serverUrl = getServerSideURL()
 
@@ -15,8 +31,9 @@ export const generateArticleStructuredData = (post: Post) => {
         .map((author) => ({
           '@type': 'Person',
           name: author.name,
+          url: serverUrl,
         }))
-    : [{ '@type': 'Person', name: 'Decentralizard' }]
+    : [{ '@type': 'Person', name: 'Decentralizard', url: serverUrl }]
 
   const categories = post.categories
     ? post.categories
@@ -25,18 +42,27 @@ export const generateArticleStructuredData = (post: Post) => {
         .filter(Boolean)
     : []
 
+  const wordCount = calculateWordCount(post.content)
+  const readingTime = estimateReadingTime(post.content)
+
   const articleData = {
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: post.title || '',
     description: post.shortDescription || post.meta?.description || '',
-    image: imageUrl,
+    image: {
+      '@type': 'ImageObject',
+      url: imageUrl,
+      width: 1200,
+      height: 630,
+    },
     datePublished: post.publishedAt || post.createdAt,
     dateModified: post.updatedAt,
     author: authors.length > 1 ? authors : authors[0],
     publisher: {
       '@type': 'Organization',
       name: 'Decentralizard',
+      url: serverUrl,
       logo: {
         '@type': 'ImageObject',
         url: serverUrl + '/images/logo.png',
@@ -48,7 +74,11 @@ export const generateArticleStructuredData = (post: Post) => {
     },
     keywords: categories.join(', '),
     articleSection: categories[0] || 'General',
-    articleBody: post.meta?.description || post.shortDescription || '',
+    wordCount: wordCount,
+    timeRequired: `PT${readingTime}M`,
+    inLanguage: 'en-US',
+    isFamilyFriendly: true,
+    isAccessibleForFree: true,
   }
 
   return articleData
