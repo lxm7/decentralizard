@@ -27,8 +27,23 @@ export const PostHero: React.FC<{
     populatedAuthors && populatedAuthors.length > 0 && formatAuthors(populatedAuthors) !== ''
 
   const readingTime = estimateReadingTime(content)
+
   return (
-    <div className="relative -mt-[10.4rem] flex items-end bg-gray-700">
+    <div className="relative -mt-[10.4rem] flex min-h-[80vh] items-end bg-gray-700">
+      <div className="absolute inset-0 select-none">
+        {heroImage && typeof heroImage !== 'string' ? (
+          <Media fill priority imgClassName="z-10 object-cover" resource={heroImage} />
+        ) : (
+          <Image
+            src="/images/hero-placeholder.jpg"
+            alt={title}
+            fill
+            priority
+            className="z-10 object-cover opacity-30"
+          />
+        )}
+        <div className="pointer-events-none absolute bottom-0 left-0 h-1/2 w-full bg-gradient-to-t from-black to-transparent" />
+      </div>
       <div className="container relative z-10 pb-8 text-white lg:grid lg:grid-cols-[1fr_48rem_1fr]">
         <div className="col-span-1 col-start-1 md:col-span-2 md:col-start-2">
           {/* Breadcrumb navigation */}
@@ -45,7 +60,7 @@ export const PostHero: React.FC<{
               <li className="text-white/60">/</li>
               <li>
                 <Link
-                  href="/posts"
+                  href="#"
                   className="text-white/80 underline transition-colors hover:text-white"
                 >
                   Articles
@@ -160,21 +175,6 @@ export const PostHero: React.FC<{
             </div>
           </div>
         </div>
-      </div>
-      <div className="relative min-h-[80vh] select-none">
-        {heroImage && typeof heroImage !== 'string' ? (
-          <Media fill priority imgClassName="-z-10 object-cover" resource={heroImage} />
-        ) : (
-          <Image
-            src="/images/hero-placeholder.jpg"
-            alt={title}
-            fill
-            priority
-            className="-z-10 object-cover"
-            sizes="100%"
-          />
-        )}
-        <div className="pointer-events-none absolute bottom-0 left-0 h-1/2 w-full bg-gradient-to-t from-black to-transparent" />
       </div>
     </div>
   )

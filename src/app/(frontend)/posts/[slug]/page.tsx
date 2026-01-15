@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 
+import Link from 'next/link'
 import { RelatedPosts } from '@/blocks/RelatedPosts/Component'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import configPromise from '@payload-config'
@@ -55,6 +56,13 @@ export default async function Post({ params: paramsPromise }: Args) {
   const post = await queryPostBySlug({ slug })
 
   if (!post) return <PayloadRedirects url={url} />
+
+  // Fetch related posts by category
+  const firstCategory = post.categories?.[0]
+  const categoryId = typeof firstCategory === 'object' ? firstCategory?.id : null
+  const categoryBasedPosts = categoryId
+    ? await queryPostsByCategory({ categoryId, excludeSlug: slug })
+    : []
 
   // Generate structured data for SEO
   const articleStructuredData = generateArticleStructuredData(post)
@@ -126,7 +134,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                   href={post.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-center justify-between gap-4 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white shadow-lg transition-all hover:from-blue-700 hover:to-blue-800 hover:shadow-xl"
+                  className="group flex items-center justify-between gap-4 rounded-lg bg-gradient-to-r from-[#EE459F] via-[#9F3BA9] to-[#4AC2E4] p-6 text-white shadow-lg transition-all hover:from-[#D93D8F] hover:via-[#8A3394] hover:to-[#3AADD0] hover:shadow-xl"
                 >
                   <div className="flex items-center gap-3">
                     <svg
@@ -169,8 +177,8 @@ export default async function Post({ params: paramsPromise }: Args) {
             {/* Article summary/excerpt for SEO */}
             {post.shortDescription && (
               <div className="mx-auto mb-8 max-w-[48rem]">
-                <div className="rounded-r-lg border-l-4 border-blue-500 bg-blue-50 p-6">
-                  <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-blue-900">
+                <div className="rounded-r-lg border-l-4 border-[#EE459F] bg-pink-50 p-6">
+                  <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-[#EE459F]">
                     Article Summary
                   </h2>
                   <p className="text-lg leading-relaxed text-gray-700" itemProp="description">
@@ -230,8 +238,9 @@ export default async function Post({ params: paramsPromise }: Args) {
                         return (
                           <a
                             key={index}
-                            href={`/posts?category=${category.slug}`}
-                            className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-200"
+                            href="#"
+                            // href={`/posts?category=${category.slug}`}
+                            className="inline-flex items-center rounded-full bg-[#4AC2E4] px-3 py-1.5 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-200"
                             itemProp="keywords"
                           >
                             {category.title}
@@ -279,7 +288,45 @@ export default async function Post({ params: paramsPromise }: Args) {
               </div>
             )}
 
-            {/* Related posts section */}
+            {/* Category-based related posts */}
+            {categoryBasedPosts.length > 0 && (
+              <div className="mx-auto mt-16 max-w-[52rem]">
+                <h2 className="mb-8 text-2xl font-bold text-gray-900 md:text-3xl">
+                  More in {typeof firstCategory === 'object' ? firstCategory?.title : 'This Category'}
+                </h2>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                  {categoryBasedPosts.map((relatedPost) => (
+                    <Link
+                      key={relatedPost.id}
+                      href={`/posts/${relatedPost.slug}`}
+                      className="group overflow-hidden rounded-lg bg-white shadow-md transition-all hover:shadow-lg"
+                    >
+                      {relatedPost.heroImage && typeof relatedPost.heroImage === 'object' && (
+                        <div className="aspect-video overflow-hidden bg-gray-200">
+                          <img
+                            src={relatedPost.heroImage.url || ''}
+                            alt={relatedPost.title}
+                            className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                          />
+                        </div>
+                      )}
+                      <div className="p-4">
+                        <h3 className="line-clamp-2 font-semibold text-gray-900 group-hover:text-[#9F3BA9]">
+                          {relatedPost.title}
+                        </h3>
+                        {relatedPost.shortDescription && (
+                          <p className="mt-2 line-clamp-2 text-sm text-gray-600">
+                            {relatedPost.shortDescription}
+                          </p>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Manually curated related posts */}
             {post.relatedPosts && post.relatedPosts.length > 0 && (
               <div className="mx-auto mt-16 max-w-[52rem]">
                 <h2 className="mb-8 text-2xl font-bold text-gray-900 md:text-3xl">
@@ -326,3 +373,36 @@ const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
 
   return result.docs?.[0] || null
 })
+
+const queryPostsByCategory = cache(
+  async ({ categoryId, excludeSlug }: { categoryId: string; excludeSlug: string }) => {
+    const { isEnabled: draft } = await draftMode()
+
+    const payload = await getPayload({ config: configPromise })
+
+    const result = await payload.find({
+      collection: 'posts',
+      draft,
+      limit: 3,
+      depth: 1,
+      overrideAccess: draft,
+      sort: '-publishedAt',
+      where: {
+        and: [
+          {
+            categories: {
+              contains: categoryId,
+            },
+          },
+          {
+            slug: {
+              not_equals: excludeSlug,
+            },
+          },
+        ],
+      },
+    })
+
+    return result.docs || []
+  },
+)
