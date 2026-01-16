@@ -19,3 +19,7 @@ docker compose -f $COMPOSE_FILE build app
 docker compose -f $COMPOSE_FILE up -d --no-deps --scale app=2 app
 sleep 15 # Wait for healthcheck (adjust as needed)
 docker compose -f $COMPOSE_FILE up -d --no-deps --scale app=1 app
+
+## Reload nginx to pick up new app container IPs
+echo "Reloading nginx..."
+docker exec decentralizard-nginx nginx -s reload
