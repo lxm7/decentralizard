@@ -665,13 +665,13 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
     <main className="relative flex h-full w-full flex-col" role="main">
       {/* Loading overlay */}
       {isNavigating && (
-        <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent" />
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 rounded-lg bg-white p-8 shadow-2xl">
+            <div className="h-16 w-16 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
             <div className="text-center">
               <p className="text-lg font-semibold text-gray-900">Loading Article</p>
               {clickedArticle && (
-                <p className="text-sm text-gray-600 mt-1 max-w-sm truncate">{clickedArticle}</p>
+                <p className="mt-1 max-w-sm truncate text-sm text-gray-600">{clickedArticle}</p>
               )}
             </div>
           </div>
@@ -772,7 +772,7 @@ const SearchInput: FC<{
       <label htmlFor="article-search" className="sr-only">
         Search articles
       </label>
-      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
         <svg
           className="h-5 w-5 text-gray-400"
           fill="none"
@@ -794,7 +794,7 @@ const SearchInput: FC<{
         placeholder="Search articles by title..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full pl-10 pr-4 py-2.5 text-base text-gray-900 bg-white border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+        className="w-full rounded-lg border-2 border-gray-300 bg-white py-2.5 pl-10 pr-4 text-base text-gray-900 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         aria-label="Search articles by title"
       />
     </div>
@@ -883,7 +883,7 @@ const ArticleMobileList: FC<{ posts: Post[] }> = ({ posts }) => {
               <Link
                 key={post.id}
                 href={post.slug ? `/posts/${post.slug}` : '#'}
-                className="flex h-[70px] items-center justify-between border-b border-white px-4 no-underline transition-all hover:brightness-110 relative"
+                className="relative flex h-[70px] items-center justify-between border-b border-white px-4 no-underline transition-all hover:brightness-110"
                 style={{ backgroundColor: getArticleColor(category, post.clicks) }}
                 onClick={(e) => {
                   if (post.slug) {
@@ -900,8 +900,8 @@ const ArticleMobileList: FC<{ posts: Post[] }> = ({ posts }) => {
                 }}
               >
                 {loadingSlug === post.slug && (
-                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center backdrop-blur-sm">
-                    <div className="animate-spin rounded-full h-8 w-8 border-4 border-white border-t-transparent" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent" />
                   </div>
                 )}
                 <span className="mr-3 flex-1 truncate text-sm font-medium text-white">
@@ -977,7 +977,9 @@ export const ArticleAnalyzer: FC<{
       return
     }
     const lowerQuery = searchString.toLowerCase()
-    const filtered = timeFilteredPosts.filter((post) => post.title.toLowerCase().includes(lowerQuery))
+    const filtered = timeFilteredPosts.filter((post) =>
+      post.title.toLowerCase().includes(lowerQuery),
+    )
     // If the search term is a complete word and there are no matches
     if (filtered.length === 0 && searchString.trim().includes(' ') === false) {
       setNoResults(true)
@@ -999,14 +1001,13 @@ export const ArticleAnalyzer: FC<{
   return (
     <div>
       {/* Search and filter container - row on desktop, stack on mobile */}
-      <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 shadow-sm">
+      {/* <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex-1 md:max-w-md">
               <SearchInput value={searchString} onChange={setSearchString} />
             </div>
 
-            {/* Time filter radio buttons */}
             <div className="flex flex-col gap-2" role="radiogroup" aria-label="Filter articles by time period">
               <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
                 Time Period
@@ -1041,12 +1042,11 @@ export const ArticleAnalyzer: FC<{
             </div>
           </div>
 
-          {/* Results count */}
           <div className="mt-3 text-sm text-gray-600">
             Showing <span className="font-semibold">{filteredPosts.length}</span> {filteredPosts.length === 1 ? 'article' : 'articles'}
           </div>
         </div>
-      </div>
+      </div> */}
 
       {isLoading ? (
         <div className="fixed inset-0 flex items-center justify-center">
