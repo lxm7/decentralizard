@@ -6,7 +6,6 @@ import configPromise from '@payload-config'
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const token = searchParams.get('token')
-  console.log('INIT', { token })
 
   if (!token) {
     return new NextResponse(getHtmlResponse('Missing confirmation token', false), {
@@ -25,8 +24,6 @@ export async function GET(req: NextRequest) {
         confirmationToken: { equals: token },
       },
     })
-
-    console.log({ token, subscribers })
 
     if (!subscribers.docs.length) {
       return new NextResponse(

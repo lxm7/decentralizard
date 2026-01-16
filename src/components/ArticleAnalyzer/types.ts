@@ -21,6 +21,7 @@ export interface HierarchyNode {
   uniqueClicks?: number
   clickRate?: number
   url?: string
+  slug?: string | null
   id?: string | number
 }
 
