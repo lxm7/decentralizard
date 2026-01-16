@@ -375,7 +375,7 @@ const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
 })
 
 const queryPostsByCategory = cache(
-  async ({ categoryId, excludeSlug }: { categoryId: string; excludeSlug: string }) => {
+  async ({ categoryId, excludeSlug }: { categoryId: number; excludeSlug: string }) => {
     const { isEnabled: draft } = await draftMode()
 
     const payload = await getPayload({ config: configPromise })
