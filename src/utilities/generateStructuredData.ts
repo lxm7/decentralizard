@@ -1,29 +1,29 @@
-import type { Post } from '@/payload-types'
-import { getServerSideURL } from './getURL'
+import type { Post } from '@/payload-types';
+import { getServerSideURL } from './getURL';
 
 // Estimate reading time based on content
-const estimateReadingTime = (content: any): number => {
-  if (!content?.root?.children) return 5
-  const text = JSON.stringify(content)
-  const wordCount = text.split(/\s+/).length
-  const wordsPerMinute = 200
-  return Math.max(1, Math.ceil(wordCount / wordsPerMinute))
-}
+const estimateReadingTime = (content: Post['content'] | undefined): number => {
+  if (!content?.root?.children) return 5;
+  const text = JSON.stringify(content);
+  const wordCount = text.split(/\s+/).length;
+  const wordsPerMinute = 200;
+  return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
+};
 
 // Calculate word count
-const calculateWordCount = (content: any): number => {
-  if (!content?.root?.children) return 0
-  const text = JSON.stringify(content)
-  return text.split(/\s+/).length
-}
+const calculateWordCount = (content: Post['content'] | undefined): number => {
+  if (!content?.root?.children) return 0;
+  const text = JSON.stringify(content);
+  return text.split(/\s+/).length;
+};
 
 export const generateArticleStructuredData = (post: Post) => {
-  const serverUrl = getServerSideURL()
+  const serverUrl = getServerSideURL();
 
   const imageUrl =
     post.heroImage && typeof post.heroImage === 'object' && 'url' in post.heroImage
       ? serverUrl + post.heroImage.url
-      : serverUrl + '/images/website-template-OG.webp'
+      : serverUrl + '/images/website-template-OG.webp';
 
   const authors = post.populatedAuthors
     ? post.populatedAuthors
@@ -33,17 +33,17 @@ export const generateArticleStructuredData = (post: Post) => {
           name: author.name,
           url: serverUrl,
         }))
-    : [{ '@type': 'Person', name: 'Decentralizard', url: serverUrl }]
+    : [{ '@type': 'Person', name: 'Decentralizard', url: serverUrl }];
 
   const categories = post.categories
     ? post.categories
         .filter((cat) => typeof cat === 'object' && cat !== null)
         .map((cat) => (typeof cat === 'object' && 'title' in cat ? cat.title : ''))
         .filter(Boolean)
-    : []
+    : [];
 
-  const wordCount = calculateWordCount(post.content)
-  const readingTime = estimateReadingTime(post.content)
+  const wordCount = calculateWordCount(post.content);
+  const readingTime = estimateReadingTime(post.content);
 
   const articleData = {
     '@context': 'https://schema.org',
@@ -79,13 +79,13 @@ export const generateArticleStructuredData = (post: Post) => {
     inLanguage: 'en-US',
     isFamilyFriendly: true,
     isAccessibleForFree: true,
-  }
+  };
 
-  return articleData
-}
+  return articleData;
+};
 
 export const generateBreadcrumbStructuredData = (items: Array<{ name: string; url: string }>) => {
-  const serverUrl = getServerSideURL()
+  const serverUrl = getServerSideURL();
 
   return {
     '@context': 'https://schema.org',
@@ -96,5 +96,5 @@ export const generateBreadcrumbStructuredData = (items: Array<{ name: string; ur
       name: item.name,
       item: serverUrl + item.url,
     })),
-  }
-}
+  };
+};

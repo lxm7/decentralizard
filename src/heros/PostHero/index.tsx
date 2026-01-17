@@ -1,33 +1,33 @@
-import { formatDateTime } from 'src/utilities/formatDateTime'
-import React from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
+import { formatDateTime } from 'src/utilities/formatDateTime';
+import React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 
-import type { Post } from '@/payload-types'
+import type { Post } from '@/payload-types';
 
-import { Media } from '@/components/Media'
-import { formatAuthors } from '@/utilities/formatAuthors'
-import { CategoryPill } from '@/components/CateoryPill'
+import { Media } from '@/components/Media';
+import { formatAuthors } from '@/utilities/formatAuthors';
+import { CategoryPill } from '@/components/CateoryPill';
 
 // Estimate reading time based on content
-const estimateReadingTime = (content: any): number => {
-  if (!content?.root?.children) return 5
+const estimateReadingTime = (content: Post['content'] | undefined): number => {
+  if (!content?.root?.children) return 5;
 
-  const text = JSON.stringify(content)
-  const wordCount = text.split(/\s+/).length
-  const wordsPerMinute = 200
-  return Math.max(1, Math.ceil(wordCount / wordsPerMinute))
-}
+  const text = JSON.stringify(content);
+  const wordCount = text.split(/\s+/).length;
+  const wordsPerMinute = 200;
+  return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
+};
 
 export const PostHero: React.FC<{
-  post: Post
+  post: Post;
 }> = ({ post }) => {
-  const { categories, heroImage, populatedAuthors, publishedAt, title, content } = post
+  const { categories, heroImage, populatedAuthors, publishedAt, title, content } = post;
 
   const hasAuthors =
-    populatedAuthors && populatedAuthors.length > 0 && formatAuthors(populatedAuthors) !== ''
+    populatedAuthors && populatedAuthors.length > 0 && formatAuthors(populatedAuthors) !== '';
 
-  const readingTime = estimateReadingTime(content)
+  const readingTime = estimateReadingTime(content);
 
   return (
     <div className="relative -mt-[10.4rem] flex min-h-[80vh] items-end bg-neutral-700">
@@ -43,9 +43,9 @@ export const PostHero: React.FC<{
             className="z-10 object-cover opacity-30"
           />
         )}
-        <div className="from-neutral-black pointer-events-none absolute bottom-0 left-0 h-1/2 w-full bg-gradient-to-t to-transparent" />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-1/2 w-full bg-gradient-to-t from-neutral-black to-transparent" />
       </div>
-      <div className="text-neutral-white container relative z-10 pb-8 lg:grid lg:grid-cols-[1fr_48rem_1fr]">
+      <div className="container relative z-10 pb-8 text-neutral-white lg:grid lg:grid-cols-[1fr_48rem_1fr]">
         <div className="col-span-1 col-start-1 md:col-span-2 md:col-start-2">
           {/* Breadcrumb navigation */}
           <nav aria-label="Breadcrumb" className="mb-6">
@@ -53,7 +53,7 @@ export const PostHero: React.FC<{
               <li>
                 <Link
                   href="/"
-                  className="text-neutral-white/80 hover:text-neutral-white underline transition-colors"
+                  className="text-neutral-white/80 underline transition-colors hover:text-neutral-white"
                 >
                   Home
                 </Link>
@@ -62,7 +62,7 @@ export const PostHero: React.FC<{
               <li>
                 <Link
                   href="#"
-                  className="text-neutral-white/80 hover:text-neutral-white underline transition-colors"
+                  className="text-neutral-white/80 underline transition-colors hover:text-neutral-white"
                 >
                   Articles
                 </Link>
@@ -82,13 +82,13 @@ export const PostHero: React.FC<{
           <div className="mb-6 flex flex-wrap gap-2">
             {categories?.map((category, index) => {
               if (typeof category === 'object' && category !== null) {
-                const { title: categoryTitle } = category
+                const { title: categoryTitle } = category;
 
-                const titleToUse = categoryTitle || 'Untitled category'
+                const titleToUse = categoryTitle || 'Untitled category';
 
-                return <CategoryPill key={index} title={titleToUse} />
+                return <CategoryPill key={index} title={titleToUse} />;
               }
-              return null
+              return null;
             })}
           </div>
 
@@ -171,5 +171,5 @@ export const PostHero: React.FC<{
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
