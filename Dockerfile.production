@@ -17,7 +17,8 @@ RUN --mount=type=cache,target=/app/.yarn/cache,uid=1001,gid=1001 \
 # Stage 2: Builder
 FROM deps AS builder
 COPY --chown=node:node . .
-RUN yarn build
+RUN --mount=type=cache,target=/app/.next/cache,uid=1001,gid=1001 \
+    yarn build
 
 # Stage 3: Production
 FROM base AS production

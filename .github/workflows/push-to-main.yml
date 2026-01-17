@@ -77,8 +77,6 @@ jobs:
           cd decentralizard
           git fetch origin
           git reset --hard origin/main
-          # Cleanup build cache
-          docker builder prune -af
           # Run deployment script
           bash scripts/production.sh
           EOF
