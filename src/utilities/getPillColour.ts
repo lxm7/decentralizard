@@ -2,10 +2,11 @@ const CATEGORY_COLOR_MAP: Record<string, string> = {
   'Tech blog': 'var(--brand-magenta)',
   AI: 'var(--brand-teal)',
   'Mental Health': 'var(--brand-violet)',
+  'All Feeds': 'var(--brand-violet)',
   Crypto: 'var(--brand-coral)',
   Mycology: 'var(--success)',
-  Philosophy: 'var(--brand-violet)',
-  Space: 'var(--brand-magenta)',
+  Philosophy: 'var(--brand-success)',
+  Space: 'var(--brand-success)',
 }
 
 const BRAND_COLORS = [

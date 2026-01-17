@@ -58,7 +58,7 @@ const searchVariantStyles: Record<
     filterBtn: 'hidden',
   },
   dark: {
-    container: 'flex items-center gap-3 rounded-xl px-4 py-3 bg-input',
+    container: 'flex items-center gap-3 rounded-xl px-4 py-3 bg-border bg-input',
     icon: 'h-5 w-5 text-neutral-500',
     input:
       'flex-1 bg-transparent text-sm text-neutral-white placeholder:text-neutral-300 focus:outline-none',
