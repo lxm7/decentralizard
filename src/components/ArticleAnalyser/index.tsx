@@ -6,12 +6,17 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
-import { Post } from '@/payload-types'
+import { Post, Media as MediaType } from '@/payload-types'
 import { PostWithMetrics, HierarchyNode, SizeMetric } from './types'
 import { useCanvasStore } from '@/store/useCanvasStore'
 import { cn } from '@/utilities/ui'
+// Media component available if needed for future use
+import { getClientSideURL } from '@/utilities/getURL'
+import { CategoryPill } from '../CateoryPill'
 
 const headerHeight = 60
+
+type MobileViewType = 'default' | 'wba'
 const TARGET_NODE_COUNT = 40 // Target number of articles to display at any zoom level
 
 // Simple seeded random number generator for consistent SSR/client results
@@ -29,6 +34,430 @@ function getShade(baseColor: string, value: number, max: number, variation: numb
   const brighter = d3.color(baseColor)?.brighter(variation).formatHex() || baseColor
   const darker = d3.color(baseColor)?.darker(variation).formatHex() || baseColor
   return d3.interpolateLab(brighter, darker)(t)
+}
+
+/*––––––––––––––––––––––––––––––––––––––
+  SEARCH INPUT COMPONENT
+–––––––––––––––––––––––––––––––––––––––––*/
+
+/**
+ * A simple search input that accepts text and calls onChange.
+ * Supports 'light' and 'dark' variants for different themes.
+ */
+type SearchVariant = 'light' | 'dark'
+
+const searchVariantStyles: Record<
+  SearchVariant,
+  { container: string; icon: string; input: string; filterBtn: string }
+> = {
+  light: {
+    container: 'relative',
+    icon: 'h-5 w-5 text-neutral-400',
+    input:
+      'w-full rounded-lg border-2 border-neutral-300 bg-neutral-white py-2.5 pl-10 pr-4 text-base text-neutral-900 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500 placeholder:text-neutral-400',
+    filterBtn: 'hidden',
+  },
+  dark: {
+    container: 'flex items-center gap-3 rounded-xl px-4 py-3 bg-border bg-input',
+    icon: 'h-5 w-5 text-neutral-500',
+    input:
+      'flex-1 bg-transparent text-sm text-neutral-white placeholder:text-neutral-300 focus:outline-none',
+    filterBtn: 'rounded-lg bg-[#2d333b] p-2 hover:bg-[#3d434b] transition-colors',
+  },
+}
+
+const SearchInput: FC<{
+  value: string
+  onChange: (value: string) => void
+  variant?: SearchVariant
+  placeholder?: string
+}> = ({ value, onChange, variant = 'light', placeholder = 'Search articles by title...' }) => {
+  const styles = searchVariantStyles[variant]
+
+  if (variant === 'dark') {
+    return (
+      <div className={styles.container}>
+        <svg
+          className={styles.icon}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+        <input
+          type="search"
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={styles.input}
+          aria-label={placeholder}
+        />
+        {/* <button className={styles.filterBtn} aria-label="Filter options">
+          <svg
+            className="h-4 w-4 text-neutral-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+            />
+          </svg>
+        </button> */}
+      </div>
+    )
+  }
+
+  // Light variant (original style)
+  return (
+    <div className={styles.container}>
+      <label htmlFor="article-search" className="sr-only">
+        Search articles
+      </label>
+      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+        <svg
+          className={styles.icon}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+      </div>
+      <input
+        id="article-search"
+        type="search"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={styles.input}
+        aria-label={placeholder}
+      />
+    </div>
+  )
+}
+
+/*––––––––––––––––––––––––––––––––––––––
+  VIEW TOGGLE COMPONENT
+–––––––––––––––––––––––––––––––––––––––––*/
+
+const ViewToggle: FC<{
+  activeView: MobileViewType
+  onViewChange: (view: MobileViewType) => void
+}> = ({ activeView, onViewChange }) => {
+  return (
+    <div className="flex h-10 items-center rounded-lg bg-neutral-800 p-1">
+      <button
+        onClick={() => onViewChange('default')}
+        className={cn(
+          'flex h-8 items-center justify-center gap-1 rounded-md px-3 transition-all',
+          activeView === 'default' ? 'bg-neutral-700' : 'bg-transparent hover:bg-neutral-700',
+        )}
+        aria-label="Default view"
+      >
+        <div className="flex gap-[2px]">
+          <div
+            className={cn(
+              'h-5 w-[4px] rounded-sm transition-colors',
+              activeView === 'default' ? 'bg-brand-teal' : 'bg-neutral-500',
+            )}
+          />
+          <div
+            className={cn(
+              'h-5 w-[4px] rounded-sm transition-colors',
+              activeView === 'default' ? 'bg-brand-teal' : 'bg-neutral-500',
+            )}
+          />
+          <div
+            className={cn(
+              'h-5 w-[4px] rounded-sm transition-colors',
+              activeView === 'default' ? 'bg-brand-teal' : 'bg-neutral-500',
+            )}
+          />
+        </div>
+      </button>
+      <button
+        onClick={() => onViewChange('wba')}
+        className={cn(
+          'flex h-8 items-center justify-center gap-1 rounded-md px-3 transition-all',
+          activeView === 'wba' ? 'bg-neutral-700' : 'bg-transparent hover:bg-neutral-700',
+        )}
+        aria-label="WBA view"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          className={cn(
+            'transition-colors',
+            activeView === 'wba' ? 'text-brand-teal' : 'text-neutral-500',
+          )}
+        >
+          <rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" />
+          <rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor" />
+          <rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" />
+          <rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" />
+        </svg>
+      </button>
+    </div>
+  )
+}
+
+/*––––––––––––––––––––––––––––––––––––––
+  NEW CARD-BASED MOBILE VIEW (Default)
+–––––––––––––––––––––––––––––––––––––––––*/
+
+const CardMobileView: FC<{ posts: Post[] }> = ({ posts }) => {
+  const router = useRouter()
+  const [loadingSlug, setLoadingSlug] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string>('All Feeds')
+  const [searchQuery, setSearchQuery] = useState<string>('')
+
+  // Mock data for stats ticker
+  const mockStats = {
+    gridOutput: '+12%',
+    aqi: 42,
+    aqiStatus: 'GOOD',
+    newNodes: 8,
+  }
+
+  // Get unique categories from posts
+  const categories = useMemo(() => {
+    const cats = new Set<string>()
+    posts.forEach((post) => {
+      if (post.category_titles && post.category_titles.length > 0) {
+        post.category_titles.forEach((cat) => cats.add(cat))
+      }
+    })
+    return ['All Feeds', ...Array.from(cats)]
+  }, [posts])
+
+  // Filter posts by category and search query
+  const filteredPosts = useMemo(() => {
+    let result = posts
+
+    // Filter by category
+    if (selectedCategory !== 'All Feeds') {
+      result = result.filter(
+        (post) => post.category_titles && post.category_titles.includes(selectedCategory),
+      )
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(
+        (post) =>
+          post.title.toLowerCase().includes(query) ||
+          post.shortDescription?.toLowerCase().includes(query),
+      )
+    }
+
+    return result
+  }, [posts, selectedCategory, searchQuery])
+
+  const handleArticleClick = (post: Post, e: React.MouseEvent) => {
+    if (post.slug) {
+      e.preventDefault()
+      setLoadingSlug(post.slug)
+      window.gtag?.('event', 'article_click', {
+        event_category: post.category_titles?.[0] || 'Uncategorized',
+        event_label: post.title,
+        event_link: `/posts/${post.slug}`,
+        transport_type: 'beacon',
+      })
+      router.push(`/posts/${post.slug}`)
+    }
+  }
+
+  const getImageUrl = (post: Post): string | null => {
+    if (post.heroImage && typeof post.heroImage === 'object') {
+      const media = post.heroImage as MediaType
+      if (media.url) {
+        return `${getClientSideURL()}${media.url}`
+      }
+    }
+    // Use placeholder if no hero image
+    return '/images/future1.webp'
+  }
+
+  return (
+    <div
+      className="flex w-full flex-col overflow-y-auto bg-[#0d1117]"
+      style={{ height: `calc(100vh - ${headerHeight}px)` }}
+    >
+      {/* Stats Ticker */}
+      <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-3">
+        <div className="flex items-center gap-1">
+          <span className="h-2 w-2 rounded-full bg-green-500" />
+          <span className="text-xs text-neutral-400">GRID OUTPUT:</span>
+          <span className="text-xs font-medium text-green-400">{mockStats.gridOutput}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="bg-brand-teal h-2 w-2 rounded-full" />
+          <span className="text-xs text-neutral-400">AQI:</span>
+          <span className="text-brand-teal text-xs font-medium">
+            {mockStats.aqi} ({mockStats.aqiStatus})
+          </span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="h-2 w-2 rounded-full bg-cyan-500" />
+          <span className="text-xs text-neutral-400">NEW NODES:</span>
+          <span className="text-xs font-medium text-cyan-400">{mockStats.newNodes}</span>
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="px-4 py-3">
+        <SearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          variant="dark"
+          placeholder="Search the Archives..."
+        />
+      </div>
+
+      {/* Hero Section - Global Sentiment Heatmap */}
+      {/* <div className="relative mx-4 mb-4 overflow-hidden rounded-2xl">
+        <div className="relative h-52 w-full">
+          <Image
+            src="/images/future1.webp"
+            alt="Global Sentiment Heatmap"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+          <div className="absolute left-3 top-3">
+            <span className="text-neutral-white rounded bg-cyan-500/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">
+              Live Data
+            </span>
+          </div>
+
+          <button className="bg-neutral-black/40 absolute right-3 top-3 rounded-lg p-2 backdrop-blur-sm">
+            <svg
+              className="text-neutral-white h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <h2 className="text-neutral-white text-xl font-bold">Global Sentiment Heatmap</h2>
+          <p className="mt-1 text-sm text-neutral-300">
+            Visualizing ecological restoration progress...
+          </p>
+          <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-neutral-700">
+            <div className="from-brand-teal to-brand-magenta h-full w-3/4 rounded-full bg-gradient-to-r" />
+          </div>
+        </div>
+      </div> */}
+
+      {/* Category Filter Tags - Fixed visibility */}
+      <div className="shrink-0 px-4 py-3">
+        <div
+          className="scrollbar-hide flex gap-2 overflow-x-auto pb-2"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          {categories.map((category) => (
+            <CategoryPill
+              key={category}
+              title={category}
+              isSelected={selectedCategory === category}
+              onClick={setSelectedCategory}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Latest Transmissions Header */}
+      <div className="px-4 pb-3">
+        <h3 className="text-neutral-white text-lg font-semibold">Latest Transmissions</h3>
+      </div>
+
+      {/* Article Cards */}
+      <div className="flex flex-col gap-4 px-4 pb-24">
+        {filteredPosts.map((post) => {
+          const imageUrl = getImageUrl(post)
+          return (
+            <Link
+              key={post.id}
+              href={post.slug ? `/posts/${post.slug}` : '#'}
+              onClick={(e) => handleArticleClick(post, e)}
+              className="bg-neutral-850 group relative overflow-hidden rounded-xl no-underline transition-all hover:bg-neutral-800"
+            >
+              {loadingSlug === post.slug && (
+                <div className="bg-neutral-black/50 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-400 border-t-transparent" />
+                </div>
+              )}
+
+              {/* Card Image */}
+              <div className="relative h-40 w-full overflow-hidden">
+                <Image
+                  src={imageUrl || '/images/future1.webp'}
+                  alt={post.title}
+                  fill
+                  className="object-cover transition-transform group-hover:scale-105"
+                />
+                <div className="from-neutral-850 absolute inset-0 bg-gradient-to-t via-transparent to-transparent" />
+
+                {/* Category Badges - positioned 10px from bottom of image */}
+                {post.category_titles && post.category_titles.length > 0 && (
+                  <div className="scrollbar-hide absolute bottom-2.5 left-4 right-4 flex gap-1.5 overflow-x-auto">
+                    {post.category_titles.map((category) => (
+                      <CategoryPill key={category} title={category} variant="cyan" />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Card Content */}
+              <div className="relative p-4 pt-3">
+
+                {/* Title */}
+                <h4 className="text-neutral-white mb-2 line-clamp-2 text-base font-semibold">
+                  {post.title.replace(/\n\s*/g, ' ')}
+                </h4>
+
+                {/* Description */}
+                {post.shortDescription && (
+                  <p className="line-clamp-2 text-sm text-neutral-400">{post.shortDescription}</p>
+                )}
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 /*––––––––––––––––––––––––––––––––––––––
@@ -587,15 +1016,15 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
         tooltipRef.current.innerHTML = `
           <div class="font-bold text-sm mb-2">${hit.data.name}</div>
           <div class="flex justify-between text-xs mb-1">
-            <span class="text-gray-600 mr-3">Total Clicks:</span>
+            <span class="text-neutral-600 mr-3">Total Clicks:</span>
             <span class="font-medium">${hit.data.clicks?.toLocaleString() || ''}</span>
           </div>
           <div class="flex justify-between text-xs mb-1">
-            <span class="text-gray-600 mr-3">Unique Clicks:</span>
+            <span class="text-neutral-600 mr-3">Unique Clicks:</span>
             <span class="font-medium">${hit.data.uniqueClicks?.toLocaleString() || ''}</span>
           </div>
           <div class="flex justify-between text-xs mb-1">
-            <span class="text-gray-600 mr-3">Click Rate:</span>
+            <span class="text-neutral-600 mr-3">Click Rate:</span>
             <span class="font-medium">${hit.data.clickRate ? hit.data.clickRate + '%' : ''}</span>
           </div>
         `
@@ -665,13 +1094,13 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
     <main className="relative flex h-full w-full flex-col" role="main">
       {/* Loading overlay */}
       {isNavigating && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-4 rounded-lg bg-white p-8 shadow-2xl">
+        <div className="bg-neutral-black/50 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+          <div className="bg-neutral-white flex flex-col items-center gap-4 rounded-lg p-8 shadow-2xl">
             <div className="h-16 w-16 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
             <div className="text-center">
-              <p className="text-lg font-semibold text-gray-900">Loading Article</p>
+              <p className="text-lg font-semibold text-neutral-900">Loading Article</p>
               {clickedArticle && (
-                <p className="mt-1 max-w-sm truncate text-sm text-gray-600">{clickedArticle}</p>
+                <p className="mt-1 max-w-sm truncate text-sm text-neutral-600">{clickedArticle}</p>
               )}
             </div>
           </div>
@@ -719,13 +1148,13 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
           ref={tooltipRef}
           role="tooltip"
           aria-live="polite"
-          className="pointer-events-none absolute z-10 max-w-xs rounded border border-gray-300 bg-white bg-opacity-95 p-3 opacity-0 shadow-lg transition-opacity duration-200"
+          className="bg-neutral-white pointer-events-none absolute z-10 max-w-xs rounded border border-neutral-300 bg-opacity-95 p-3 opacity-0 shadow-lg transition-opacity duration-200"
         />
 
         {/* Zoom controls */}
-        <div className="absolute bottom-4 right-4 flex space-x-2 rounded-lg bg-white p-2 shadow">
+        <div className="bg-neutral-white absolute bottom-4 right-4 flex space-x-2 rounded-lg p-2 shadow">
           <button
-            className="flex h-8 w-8 items-center justify-center rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+            className="flex h-8 w-8 items-center justify-center rounded bg-neutral-100 hover:bg-neutral-200 disabled:opacity-50"
             onClick={handleResetZoom}
             disabled={isTransitioning || zoomState.scale === 1}
             aria-label="Reset zoom"
@@ -746,7 +1175,7 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
         </div>
 
         {/* Zoom level indicator */}
-        <div className="absolute bottom-4 left-4 rounded-lg bg-white px-3 py-2 text-xs text-gray-600 shadow">
+        <div className="bg-neutral-white absolute bottom-4 left-4 rounded-lg px-3 py-2 text-xs text-neutral-600 shadow">
           <div className="flex items-center">
             <span>Zoom: {Math.round(zoomState.scale * 100)}%</span>
           </div>
@@ -756,55 +1185,10 @@ export const ArticleTreeMap: FC<{ posts: Post[] }> = ({ posts }) => {
   )
 }
 
-/*––––––––––––––––––––––––––––––––––––––
-  SEARCH INPUT & PARENT INTEGRATION (Snippet 1)
-–––––––––––––––––––––––––––––––––––––––––*/
-
 /**
- * A simple search input that accepts text and calls onChange.
+ * WBA (color-coded category list) mobile view for articles
  */
-const SearchInput: FC<{
-  value: string
-  onChange: (value: string) => void
-}> = ({ value, onChange }) => {
-  return (
-    <div className="relative">
-      <label htmlFor="article-search" className="sr-only">
-        Search articles
-      </label>
-      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-        <svg
-          className="h-5 w-5 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
-      </div>
-      <input
-        id="article-search"
-        type="search"
-        placeholder="Search articles by title..."
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border-2 border-gray-300 bg-white py-2.5 pl-10 pr-4 text-base text-gray-900 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-        aria-label="Search articles by title"
-      />
-    </div>
-  )
-}
-
-/**
- * Mobile-friendly list view for articles
- */
-const ArticleMobileList: FC<{ posts: Post[] }> = ({ posts }) => {
+const WBAMobileView: FC<{ posts: Post[] }> = ({ posts }) => {
   const router = useRouter()
   const [loadingSlug, setLoadingSlug] = useState<string | null>(null)
 
@@ -871,7 +1255,7 @@ const ArticleMobileList: FC<{ posts: Post[] }> = ({ posts }) => {
         <div key={category}>
           {/* Category Header */}
           <div
-            className="sticky top-0 z-10 px-4 py-2 text-sm font-bold text-white"
+            className="text-neutral-white sticky top-0 z-10 px-4 py-2 text-sm font-bold"
             style={{ backgroundColor: getCategoryColor(category) }}
           >
             {category} ({categoryPosts.length})
@@ -900,14 +1284,14 @@ const ArticleMobileList: FC<{ posts: Post[] }> = ({ posts }) => {
                 }}
               >
                 {loadingSlug === post.slug && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+                  <div className="bg-neutral-black/30 absolute inset-0 flex items-center justify-center backdrop-blur-sm">
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent" />
                   </div>
                 )}
-                <span className="mr-3 flex-1 truncate text-sm font-medium text-white">
+                <span className="text-neutral-white mr-3 flex-1 truncate text-sm font-medium">
                   {post.title.replace(/\n\s*/g, ' ')}
                 </span>
-                <span className="whitespace-nowrap text-xs text-white/80">
+                <span className="text-neutral-white/80 whitespace-nowrap text-xs">
                   {post.clicks?.toLocaleString()} clicks
                 </span>
               </Link>
@@ -924,9 +1308,9 @@ type TimeFilter = 'all' | 'today' | 'week' | 'month' | 'year'
 /**
  * This parent component integrates the search input with the treemap.
  * It filters the posts (by title in this example) and passes the filtered
- * posts to the ArticleAnalyzer.
+ * posts to the ArticleAnalyser.
  */
-export const ArticleAnalyzer: FC<{
+export const ArticleAnalyser: FC<{
   posts: Post[]
 }> = ({ posts }) => {
   const [searchString, setSearchString] = useState<string>('')
@@ -934,6 +1318,7 @@ export const ArticleAnalyzer: FC<{
   const [filteredPosts, setFilteredPosts] = useState<Post[]>(posts)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [noResults, setNoResults] = useState<boolean>(false)
+  const [mobileView, setMobileView] = useState<MobileViewType>('default')
 
   // Apply time filtering
   const timeFilteredPosts = useMemo(() => {
@@ -1001,7 +1386,7 @@ export const ArticleAnalyzer: FC<{
   return (
     <div>
       {/* Search and filter container - row on desktop, stack on mobile */}
-      {/* <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 shadow-sm">
+      {/* <div className="bg-gradient-to-r from-neutral-50 to-neutral-100 border-b border-neutral-200 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex-1 md:max-w-md">
@@ -1009,7 +1394,7 @@ export const ArticleAnalyzer: FC<{
             </div>
 
             <div className="flex flex-col gap-2" role="radiogroup" aria-label="Filter articles by time period">
-              <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+              <span className="text-xs font-semibold text-neutral-600 uppercase tracking-wide">
                 Time Period
               </span>
               <div className="flex flex-wrap gap-2">
@@ -1020,8 +1405,8 @@ export const ArticleAnalyzer: FC<{
                       'flex cursor-pointer items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all',
                       'border-2 hover:shadow-sm',
                       timeFilter === filter
-                        ? 'bg-blue-600 border-blue-600 text-white shadow-md'
-                        : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'
+                        ? 'bg-blue-600 border-blue-600 text-neutral-white shadow-md'
+                        : 'bg-neutral-white border-neutral-300 text-neutral-700 hover:border-neutral-400 hover:bg-neutral-50'
                     )}
                   >
                     <input
@@ -1042,7 +1427,7 @@ export const ArticleAnalyzer: FC<{
             </div>
           </div>
 
-          <div className="mt-3 text-sm text-gray-600">
+          <div className="mt-3 text-sm text-neutral-600">
             Showing <span className="font-semibold">{filteredPosts.length}</span> {filteredPosts.length === 1 ? 'article' : 'articles'}
           </div>
         </div>
@@ -1051,10 +1436,10 @@ export const ArticleAnalyzer: FC<{
       {isLoading ? (
         <div className="fixed inset-0 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
-            <div className="text-base text-gray-500">Searching with AI...</div>
+            <div className="text-base text-neutral-500">Searching with AI...</div>
             <div className="relative h-8 w-32">
               <Image
-                src="/images/logo2-white-loader-colour.svg"
+                src="/images/logo/logo2-white-loader-colour.svg"
                 alt="Loading"
                 fill
                 className="ml-[-10px]"
@@ -1065,16 +1450,26 @@ export const ArticleAnalyzer: FC<{
       ) : noResults ? (
         <div className="fixed inset-0 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
-            <div className="flex w-full items-center justify-center text-base text-gray-500">
+            <div className="flex w-full items-center justify-center text-base text-neutral-500">
               No articles found for &quot;{searchString}&quot;
             </div>
           </div>
         </div>
       ) : (
         <>
-          {/* Mobile list view - shown on screens < 768px */}
+          {/* Mobile view with toggle - shown on screens < 768px */}
           <div className="block md:hidden">
-            <ArticleMobileList posts={filteredPosts} />
+            {/* Toggle positioned at top right */}
+            <div className="fixed bottom-[10px] right-4 z-20">
+              <ViewToggle activeView={mobileView} onViewChange={setMobileView} />
+            </div>
+
+            {/* Render mobile view based on selection */}
+            {mobileView === 'default' ? (
+              <CardMobileView posts={filteredPosts} />
+            ) : (
+              <WBAMobileView posts={filteredPosts} />
+            )}
           </div>
 
           {/* Desktop treemap view - shown on screens >= 768px */}
