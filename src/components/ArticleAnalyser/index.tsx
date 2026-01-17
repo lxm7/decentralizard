@@ -335,7 +335,7 @@ const CardMobileView: FC<{ posts: Post[] }> = ({ posts }) => {
       </div>
 
       {/* Hero Section - Global Sentiment Heatmap */}
-      <div className="relative mx-4 mb-4 overflow-hidden rounded-2xl">
+      {/* <div className="relative mx-4 mb-4 overflow-hidden rounded-2xl">
         <div className="relative h-52 w-full">
           <Image
             src="/images/future1.webp"
@@ -346,14 +346,12 @@ const CardMobileView: FC<{ posts: Post[] }> = ({ posts }) => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-          {/* LIVE DATA Badge */}
           <div className="absolute left-3 top-3">
             <span className="text-neutral-white rounded bg-cyan-500/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wider">
               Live Data
             </span>
           </div>
 
-          {/* Expand Icon */}
           <button className="bg-neutral-black/40 absolute right-3 top-3 rounded-lg p-2 backdrop-blur-sm">
             <svg
               className="text-neutral-white h-4 w-4"
@@ -371,21 +369,19 @@ const CardMobileView: FC<{ posts: Post[] }> = ({ posts }) => {
           </button>
         </div>
 
-        {/* Hero Content */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <h2 className="text-neutral-white text-xl font-bold">Global Sentiment Heatmap</h2>
           <p className="mt-1 text-sm text-neutral-300">
             Visualizing ecological restoration progress...
           </p>
-          {/* Progress bar */}
           <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-neutral-700">
             <div className="from-brand-teal to-brand-magenta h-full w-3/4 rounded-full bg-gradient-to-r" />
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Category Filter Tags - Fixed visibility */}
-      <div className="shrink-0 px-4 pb-4">
+      <div className="shrink-0 px-4 py-3">
         <div
           className="scrollbar-hide flex gap-2 overflow-x-auto pb-2"
           style={{ WebkitOverflowScrolling: 'touch' }}
@@ -432,23 +428,19 @@ const CardMobileView: FC<{ posts: Post[] }> = ({ posts }) => {
                   className="object-cover transition-transform group-hover:scale-105"
                 />
                 <div className="from-neutral-850 absolute inset-0 bg-gradient-to-t via-transparent to-transparent" />
-              </div>
 
-              {/* Card Content */}
-              <div className="relative -mt-6 p-4 pt-0">
-                {/* Category Badges */}
+                {/* Category Badges - positioned 10px from bottom of image */}
                 {post.category_titles && post.category_titles.length > 0 && (
-                  <div className="scrollbar-hide -mx-1 mb-2 flex gap-1.5 overflow-x-auto pb-1">
+                  <div className="scrollbar-hide absolute bottom-2.5 left-4 right-4 flex gap-1.5 overflow-x-auto">
                     {post.category_titles.map((category) => (
-                      <span
-                        key={category}
-                        className="shrink-0 rounded bg-cyan-500/20 px-2 py-1 text-xs font-medium text-cyan-400"
-                      >
-                        {category}
-                      </span>
+                      <CategoryPill key={category} title={category} variant="cyan" />
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* Card Content */}
+              <div className="relative p-4 pt-3">
 
                 {/* Title */}
                 <h4 className="text-neutral-white mb-2 line-clamp-2 text-base font-semibold">
@@ -1316,9 +1308,9 @@ type TimeFilter = 'all' | 'today' | 'week' | 'month' | 'year'
 /**
  * This parent component integrates the search input with the treemap.
  * It filters the posts (by title in this example) and passes the filtered
- * posts to the ArticleAnalyzer.
+ * posts to the ArticleAnalyser.
  */
-export const ArticleAnalyzer: FC<{
+export const ArticleAnalyser: FC<{
   posts: Post[]
 }> = ({ posts }) => {
   const [searchString, setSearchString] = useState<string>('')
@@ -1447,7 +1439,7 @@ export const ArticleAnalyzer: FC<{
             <div className="text-base text-neutral-500">Searching with AI...</div>
             <div className="relative h-8 w-32">
               <Image
-                src="/images/logo2-white-loader-colour.svg"
+                src="/images/logo/logo2-white-loader-colour.svg"
                 alt="Loading"
                 fill
                 className="ml-[-10px]"

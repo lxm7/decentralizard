@@ -134,7 +134,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                   href={post.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-center justify-between gap-4 rounded-lg bg-gradient-to-r from-brand-magenta via-brand-violet to-brand-teal p-6 text-neutral-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl"
+                  className="from-brand-magenta via-brand-violet to-brand-teal text-neutral-white group flex items-center justify-between gap-4 rounded-lg bg-gradient-to-r p-6 shadow-lg transition-all hover:opacity-90 hover:shadow-xl"
                 >
                   <div className="flex items-center gap-3">
                     <svg
@@ -189,7 +189,7 @@ export default async function Post({ params: paramsPromise }: Args) {
             )}
 
             {/* Content container with optimal reading width */}
-            <div className="mx-auto max-w-[48rem] rounded-lg bg-neutral-white p-8 shadow-lg md:p-12">
+            <div className="bg-neutral-white mx-auto max-w-[48rem] rounded-lg p-8 shadow-lg md:p-12">
               {/* Article metadata for SEO */}
               <div className="mb-6 flex flex-wrap gap-4 border-b border-neutral-200 pb-6 text-sm text-neutral-600">
                 {post.updatedAt && post.updatedAt !== post.createdAt && (
@@ -257,7 +257,7 @@ export default async function Post({ params: paramsPromise }: Args) {
             {/* Author bio section */}
             {post.populatedAuthors && post.populatedAuthors.length > 0 && (
               <div className="mx-auto mt-12 max-w-[48rem]">
-                <div className="rounded-lg bg-neutral-white p-6 shadow-lg md:p-8">
+                <div className="bg-neutral-white rounded-lg p-6 shadow-lg md:p-8">
                   <h3 className="mb-4 text-xl font-bold text-neutral-900">About the Author</h3>
                   {post.populatedAuthors.map((author, index) => {
                     if (author?.name) {
@@ -269,7 +269,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                           itemType="https://schema.org/Person"
                         >
                           <div className="flex-shrink-0">
-                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-brand-violet to-brand-magenta text-xl font-bold text-neutral-white">
+                            <div className="from-brand-violet to-brand-magenta text-neutral-white flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br text-xl font-bold">
                               {author.name.charAt(0).toUpperCase()}
                             </div>
                           </div>
@@ -292,14 +292,15 @@ export default async function Post({ params: paramsPromise }: Args) {
             {categoryBasedPosts.length > 0 && (
               <div className="mx-auto mt-16 max-w-[52rem]">
                 <h2 className="mb-8 text-2xl font-bold text-neutral-900 md:text-3xl">
-                  More in {typeof firstCategory === 'object' ? firstCategory?.title : 'This Category'}
+                  More in{' '}
+                  {typeof firstCategory === 'object' ? firstCategory?.title : 'This Category'}
                 </h2>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                   {categoryBasedPosts.map((relatedPost) => (
                     <Link
                       key={relatedPost.id}
                       href={`/posts/${relatedPost.slug}`}
-                      className="group overflow-hidden rounded-lg bg-neutral-white shadow-md transition-all hover:shadow-lg"
+                      className="bg-neutral-white group overflow-hidden rounded-lg shadow-md transition-all hover:shadow-lg"
                     >
                       {relatedPost.heroImage && typeof relatedPost.heroImage === 'object' && (
                         <div className="aspect-video overflow-hidden bg-neutral-200">

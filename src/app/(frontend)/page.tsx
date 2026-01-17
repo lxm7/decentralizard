@@ -5,7 +5,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { cache } from 'react'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
-import { ArticleAnalyzer } from '@/components/ArticleAnalyzer'
+import { ArticleAnalyser } from '@/components/ArticleAnalyser'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 // import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
@@ -98,7 +98,7 @@ export default async function HomePage() {
       {/* Recent Posts Section */}
       {recentPosts.length > 0 && (
         <main className="flex-1 overflow-hidden">
-          <ArticleAnalyzer posts={recentPosts} />
+          <ArticleAnalyser posts={recentPosts} />
         </main>
       )}
       <NewsletterManager />

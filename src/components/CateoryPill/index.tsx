@@ -2,14 +2,23 @@ import React from 'react'
 import { cn } from '@/utilities/ui'
 import { getPillColour } from '@/utilities/getPillColour'
 
+type PillVariant = 'default' | 'cyan'
+
 interface CategoryPillProps {
   title: string
   onClick?: (title: string) => void
   isSelected?: boolean
   className?: string
+  variant?: PillVariant
 }
 
-export const CategoryPill = ({ title, onClick, isSelected, className }: CategoryPillProps) => {
+export const CategoryPill = ({
+  title,
+  onClick,
+  isSelected,
+  className,
+  variant = 'default',
+}: CategoryPillProps) => {
   const color = getPillColour(title)
 
   // Base Styles
@@ -18,6 +27,20 @@ export const CategoryPill = ({ title, onClick, isSelected, className }: Category
     'font-medium uppercase tracking-wide whitespace-nowrap',
     className,
   )
+
+  // Cyan variant uses fixed cyan colors
+  if (variant === 'cyan') {
+    return (
+      <span
+        className={cn(
+          baseStyles,
+          'rounded bg-cyan-500/20 px-2 py-1 text-xs text-cyan-400',
+        )}
+      >
+        {title}
+      </span>
+    )
+  }
 
   // Style logic: if selected or is a static badge, use full color.
   // If it's a button but not selected, use a subtle/muted version.

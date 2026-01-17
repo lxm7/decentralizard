@@ -36,7 +36,7 @@ export const PostHero: React.FC<{
           <Media fill priority imgClassName="z-10 object-cover" resource={heroImage} />
         ) : (
           <Image
-            src="/images/hero-placeholder.jpg"
+            src="/images/future1.webp"
             alt={title}
             fill
             priority

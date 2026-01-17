@@ -65,7 +65,7 @@ export const generateArticleStructuredData = (post: Post) => {
       url: serverUrl,
       logo: {
         '@type': 'ImageObject',
-        url: serverUrl + '/images/logo.png',
+        url: serverUrl + '/images/logo/logo.png',
       },
     },
     mainEntityOfPage: {

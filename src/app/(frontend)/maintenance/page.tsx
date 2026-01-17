@@ -7,7 +7,7 @@ export default function MaintenancePage() {
   const [imageLoaded, setImageLoaded] = useState(false)
 
   return (
-    <div className="relative w-screen h-screen">
+    <div className="relative h-screen w-screen">
       {/* Background image */}
       <Image
         src="/images/future1.webp"
@@ -25,14 +25,14 @@ export default function MaintenancePage() {
       />
 
       {/* Overlay */}
-      <div className="absolute inset-0 bg-neutral-black bg-opacity-70 z-10"></div>
+      <div className="bg-neutral-black absolute inset-0 z-10 bg-opacity-70"></div>
 
       {/* Centered content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center z-20 space-y-6">
+      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center space-y-6">
         {/* Logo (Switch visibility based on imageLoaded state) */}
-        <div className="relative w-60 h-10">
+        <div className="relative h-10 w-60">
           <Image
-            src="/images/logo2-white-loader-colour.svg"
+            src="/images/logo/logo2-white-loader-colour.svg"
             alt="logo-loader"
             fill
             className={`absolute transition-opacity duration-500 ${
@@ -40,7 +40,7 @@ export default function MaintenancePage() {
             }`}
           />
           <Image
-            src="/images/logo2-white.svg"
+            src="/images/logo/logo2-white.svg"
             alt="logo"
             fill
             className={`absolute transition-opacity duration-500 ${
@@ -55,7 +55,7 @@ export default function MaintenancePage() {
               This site is under construction. Come back soon!
             </h1>
           ) : (
-            <h1 className="text-transparent bg-clip-text text-xl md:text-xl">
+            <h1 className="bg-clip-text text-xl text-transparent md:text-xl">
               This site is under construction. Come back soon!
             </h1>
           )}
