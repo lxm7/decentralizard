@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import React from 'react'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/base/button'
 
 export default function NotFound() {
   return (

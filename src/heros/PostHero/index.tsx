@@ -7,6 +7,7 @@ import type { Post } from '@/payload-types'
 
 import { Media } from '@/components/Media'
 import { formatAuthors } from '@/utilities/formatAuthors'
+import { CategoryPill } from '@/components/CateoryPill'
 
 // Estimate reading time based on content
 const estimateReadingTime = (content: any): number => {
@@ -29,7 +30,7 @@ export const PostHero: React.FC<{
   const readingTime = estimateReadingTime(content)
 
   return (
-    <div className="relative -mt-[10.4rem] flex min-h-[80vh] items-end bg-gray-700">
+    <div className="relative -mt-[10.4rem] flex min-h-[80vh] items-end bg-neutral-700">
       <div className="absolute inset-0 select-none">
         {heroImage && typeof heroImage !== 'string' ? (
           <Media fill priority imgClassName="z-10 object-cover" resource={heroImage} />
@@ -42,9 +43,9 @@ export const PostHero: React.FC<{
             className="z-10 object-cover opacity-30"
           />
         )}
-        <div className="pointer-events-none absolute bottom-0 left-0 h-1/2 w-full bg-gradient-to-t from-black to-transparent" />
+        <div className="from-neutral-black pointer-events-none absolute bottom-0 left-0 h-1/2 w-full bg-gradient-to-t to-transparent" />
       </div>
-      <div className="container relative z-10 pb-8 text-white lg:grid lg:grid-cols-[1fr_48rem_1fr]">
+      <div className="text-neutral-white container relative z-10 pb-8 lg:grid lg:grid-cols-[1fr_48rem_1fr]">
         <div className="col-span-1 col-start-1 md:col-span-2 md:col-start-2">
           {/* Breadcrumb navigation */}
           <nav aria-label="Breadcrumb" className="mb-6">
@@ -52,24 +53,24 @@ export const PostHero: React.FC<{
               <li>
                 <Link
                   href="/"
-                  className="text-white/80 underline transition-colors hover:text-white"
+                  className="text-neutral-white/80 hover:text-neutral-white underline transition-colors"
                 >
                   Home
                 </Link>
               </li>
-              <li className="text-white/60">/</li>
+              <li className="text-neutral-white/60">/</li>
               <li>
                 <Link
                   href="#"
-                  className="text-white/80 underline transition-colors hover:text-white"
+                  className="text-neutral-white/80 hover:text-neutral-white underline transition-colors"
                 >
                   Articles
                 </Link>
               </li>
               {categories && categories.length > 0 && (
                 <>
-                  <li className="text-white/60">/</li>
-                  <li className="text-white" aria-current="page">
+                  <li className="text-neutral-white/60">/</li>
+                  <li className="text-neutral-white" aria-current="page">
                     {typeof categories[0] === 'object' && categories[0]?.title}
                   </li>
                 </>
@@ -85,14 +86,7 @@ export const PostHero: React.FC<{
 
                 const titleToUse = categoryTitle || 'Untitled category'
 
-                return (
-                  <span
-                    key={index}
-                    className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white backdrop-blur-sm"
-                  >
-                    {titleToUse}
-                  </span>
-                )
+                return <CategoryPill key={index} title={titleToUse} />
               }
               return null
             })}
@@ -110,7 +104,7 @@ export const PostHero: React.FC<{
             {hasAuthors && (
               <div className="flex items-center gap-2">
                 <svg
-                  className="h-5 w-5 text-white/80"
+                  className="text-neutral-white/80 h-5 w-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -124,7 +118,7 @@ export const PostHero: React.FC<{
                   />
                 </svg>
                 <div className="flex flex-col">
-                  <span className="text-xs text-white/70">Author</span>
+                  <span className="text-neutral-white/70 text-xs">Author</span>
                   <span className="font-medium">{formatAuthors(populatedAuthors)}</span>
                 </div>
               </div>
@@ -132,7 +126,7 @@ export const PostHero: React.FC<{
             {publishedAt && (
               <div className="flex items-center gap-2">
                 <svg
-                  className="h-5 w-5 text-white/80"
+                  className="text-neutral-white/80 h-5 w-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -146,7 +140,7 @@ export const PostHero: React.FC<{
                   />
                 </svg>
                 <div className="flex flex-col">
-                  <span className="text-xs text-white/70">Published</span>
+                  <span className="text-neutral-white/70 text-xs">Published</span>
                   <time dateTime={publishedAt} className="font-medium">
                     {formatDateTime(publishedAt)}
                   </time>
@@ -155,7 +149,7 @@ export const PostHero: React.FC<{
             )}
             <div className="flex items-center gap-2">
               <svg
-                className="h-5 w-5 text-white/80"
+                className="text-neutral-white/80 h-5 w-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -169,7 +163,7 @@ export const PostHero: React.FC<{
                 />
               </svg>
               <div className="flex flex-col">
-                <span className="text-xs text-white/70">Reading time</span>
+                <span className="text-neutral-white/70 text-xs">Reading time</span>
                 <span className="font-medium">{readingTime} min read</span>
               </div>
             </div>

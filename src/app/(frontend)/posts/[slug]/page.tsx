@@ -134,7 +134,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                   href={post.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-center justify-between gap-4 rounded-lg bg-gradient-to-r from-[#EE459F] via-[#9F3BA9] to-[#4AC2E4] p-6 text-white shadow-lg transition-all hover:from-[#D93D8F] hover:via-[#8A3394] hover:to-[#3AADD0] hover:shadow-xl"
+                  className="group flex items-center justify-between gap-4 rounded-lg bg-gradient-to-r from-brand-magenta via-brand-violet to-brand-teal p-6 text-neutral-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl"
                 >
                   <div className="flex items-center gap-3">
                     <svg
@@ -181,7 +181,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                   <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-[#EE459F]">
                     Article Summary
                   </h2>
-                  <p className="text-lg leading-relaxed text-gray-700" itemProp="description">
+                  <p className="text-lg leading-relaxed text-neutral-700" itemProp="description">
                     {post.shortDescription}
                   </p>
                 </div>
@@ -189,9 +189,9 @@ export default async function Post({ params: paramsPromise }: Args) {
             )}
 
             {/* Content container with optimal reading width */}
-            <div className="mx-auto max-w-[48rem] rounded-lg bg-white p-8 shadow-lg md:p-12">
+            <div className="mx-auto max-w-[48rem] rounded-lg bg-neutral-white p-8 shadow-lg md:p-12">
               {/* Article metadata for SEO */}
-              <div className="mb-6 flex flex-wrap gap-4 border-b border-gray-200 pb-6 text-sm text-gray-600">
+              <div className="mb-6 flex flex-wrap gap-4 border-b border-neutral-200 pb-6 text-sm text-neutral-600">
                 {post.updatedAt && post.updatedAt !== post.createdAt && (
                   <div className="flex items-center gap-1">
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -228,8 +228,8 @@ export default async function Post({ params: paramsPromise }: Args) {
 
               {/* Article tags/keywords */}
               {post.categories && post.categories.length > 0 && (
-                <div className="mt-8 border-t border-gray-200 pt-6">
-                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-700">
+                <div className="mt-8 border-t border-neutral-200 pt-6">
+                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-700">
                     Topics Covered
                   </h3>
                   <div className="flex flex-wrap gap-2">
@@ -240,7 +240,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                             key={index}
                             href="#"
                             // href={`/posts?category=${category.slug}`}
-                            className="inline-flex items-center rounded-full bg-[#4AC2E4] px-3 py-1.5 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-200"
+                            className="inline-flex items-center rounded-full bg-[#4AC2E4] px-3 py-1.5 text-sm font-medium text-neutral-800 transition-colors hover:bg-neutral-200"
                             itemProp="keywords"
                           >
                             {category.title}
@@ -257,8 +257,8 @@ export default async function Post({ params: paramsPromise }: Args) {
             {/* Author bio section */}
             {post.populatedAuthors && post.populatedAuthors.length > 0 && (
               <div className="mx-auto mt-12 max-w-[48rem]">
-                <div className="rounded-lg bg-white p-6 shadow-lg md:p-8">
-                  <h3 className="mb-4 text-xl font-bold text-gray-900">About the Author</h3>
+                <div className="rounded-lg bg-neutral-white p-6 shadow-lg md:p-8">
+                  <h3 className="mb-4 text-xl font-bold text-neutral-900">About the Author</h3>
                   {post.populatedAuthors.map((author, index) => {
                     if (author?.name) {
                       return (
@@ -269,15 +269,15 @@ export default async function Post({ params: paramsPromise }: Args) {
                           itemType="https://schema.org/Person"
                         >
                           <div className="flex-shrink-0">
-                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-xl font-bold text-white">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-brand-violet to-brand-magenta text-xl font-bold text-neutral-white">
                               {author.name.charAt(0).toUpperCase()}
                             </div>
                           </div>
                           <div>
-                            <h4 className="text-lg font-semibold text-gray-900" itemProp="name">
+                            <h4 className="text-lg font-semibold text-neutral-900" itemProp="name">
                               {author.name}
                             </h4>
-                            <p className="mt-1 text-gray-600">Contributor at Decentralizard</p>
+                            <p className="mt-1 text-neutral-600">Contributor at Decentralizard</p>
                           </div>
                         </div>
                       )
@@ -291,7 +291,7 @@ export default async function Post({ params: paramsPromise }: Args) {
             {/* Category-based related posts */}
             {categoryBasedPosts.length > 0 && (
               <div className="mx-auto mt-16 max-w-[52rem]">
-                <h2 className="mb-8 text-2xl font-bold text-gray-900 md:text-3xl">
+                <h2 className="mb-8 text-2xl font-bold text-neutral-900 md:text-3xl">
                   More in {typeof firstCategory === 'object' ? firstCategory?.title : 'This Category'}
                 </h2>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -299,10 +299,10 @@ export default async function Post({ params: paramsPromise }: Args) {
                     <Link
                       key={relatedPost.id}
                       href={`/posts/${relatedPost.slug}`}
-                      className="group overflow-hidden rounded-lg bg-white shadow-md transition-all hover:shadow-lg"
+                      className="group overflow-hidden rounded-lg bg-neutral-white shadow-md transition-all hover:shadow-lg"
                     >
                       {relatedPost.heroImage && typeof relatedPost.heroImage === 'object' && (
-                        <div className="aspect-video overflow-hidden bg-gray-200">
+                        <div className="aspect-video overflow-hidden bg-neutral-200">
                           <img
                             src={relatedPost.heroImage.url || ''}
                             alt={relatedPost.title}
@@ -311,11 +311,11 @@ export default async function Post({ params: paramsPromise }: Args) {
                         </div>
                       )}
                       <div className="p-4">
-                        <h3 className="line-clamp-2 font-semibold text-gray-900 group-hover:text-[#9F3BA9]">
+                        <h3 className="line-clamp-2 font-semibold text-neutral-900 group-hover:text-[#9F3BA9]">
                           {relatedPost.title}
                         </h3>
                         {relatedPost.shortDescription && (
-                          <p className="mt-2 line-clamp-2 text-sm text-gray-600">
+                          <p className="mt-2 line-clamp-2 text-sm text-neutral-600">
                             {relatedPost.shortDescription}
                           </p>
                         )}
@@ -329,7 +329,7 @@ export default async function Post({ params: paramsPromise }: Args) {
             {/* Manually curated related posts */}
             {post.relatedPosts && post.relatedPosts.length > 0 && (
               <div className="mx-auto mt-16 max-w-[52rem]">
-                <h2 className="mb-8 text-2xl font-bold text-gray-900 md:text-3xl">
+                <h2 className="mb-8 text-2xl font-bold text-neutral-900 md:text-3xl">
                   Related Articles
                 </h2>
                 <RelatedPosts
