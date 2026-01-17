@@ -1,30 +1,31 @@
-import type { Metadata } from 'next'
+import type { Metadata } from 'next';
 
-import Link from 'next/link'
-import { RelatedPosts } from '@/blocks/RelatedPosts/Component'
-import { PayloadRedirects } from '@/components/PayloadRedirects'
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
-import { draftMode } from 'next/headers'
-import React, { cache } from 'react'
-import RichText from '@/components/RichText'
+import Image from 'next/image';
+import Link from 'next/link';
+import { RelatedPosts } from '@/blocks/RelatedPosts/Component';
+import { PayloadRedirects } from '@/components/PayloadRedirects';
+import configPromise from '@payload-config';
+import { getPayload } from 'payload';
+import { draftMode } from 'next/headers';
+import React, { cache } from 'react';
+import RichText from '@/components/RichText';
 
-import type { Post } from '@/payload-types'
+import type { Post } from '@/payload-types';
 
-import { PostHero } from '@/heros/PostHero'
-import { generateMeta } from '@/utilities/generateMeta'
+import { PostHero } from '@/heros/PostHero';
+import { generateMeta } from '@/utilities/generateMeta';
 import {
   generateArticleStructuredData,
   generateBreadcrumbStructuredData,
-} from '@/utilities/generateStructuredData'
-import PageClient from './page.client'
-import { LivePreviewListener } from '@/components/LivePreviewListener'
+} from '@/utilities/generateStructuredData';
+import PageClient from './page.client';
+import { LivePreviewListener } from '@/components/LivePreviewListener';
 
 // Enable ISR - revalidate every 60 seconds in production
-export const revalidate = 60
+export const revalidate = 60;
 
 export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise })
+  const payload = await getPayload({ config: configPromise });
   const posts = await payload.find({
     collection: 'posts',
     draft: false,
@@ -34,57 +35,57 @@ export async function generateStaticParams() {
     select: {
       slug: true,
     },
-  })
+  });
 
   const params = posts.docs.map(({ slug }) => {
-    return { slug }
-  })
+    return { slug };
+  });
 
-  return params
+  return params;
 }
 
 type Args = {
   params: Promise<{
-    slug?: string
-  }>
-}
+    slug?: string;
+  }>;
+};
 
 export default async function Post({ params: paramsPromise }: Args) {
-  const { isEnabled: draft } = await draftMode()
-  const { slug = '' } = await paramsPromise
-  const url = '/posts/' + slug
-  const post = await queryPostBySlug({ slug })
+  const { isEnabled: draft } = await draftMode();
+  const { slug = '' } = await paramsPromise;
+  const url = '/posts/' + slug;
+  const post = await queryPostBySlug({ slug });
 
-  if (!post) return <PayloadRedirects url={url} />
+  if (!post) return <PayloadRedirects url={url} />;
 
   // Fetch related posts by category
-  const firstCategory = post.categories?.[0]
-  const categoryId = typeof firstCategory === 'object' ? firstCategory?.id : null
+  const firstCategory = post.categories?.[0];
+  const categoryId = typeof firstCategory === 'object' ? firstCategory?.id : null;
   const categoryBasedPosts = categoryId
     ? await queryPostsByCategory({ categoryId, excludeSlug: slug })
-    : []
+    : [];
 
   // Generate structured data for SEO
-  const articleStructuredData = generateArticleStructuredData(post)
+  const articleStructuredData = generateArticleStructuredData(post);
 
   const breadcrumbItems = [
     { name: 'Home', url: '/' },
     { name: 'Articles', url: '/posts' },
-  ]
+  ];
 
   if (post.categories && post.categories.length > 0) {
-    const firstCategory = post.categories[0]
+    const firstCategory = post.categories[0];
     if (typeof firstCategory === 'object' && firstCategory?.title) {
       breadcrumbItems.push({
         name: firstCategory.title,
         url: `/posts?category=${firstCategory.slug}`,
-      })
+      });
     }
   }
 
-  breadcrumbItems.push({ name: post.title, url: `/posts/${post.slug}` })
+  breadcrumbItems.push({ name: post.title, url: `/posts/${post.slug}` });
 
-  const breadcrumbStructuredData = generateBreadcrumbStructuredData(breadcrumbItems)
+  const breadcrumbStructuredData = generateBreadcrumbStructuredData(breadcrumbItems);
 
   return (
     <>
@@ -134,7 +135,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                   href={post.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="from-brand-magenta via-brand-violet to-brand-teal text-neutral-white group flex items-center justify-between gap-4 rounded-lg bg-gradient-to-r p-6 shadow-lg transition-all hover:opacity-90 hover:shadow-xl"
+                  className="group flex items-center justify-between gap-4 rounded-lg bg-gradient-to-r from-brand-magenta via-brand-violet to-brand-teal p-6 text-neutral-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl"
                 >
                   <div className="flex items-center gap-3">
                     <svg
@@ -189,7 +190,7 @@ export default async function Post({ params: paramsPromise }: Args) {
             )}
 
             {/* Content container with optimal reading width */}
-            <div className="bg-neutral-white mx-auto max-w-[48rem] rounded-lg p-8 shadow-lg md:p-12">
+            <div className="mx-auto max-w-[48rem] rounded-lg bg-neutral-white p-8 shadow-lg md:p-12">
               {/* Article metadata for SEO */}
               <div className="mb-6 flex flex-wrap gap-4 border-b border-neutral-200 pb-6 text-sm text-neutral-600">
                 {post.updatedAt && post.updatedAt !== post.createdAt && (
@@ -245,9 +246,9 @@ export default async function Post({ params: paramsPromise }: Args) {
                           >
                             {category.title}
                           </a>
-                        )
+                        );
                       }
-                      return null
+                      return null;
                     })}
                   </div>
                 </div>
@@ -257,7 +258,7 @@ export default async function Post({ params: paramsPromise }: Args) {
             {/* Author bio section */}
             {post.populatedAuthors && post.populatedAuthors.length > 0 && (
               <div className="mx-auto mt-12 max-w-[48rem]">
-                <div className="bg-neutral-white rounded-lg p-6 shadow-lg md:p-8">
+                <div className="rounded-lg bg-neutral-white p-6 shadow-lg md:p-8">
                   <h3 className="mb-4 text-xl font-bold text-neutral-900">About the Author</h3>
                   {post.populatedAuthors.map((author, index) => {
                     if (author?.name) {
@@ -269,7 +270,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                           itemType="https://schema.org/Person"
                         >
                           <div className="flex-shrink-0">
-                            <div className="from-brand-violet to-brand-magenta text-neutral-white flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br text-xl font-bold">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-brand-violet to-brand-magenta text-xl font-bold text-neutral-white">
                               {author.name.charAt(0).toUpperCase()}
                             </div>
                           </div>
@@ -280,9 +281,9 @@ export default async function Post({ params: paramsPromise }: Args) {
                             <p className="mt-1 text-neutral-600">Contributor at Decentralizard</p>
                           </div>
                         </div>
-                      )
+                      );
                     }
-                    return null
+                    return null;
                   })}
                 </div>
               </div>
@@ -300,14 +301,15 @@ export default async function Post({ params: paramsPromise }: Args) {
                     <Link
                       key={relatedPost.id}
                       href={`/posts/${relatedPost.slug}`}
-                      className="bg-neutral-white group overflow-hidden rounded-lg shadow-md transition-all hover:shadow-lg"
+                      className="group overflow-hidden rounded-lg bg-neutral-white shadow-md transition-all hover:shadow-lg"
                     >
                       {relatedPost.heroImage && typeof relatedPost.heroImage === 'object' && (
-                        <div className="aspect-video overflow-hidden bg-neutral-200">
-                          <img
+                        <div className="relative aspect-video overflow-hidden bg-neutral-200">
+                          <Image
                             src={relatedPost.heroImage.url || ''}
                             alt={relatedPost.title}
-                            className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                            fill
+                            className="object-cover transition-transform group-hover:scale-105"
                           />
                         </div>
                       )}
@@ -343,20 +345,20 @@ export default async function Post({ params: paramsPromise }: Args) {
         </div>
       </article>
     </>
-  )
+  );
 }
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
-  const { slug = '' } = await paramsPromise
-  const post = await queryPostBySlug({ slug })
+  const { slug = '' } = await paramsPromise;
+  const post = await queryPostBySlug({ slug });
 
-  return generateMeta({ doc: post })
+  return generateMeta({ doc: post });
 }
 
 const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
-  const { isEnabled: draft } = await draftMode()
+  const { isEnabled: draft } = await draftMode();
 
-  const payload = await getPayload({ config: configPromise })
+  const payload = await getPayload({ config: configPromise });
 
   const result = await payload.find({
     collection: 'posts',
@@ -370,16 +372,16 @@ const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
         equals: slug,
       },
     },
-  })
+  });
 
-  return result.docs?.[0] || null
-})
+  return result.docs?.[0] || null;
+});
 
 const queryPostsByCategory = cache(
   async ({ categoryId, excludeSlug }: { categoryId: number; excludeSlug: string }) => {
-    const { isEnabled: draft } = await draftMode()
+    const { isEnabled: draft } = await draftMode();
 
-    const payload = await getPayload({ config: configPromise })
+    const payload = await getPayload({ config: configPromise });
 
     const result = await payload.find({
       collection: 'posts',
@@ -402,8 +404,8 @@ const queryPostsByCategory = cache(
           },
         ],
       },
-    })
+    });
 
-    return result.docs || []
-  },
-)
+    return result.docs || [];
+  }
+);
