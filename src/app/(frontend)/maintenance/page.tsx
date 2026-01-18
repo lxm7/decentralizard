@@ -1,10 +1,10 @@
-'use client'
+'use client';
 
-import Image from 'next/image'
-import { useState } from 'react'
+import Image from 'next/image';
+import { useState } from 'react';
 
 export default function MaintenancePage() {
-  const [imageLoaded, setImageLoaded] = useState(false)
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   return (
     <div className="relative h-screen w-screen">
@@ -12,12 +12,11 @@ export default function MaintenancePage() {
       <Image
         src="/images/future1.webp"
         alt="Background future space image"
-        fill
         style={{
           objectFit: 'cover',
           objectPosition: 'bottom',
         }}
-        unoptimized
+        priority
         className={`z-0 transition-opacity duration-500 ${
           imageLoaded ? 'opacity-100' : 'opacity-0'
         }`}
@@ -25,7 +24,7 @@ export default function MaintenancePage() {
       />
 
       {/* Overlay */}
-      <div className="bg-neutral-black absolute inset-0 z-10 bg-opacity-70"></div>
+      <div className="absolute inset-0 z-10 bg-neutral-black bg-opacity-70"></div>
 
       {/* Centered content */}
       <div className="absolute inset-0 z-20 flex flex-col items-center justify-center space-y-6">
@@ -51,7 +50,7 @@ export default function MaintenancePage() {
         {/* Text */}
         <div className="px-6 text-center">
           {imageLoaded ? (
-            <h1 className="text-neutral-white text-xl md:text-xl">
+            <h1 className="text-xl text-neutral-white md:text-xl">
               This site is under construction. Come back soon!
             </h1>
           ) : (
@@ -62,5 +61,5 @@ export default function MaintenancePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -38,7 +38,6 @@ export const PostHero: React.FC<{
           <Image
             src="/images/future1.webp"
             alt={title}
-            fill
             priority
             className="z-10 object-cover opacity-30"
           />
