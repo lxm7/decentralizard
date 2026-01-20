@@ -5,8 +5,6 @@ import { PostWithMetrics } from './types';
 import { getShade, getCategoryColor as getColor, enrichPostsWithMetrics } from './utils';
 import { useArticleNavigation } from './hooks';
 
-const headerHeight = 60;
-
 interface WBAMobileViewProps {
   posts: Post[];
 }
@@ -55,7 +53,7 @@ export const WBAMobileView: FC<WBAMobileViewProps> = ({ posts }) => {
   };
 
   return (
-    <div className="w-full overflow-y-auto" style={{ height: `calc(100vh - ${headerHeight}px)` }}>
+    <div className="h-full w-full overflow-y-auto">
       {Object.entries(categorizedPosts).map(([category, categoryPosts]) => (
         <div key={category}>
           {/* Category Header */}

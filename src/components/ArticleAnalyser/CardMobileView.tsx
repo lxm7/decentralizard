@@ -7,8 +7,6 @@ import { SearchInput } from './SearchInput';
 import { useCategories, useArticleFilters, useArticleNavigation } from './hooks';
 import { getImageUrl, getMockStats } from './utils';
 
-const headerHeight = 60;
-
 interface CardMobileViewProps {
   posts: Post[];
 }
@@ -23,10 +21,7 @@ export const CardMobileView: FC<CardMobileViewProps> = ({ posts }) => {
   const { loadingSlug, handleArticleClick } = useArticleNavigation();
 
   return (
-    <div
-      className="flex w-full flex-col overflow-y-auto bg-[#0d1117]"
-      style={{ height: `calc(100vh - ${headerHeight}px)` }}
-    >
+    <div className="flex h-full w-full flex-col overflow-y-auto bg-[#0d1117]">
       {/* Stats Ticker */}
       <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-3">
         <div className="flex items-center gap-1">
@@ -75,12 +70,6 @@ export const CardMobileView: FC<CardMobileViewProps> = ({ posts }) => {
         </div>
       </div>
 
-      {/* Latest Transmissions Header */}
-      <div className="px-4 pb-3">
-        <h3 className="text-lg font-semibold text-neutral-white">Latest Transmissions</h3>
-      </div>
-
-      {/* Article Cards */}
       <div className="flex flex-col gap-4 px-4 pb-24">
         {filteredPosts.map((post) => {
           const imageUrl = getImageUrl(post);

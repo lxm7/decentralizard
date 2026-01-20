@@ -9,6 +9,7 @@ import { CardMobileView } from './CardMobileView';
 import { WBAMobileView } from './WBAMobileView';
 import { ArticleTreeMap } from './ArticleTreeMap';
 import { ViewToggle } from './ViewToggle';
+import { Header, Hero } from '@/components/Header';
 
 interface ArticleAnalyserProps {
   posts: Post[];
@@ -86,9 +87,24 @@ export const ArticleAnalyser: FC<ArticleAnalyserProps> = ({ posts }) => {
   }, [searchString, timeFilteredPosts]);
 
   return (
-    <div>
+    <div
+      className="flex h-screen flex-col"
+      style={{
+        backgroundImage: `
+          linear-gradient(oklch(var(--neutral-800)) 1px, transparent 1px),
+          linear-gradient(90deg, oklch(var(--neutral-800)) 1px, transparent 1px)
+        `,
+        backgroundSize: '50px 50px',
+      }}
+    >
+      {/* Header - Always visible */}
+      <Header />
+
+      {/* Hero - Always visible */}
+      <Hero onNewIdea={() => console.log('New idea essay clicked')} />
+
       {isLoading ? (
-        <div className="fixed inset-0 flex items-center justify-center">
+        <div className="fixed inset-0 flex items-center justify-center bg-[#0d1117]/95">
           <div className="flex flex-col items-center gap-4">
             <div className="text-base text-neutral-500">Searching with AI...</div>
             <div className="relative h-8 w-32">
@@ -102,7 +118,7 @@ export const ArticleAnalyser: FC<ArticleAnalyserProps> = ({ posts }) => {
           </div>
         </div>
       ) : noResults ? (
-        <div className="fixed inset-0 flex items-center justify-center">
+        <div className="fixed inset-0 flex items-center justify-center bg-[#0d1117]/95">
           <div className="flex flex-col items-center gap-4">
             <div className="flex w-full items-center justify-center text-base text-neutral-500">
               No articles found for &quot;{searchString}&quot;
@@ -115,7 +131,7 @@ export const ArticleAnalyser: FC<ArticleAnalyserProps> = ({ posts }) => {
             <ViewToggle activeView={view} onViewChange={setView} />
           </div>
           {/* Mobile view with toggle - shown on screens < 768px */}
-          <div className="block md:hidden">
+          <div className="block flex-1 overflow-hidden md:hidden">
             {/* Render mobile view based on selection */}
             {view === 'default' ? (
               <CardMobileView posts={filteredPosts} />
@@ -125,7 +141,7 @@ export const ArticleAnalyser: FC<ArticleAnalyserProps> = ({ posts }) => {
           </div>
 
           {/* Desktop view with toggle - shown on screens >= 768px */}
-          <div className="hidden h-screen md:block">
+          <div className="hidden flex-1 overflow-hidden md:block">
             {view === 'default' ? (
               <DesktopGridView posts={filteredPosts} />
             ) : (

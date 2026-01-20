@@ -103,6 +103,13 @@ export default async function Post({ params: paramsPromise }: Args) {
         className="bg-gradient-to-b from-gray-50 to-white pb-16 pt-16"
         itemScope
         itemType="https://schema.org/Article"
+        style={{
+          backgroundImage: `
+          linear-gradient(oklch(var(--neutral-800)) 1px, transparent 1px),
+          linear-gradient(90deg, oklch(var(--neutral-800)) 1px, transparent 1px)
+        `,
+          backgroundSize: '50px 50px',
+        }}
       >
         {/* Hidden metadata for Schema.org */}
         <meta itemProp="headline" content={post.title} />

@@ -11,7 +11,6 @@ import {
   PREDEFINED_CATEGORY_COLORS,
 } from './utils';
 
-const headerHeight = 60;
 const TARGET_NODE_COUNT = 40; // Target number of articles to display at any zoom level
 
 interface ArticleTreeMapProps {
@@ -21,6 +20,7 @@ interface ArticleTreeMapProps {
 export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts }) => {
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [sizeMetric] = useState<SizeMetric>('clicks');
   const [postsWithMetrics, setPostsWithMetrics] = useState<PostWithMetrics[]>([]);
@@ -49,13 +49,16 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts }) => {
   // Track the full hierarchy data
   const hierarchyRootRef = useRef<d3.HierarchyNode<HierarchyNode> | null>(null);
 
-  // Set up canvas dimensions
+  // Set up canvas dimensions based on container
   useEffect(() => {
     const handleResize = () => {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight - headerHeight,
-      });
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setDimensions({
+          width: rect.width,
+          height: rect.height,
+        });
+      }
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -621,7 +624,7 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts }) => {
   }, [hoveredNode]);
 
   return (
-    <main className="relative flex h-full w-full flex-col" role="main">
+    <main ref={containerRef} className="relative flex h-full w-full flex-col" role="main">
       {/* Loading overlay */}
       {isNavigating && (
         <div className="bg-neutral-black/50 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">

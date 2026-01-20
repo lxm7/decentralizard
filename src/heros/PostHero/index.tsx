@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 import type { Post } from '@/payload-types';
-
 import { Media } from '@/components/Media';
 import { formatAuthors } from '@/utilities/formatAuthors';
 import { CategoryPill } from '@/components/CateoryPill';
@@ -39,6 +38,8 @@ export const PostHero: React.FC<{
             src="/images/future1.webp"
             alt={title}
             priority
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="z-10 object-cover opacity-30"
           />
         )}

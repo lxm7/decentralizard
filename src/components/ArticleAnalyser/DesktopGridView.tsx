@@ -23,7 +23,7 @@ export const DesktopGridView: FC<DesktopGridViewProps> = ({ posts }) => {
   const { loadingSlug, handleArticleClick } = useArticleNavigation();
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-[#0d1117]">
+    <div className="flex h-full w-full overflow-hidden">
       {/* Collapsible Sidebar */}
       <div
         className={cn(
@@ -32,7 +32,7 @@ export const DesktopGridView: FC<DesktopGridViewProps> = ({ posts }) => {
         )}
       >
         {isSidebarOpen && (
-          <div className="flex h-full flex-col p-4">
+          <div className="flex h-full flex-col bg-[#0d1117] p-4">
             {/* Sidebar Header */}
             <div className="mb-6">
               <h2 className="text-lg font-bold text-neutral-white">Digital Laboratory Notebook</h2>
@@ -112,21 +112,10 @@ export const DesktopGridView: FC<DesktopGridViewProps> = ({ posts }) => {
         </svg>
       </button>
 
-      {/* Main Content Area with Grid Background */}
-      <div
-        className="flex flex-1 flex-col overflow-hidden"
-        style={{
-          backgroundImage: `
-            linear-gradient(oklch(var(--neutral-800)) 1px, transparent 1px),
-            linear-gradient(90deg, oklch(var(--neutral-800)) 1px, transparent 1px)
-          `,
-          backgroundSize: '50px 50px',
-        }}
-      >
+      {/* Main Content Area */}
+      <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header with Search and Filters */}
-        <div className="flex-shrink-0 border-b border-neutral-800 bg-[#0d1117]/95 p-6 backdrop-blur-sm">
-          <h1 className="mb-2 text-2xl font-bold text-neutral-white">Latest Transmissions</h1>
-
+        <div className="flex-shrink-0 border-b border-neutral-800 p-6 backdrop-blur-sm">
           {/* Search Bar */}
           <div className="mb-4">
             <SearchInput
