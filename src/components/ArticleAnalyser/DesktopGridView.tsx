@@ -9,6 +9,7 @@ import { ViewType } from './types';
 import { useFilterStore, useFilteredPosts } from '@/stores/useFilterStore';
 import { FilterSidebar } from './FilterSidebar';
 import { Hero } from '@/components/Header';
+import { cn } from '@/utilities/ui';
 
 interface DesktopGridViewProps {
   posts: Post[];
@@ -25,7 +26,7 @@ export const DesktopGridView: FC<DesktopGridViewProps> = ({ posts, activeView, o
   const { loadingSlug, handleArticleClick } = useArticleNavigation();
 
   return (
-    <div className="flex h-full w-full overflow-hidden">
+    <div className="flex w-full">
       <FilterSidebar
         posts={posts}
         isOpen={isSidebarOpen}
@@ -34,14 +35,19 @@ export const DesktopGridView: FC<DesktopGridViewProps> = ({ posts, activeView, o
         onViewChange={onViewChange}
       />
 
-      {/* Main Content Area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      {/* Main Content Area - Add left margin when sidebar is open */}
+      <div
+        className={cn(
+          'flex flex-1 flex-col transition-all duration-300',
+          isSidebarOpen ? 'ml-64' : 'ml-0'
+        )}
+      >
         {/* Hero Section */}
         <Hero onNewIdea={() => console.log('New idea essay clicked')} />
 
         {/* Category Filter Pills - show selected categories */}
         {selectedCategories.length > 0 && (
-          <div className="flex-shrink-0 border-b border-neutral-800 p-4">
+          <div className="border-b border-neutral-800 p-4">
             <div className="scrollbar-hide flex gap-2 overflow-x-auto">
               {selectedCategories.map((category) => (
                 <CategoryPill
@@ -56,7 +62,7 @@ export const DesktopGridView: FC<DesktopGridViewProps> = ({ posts, activeView, o
         )}
 
         {/* Article Grid */}
-        <div className="flex-1 p-6">
+        <div className="p-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {filteredPosts.map((post) => {
               const imageUrl = getImageUrl(post);

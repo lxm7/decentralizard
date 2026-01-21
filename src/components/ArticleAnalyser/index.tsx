@@ -23,7 +23,7 @@ export const ArticleAnalyser: FC<ArticleAnalyserProps> = ({ posts }) => {
 
   return (
     <div
-      className="flex h-screen flex-col"
+      className="min-h-screen"
       style={{
         backgroundImage: `
           linear-gradient(oklch(var(--neutral-800)) 1px, transparent 1px),
@@ -32,25 +32,28 @@ export const ArticleAnalyser: FC<ArticleAnalyserProps> = ({ posts }) => {
         backgroundSize: '50px 50px',
       }}
     >
-      {/* Header - Always visible */}
+      {/* Header - Fixed at top */}
       <Header />
 
-      <div className="fixed bottom-[10px] right-4 z-20 md:hidden">
-        <ViewToggle activeView={view} onViewChange={setView} />
-      </div>
+      {/* Content with padding for fixed header */}
+      <div className="pt-[57px]">
+        <div className="fixed bottom-[10px] right-4 z-20 md:hidden">
+          <ViewToggle activeView={view} onViewChange={setView} />
+        </div>
 
-      {/* Mobile view with toggle - shown on screens < 768px */}
-      <div className="block flex-1 overflow-hidden md:hidden">
-        {view === 'default' ? <CardMobileView posts={posts} /> : <WBAMobileView posts={posts} />}
-      </div>
+        {/* Mobile view with toggle - shown on screens < 768px */}
+        <div className="block md:hidden">
+          {view === 'default' ? <CardMobileView posts={posts} /> : <WBAMobileView posts={posts} />}
+        </div>
 
-      {/* Desktop view with toggle - shown on screens >= 768px */}
-      <div className="hidden flex-1 overflow-hidden md:block">
-        {view === 'default' ? (
-          <DesktopGridView posts={posts} activeView={view} onViewChange={setView} />
-        ) : (
-          <ArticleTreeMap posts={posts} activeView={view} onViewChange={setView} />
-        )}
+        {/* Desktop view with toggle - shown on screens >= 768px */}
+        <div className="hidden md:block">
+          {view === 'default' ? (
+            <DesktopGridView posts={posts} activeView={view} onViewChange={setView} />
+          ) : (
+            <ArticleTreeMap posts={posts} activeView={view} onViewChange={setView} />
+          )}
+        </div>
       </div>
     </div>
   );

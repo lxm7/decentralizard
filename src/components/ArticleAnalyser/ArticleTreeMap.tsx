@@ -12,6 +12,7 @@ import {
   PREDEFINED_CATEGORY_COLORS,
 } from './utils';
 import { FilterSidebar } from './FilterSidebar';
+import { cn } from '@/utilities/ui';
 
 const TARGET_NODE_COUNT = 40; // Target number of articles to display at any zoom level
 
@@ -632,7 +633,7 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts, activeView, onV
   }, [hoveredNode]);
 
   return (
-    <div className="flex h-full w-full overflow-hidden">
+    <div className="flex w-full">
       <FilterSidebar
         posts={posts}
         isOpen={isSidebarOpen}
@@ -641,7 +642,15 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts, activeView, onV
         onViewChange={onViewChange}
       />
 
-      <main ref={containerRef} className="relative flex h-full flex-1 flex-col" role="main">
+      <main
+        ref={containerRef}
+        className={cn(
+          'relative flex flex-1 flex-col transition-all duration-300',
+          isSidebarOpen ? 'ml-64' : 'ml-0'
+        )}
+        style={{ height: 'calc(100vh - 57px)' }}
+        role="main"
+      >
         {/* Loading overlay */}
         {isNavigating && (
           <div className="bg-neutral-black/50 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -685,7 +694,7 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts, activeView, onV
 
         {/* The interactive treemap */}
         <section
-          className="relative flex-1 overflow-hidden"
+          className="relative mt-4 flex-1 overflow-hidden"
           aria-label="Interactive articles treemap"
           role="img"
         >

@@ -38,15 +38,15 @@ export const FilterSidebar: FC<FilterSidebarProps> = ({
 
   return (
     <>
-      {/* Collapsible Sidebar */}
+      {/* Collapsible Sidebar - Fixed position */}
       <div
         className={cn(
-          'flex-shrink-0 border-r border-neutral-800 transition-all duration-300 ease-in-out',
+          'fixed bottom-0 left-0 top-[57px] z-40 flex-shrink-0 border-r border-neutral-800 bg-[#0d1117] transition-all duration-300 ease-in-out',
           isOpen ? 'w-64' : 'w-0'
         )}
       >
         {isOpen && (
-          <div className="flex h-full flex-col bg-[#0d1117] p-4">
+          <div className="flex h-full flex-col overflow-y-auto p-4">
             <div className="mb-8">
               <SearchInput
                 value={searchQuery}
@@ -105,7 +105,7 @@ export const FilterSidebar: FC<FilterSidebarProps> = ({
             </div>
 
             {/* Category Filter Accordion */}
-            <div className="flex-1">
+            <div className="pb-4">
               <Accordion type="single" collapsible defaultValue="categories">
                 <AccordionItem value="categories" className="border-neutral-800">
                   <AccordionTrigger className="text-xs font-semibold uppercase tracking-wide text-neutral-400 hover:text-neutral-300 hover:no-underline">
@@ -141,7 +141,7 @@ export const FilterSidebar: FC<FilterSidebarProps> = ({
       {/* Toggle Sidebar Button */}
       <button
         onClick={onToggle}
-        className="absolute left-0 top-1/2 z-20 -translate-y-1/2 rounded-r-lg border border-l-0 border-neutral-800 bg-neutral-900 p-2 transition-all hover:bg-neutral-800"
+        className="fixed top-1/2 z-50 -translate-y-1/2 rounded-r-lg border border-l-0 border-neutral-800 bg-neutral-900 p-2 transition-all hover:bg-neutral-800"
         style={{ left: isOpen ? '256px' : '0' }}
         aria-label={isOpen ? 'Close sidebar' : 'Open sidebar'}
       >

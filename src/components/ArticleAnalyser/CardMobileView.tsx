@@ -22,7 +22,7 @@ export const CardMobileView: FC<CardMobileViewProps> = ({ posts }) => {
   const { loadingSlug, handleArticleClick } = useArticleNavigation();
 
   return (
-    <div className="flex h-full w-full flex-col overflow-y-auto bg-[#0d1117]">
+    <div className="flex w-full flex-col bg-[#0d1117]">
       {/* Stats Ticker */}
       <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-3">
         <div className="flex items-center gap-1">

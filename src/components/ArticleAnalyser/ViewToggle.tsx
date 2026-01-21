@@ -18,22 +18,22 @@ export const ViewToggle: FC<ViewToggleProps> = ({ activeView, onViewChange }) =>
         )}
         aria-label="Default view"
       >
-        <div className="flex gap-[2px]">
+        <div className="flex flex-col gap-[2px]">
           <div
             className={cn(
-              'h-5 w-[4px] rounded-sm transition-colors',
+              'h-[4px] w-5 rounded-sm transition-colors',
               activeView === 'default' ? 'bg-brand-teal' : 'bg-neutral-500'
             )}
           />
           <div
             className={cn(
-              'h-5 w-[4px] rounded-sm transition-colors',
+              'h-[4px] w-5 rounded-sm transition-colors',
               activeView === 'default' ? 'bg-brand-teal' : 'bg-neutral-500'
             )}
           />
           <div
             className={cn(
-              'h-5 w-[4px] rounded-sm transition-colors',
+              'h-[4px] w-5 rounded-sm transition-colors',
               activeView === 'default' ? 'bg-brand-teal' : 'bg-neutral-500'
             )}
           />

@@ -13,7 +13,7 @@ export const Header: FC<HeaderProps> = ({ className }) => {
   return (
     <header
       className={cn(
-        'flex items-center justify-between border-b border-neutral-800 bg-[oklch(var(--bg-primary))] px-4 py-3',
+        'fixed left-0 right-0 top-0 z-50 flex items-center justify-between border-b border-neutral-800 bg-[oklch(var(--bg-primary))] px-4 py-3',
         className
       )}
     >
@@ -26,7 +26,7 @@ export const Header: FC<HeaderProps> = ({ className }) => {
             className="-ml-[5px] -mt-[4px] object-contain"
           />
         </div>
-        <span className="sr:only">Decentralizard</span>
+        <span className="sr-only">Decentralizard</span>
       </Link>
 
       {/* Right: Navigation + Actions */}

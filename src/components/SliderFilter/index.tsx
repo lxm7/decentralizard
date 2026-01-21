@@ -14,7 +14,7 @@ export const SliderFilter = ({ className, ...props }: SliderProps) => {
         <span className="text-xs font-medium uppercase tracking-wider text-cyan-400">
           Analytical (Science)
         </span>
-        <span className="text-xs font-medium uppercase tracking-wider text-purple-400">
+        <span className="text-right text-xs font-medium uppercase tracking-wider text-purple-400">
           Expressive (Arts)
         </span>
       </div>
