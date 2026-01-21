@@ -9,7 +9,7 @@ interface ViewToggleProps {
 
 export const ViewToggle: FC<ViewToggleProps> = ({ activeView, onViewChange }) => {
   return (
-    <div className="flex h-10 items-center rounded-lg bg-neutral-800 p-1">
+    <div className="flex h-10 w-[88px] items-center rounded-lg bg-neutral-800 p-1">
       <button
         onClick={() => onViewChange('default')}
         className={cn(

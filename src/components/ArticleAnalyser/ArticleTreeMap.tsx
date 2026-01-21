@@ -2,22 +2,26 @@ import React, { FC, useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import * as d3 from 'd3';
 import { Post } from '@/payload-types';
-import { useCanvasStore } from '@/store/useCanvasStore';
-import { SizeMetric, PostWithMetrics, HierarchyNode } from './types';
+import { useCanvasStore } from '@/stores/useCanvasStore';
+import { useFilteredPosts } from '@/stores/useFilterStore';
+import { SizeMetric, PostWithMetrics, HierarchyNode, ViewType } from './types';
 import {
   getShade,
   enrichPostsWithMetrics,
   CATEGORY_PALETTE,
   PREDEFINED_CATEGORY_COLORS,
 } from './utils';
+import { FilterSidebar } from './FilterSidebar';
 
 const TARGET_NODE_COUNT = 40; // Target number of articles to display at any zoom level
 
 interface ArticleTreeMapProps {
   posts: Post[];
+  activeView?: ViewType;
+  onViewChange?: (view: ViewType) => void;
 }
 
-export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts }) => {
+export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts, activeView, onViewChange }) => {
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -26,6 +30,10 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts }) => {
   const [postsWithMetrics, setPostsWithMetrics] = useState<PostWithMetrics[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
   const [clickedArticle, setClickedArticle] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
+
+  // Use Zustand store for filtered posts
+  const filteredPosts = useFilteredPosts(posts);
 
   // Store the current zoom state
   const [zoomState, setZoomState] = useState({
@@ -67,8 +75,8 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts }) => {
 
   // Enrich posts with deterministic metrics (consistent across SSR and client)
   useEffect(() => {
-    setPostsWithMetrics(enrichPostsWithMetrics(posts));
-  }, [posts]);
+    setPostsWithMetrics(enrichPostsWithMetrics(filteredPosts));
+  }, [filteredPosts]);
 
   // Build hierarchical data for the treemap
   const hierarchyData: HierarchyNode = useMemo(() => {
@@ -624,96 +632,108 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts }) => {
   }, [hoveredNode]);
 
   return (
-    <main ref={containerRef} className="relative flex h-full w-full flex-col" role="main">
-      {/* Loading overlay */}
-      {isNavigating && (
-        <div className="bg-neutral-black/50 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-4 rounded-lg bg-neutral-white p-8 shadow-2xl">
-            <div className="h-16 w-16 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-            <div className="text-center">
-              <p className="text-lg font-semibold text-neutral-900">Loading Article</p>
-              {clickedArticle && (
-                <p className="mt-1 max-w-sm truncate text-sm text-neutral-600">{clickedArticle}</p>
-              )}
+    <div className="flex h-full w-full overflow-hidden">
+      <FilterSidebar
+        posts={posts}
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        activeView={activeView}
+        onViewChange={onViewChange}
+      />
+
+      <main ref={containerRef} className="relative flex h-full flex-1 flex-col" role="main">
+        {/* Loading overlay */}
+        {isNavigating && (
+          <div className="bg-neutral-black/50 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-4 rounded-lg bg-neutral-white p-8 shadow-2xl">
+              <div className="h-16 w-16 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+              <div className="text-center">
+                <p className="text-lg font-semibold text-neutral-900">Loading Article</p>
+                {clickedArticle && (
+                  <p className="mt-1 max-w-sm truncate text-sm text-neutral-600">
+                    {clickedArticle}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* SEO and accessibility block */}
-      <section className="sr-only" aria-label="Detailed article information for SEO">
-        {postsWithMetrics.map((post) => (
-          <article key={post.id} role="article">
-            <h2>{post.title.replace(/\n\s*/g, ' ')}</h2>
-            <p>{post.shortDescription ?? ''}</p>
-            <p>{post.meta?.description ?? ''}</p>
-            <p>
-              {(
-                post.content?.root?.children?.[0]?.children?.[0] as {
-                  text: string;
-                }
-              )?.text ?? ''}
-            </p>
-            <ul>
-              {post.category_titles?.map((category) => (
-                <li key={category}>{category}</li>
-              ))}
-            </ul>
-            {post.slug && <a href={`/posts/${post.slug}`}>Read more</a>}
-          </article>
-        ))}
-      </section>
+        {/* SEO and accessibility block */}
+        <section className="sr-only" aria-label="Detailed article information for SEO">
+          {postsWithMetrics.map((post) => (
+            <article key={post.id} role="article">
+              <h2>{post.title.replace(/\n\s*/g, ' ')}</h2>
+              <p>{post.shortDescription ?? ''}</p>
+              <p>{post.meta?.description ?? ''}</p>
+              <p>
+                {(
+                  post.content?.root?.children?.[0]?.children?.[0] as {
+                    text: string;
+                  }
+                )?.text ?? ''}
+              </p>
+              <ul>
+                {post.category_titles?.map((category) => (
+                  <li key={category}>{category}</li>
+                ))}
+              </ul>
+              {post.slug && <a href={`/posts/${post.slug}`}>Read more</a>}
+            </article>
+          ))}
+        </section>
 
-      {/* The interactive treemap */}
-      <section
-        className="relative flex-1 overflow-hidden"
-        aria-label="Interactive articles treemap"
-        role="img"
-      >
-        <canvas
-          ref={canvasRef}
-          width={dimensions.width}
-          height={dimensions.height}
-          className="block h-full w-full"
-          aria-label="Interactive treemap visualization of articles. Use scroll to zoom."
-        />
-        <div
-          ref={tooltipRef}
-          role="tooltip"
-          aria-live="polite"
-          className="pointer-events-none absolute z-10 max-w-xs rounded border border-neutral-300 bg-neutral-white bg-opacity-95 p-3 opacity-0 shadow-lg transition-opacity duration-200"
-        />
+        {/* The interactive treemap */}
+        <section
+          className="relative flex-1 overflow-hidden"
+          aria-label="Interactive articles treemap"
+          role="img"
+        >
+          <canvas
+            ref={canvasRef}
+            width={dimensions.width}
+            height={dimensions.height}
+            className="block h-full w-full"
+            aria-label="Interactive treemap visualization of articles. Use scroll to zoom."
+          />
+          <div
+            ref={tooltipRef}
+            role="tooltip"
+            aria-live="polite"
+            className="pointer-events-none absolute z-10 max-w-xs rounded border border-neutral-300 bg-neutral-white bg-opacity-95 p-3 opacity-0 shadow-lg transition-opacity duration-200"
+          />
 
-        {/* Zoom controls */}
-        <div className="absolute bottom-4 right-4 flex space-x-2 rounded-lg bg-neutral-white p-2 shadow">
-          <button
-            className="flex h-8 w-8 items-center justify-center rounded bg-neutral-100 hover:bg-neutral-200 disabled:opacity-50"
-            onClick={handleResetZoom}
-            disabled={isTransitioning || zoomState.scale === 1}
-            aria-label="Reset zoom"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
+          {/* Zoom controls */}
+          <div className="absolute bottom-4 right-4 flex space-x-2 rounded-lg bg-neutral-white p-2 shadow">
+            <button
+              className="flex h-8 w-8 items-center justify-center rounded bg-neutral-100 hover:bg-neutral-200 disabled:opacity-50"
+              onClick={handleResetZoom}
+              disabled={isTransitioning || zoomState.scale === 1}
+              aria-label="Reset zoom"
             >
-              <path
-                fillRule="evenodd"
-                d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* Zoom level indicator */}
-        <div className="absolute bottom-4 left-4 rounded-lg bg-neutral-white px-3 py-2 text-xs text-neutral-600 shadow">
-          <div className="flex items-center">
-            <span>Zoom: {Math.round(zoomState.scale * 100)}%</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
           </div>
-        </div>
-      </section>
-    </main>
+
+          {/* Zoom level indicator */}
+          <div className="absolute bottom-4 left-4 rounded-lg bg-neutral-white px-3 py-2 text-xs text-neutral-600 shadow">
+            <div className="flex items-center">
+              <span>Zoom: {Math.round(zoomState.scale * 100)}%</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
   );
 };

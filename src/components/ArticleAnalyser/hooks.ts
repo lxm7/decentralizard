@@ -13,36 +13,8 @@ export const useCategories = (posts: Post[]) => {
         post.category_titles.forEach((cat) => cats.add(cat));
       }
     });
-    return ['All Feeds', ...Array.from(cats)];
+    return Array.from(cats).sort();
   }, [posts]);
-};
-
-/**
- * Hook for filtering posts by category and search query
- */
-export const useArticleFilters = (posts: Post[], selectedCategory: string, searchQuery: string) => {
-  return useMemo(() => {
-    let result = posts;
-
-    // Filter by category
-    if (selectedCategory !== 'All Feeds') {
-      result = result.filter(
-        (post) => post.category_titles && post.category_titles.includes(selectedCategory)
-      );
-    }
-
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (post) =>
-          post.title.toLowerCase().includes(query) ||
-          post.shortDescription?.toLowerCase().includes(query)
-      );
-    }
-
-    return result;
-  }, [posts, selectedCategory, searchQuery]);
 };
 
 /**

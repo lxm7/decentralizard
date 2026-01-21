@@ -8,28 +8,16 @@ type SliderProps = React.ComponentProps<typeof Slider>;
 
 export const SliderFilter = ({ className, ...props }: SliderProps) => {
   return (
-    <div className={cn('hidden items-center gap-4 lg:flex', className)}>
-      <span className="text-xs font-medium uppercase tracking-wider text-cyan-400">
-        Analytical
-        <br />
-        (Science)
-      </span>
-
-      <div className="relative w-48">
-        <Slider
-          defaultValue={[50]}
-          max={100}
-          step={1}
-          className={cn('w-[200px]', className)}
-          {...props}
-        />
+    <div className={cn('flex flex-col gap-2', className)}>
+      <Slider defaultValue={[50]} max={100} step={1} className="w-full" {...props} />
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium uppercase tracking-wider text-cyan-400">
+          Analytical (Science)
+        </span>
+        <span className="text-xs font-medium uppercase tracking-wider text-purple-400">
+          Expressive (Arts)
+        </span>
       </div>
-
-      <span className="text-xs font-medium uppercase tracking-wider text-purple-400">
-        Expressive
-        <br />
-        (Arts)
-      </span>
     </div>
   );
 };

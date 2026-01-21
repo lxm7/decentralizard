@@ -4,7 +4,6 @@ import React, { FC } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/utilities/ui';
-import { SliderFilter } from '@/components/SliderFilter';
 
 interface HeaderProps {
   className?: string;
@@ -14,24 +13,21 @@ export const Header: FC<HeaderProps> = ({ className }) => {
   return (
     <header
       className={cn(
-        'flex items-center justify-between border-b border-neutral-800 bg-[oklch(var(--bg-primary))] px-4 py-3 lg:px-6',
+        'flex items-center justify-between border-b border-neutral-800 bg-[oklch(var(--bg-primary))] px-4 py-3',
         className
       )}
     >
       <Link href="/" className="flex items-center gap-3 no-underline">
-        <div className="relative h-[30px] w-[130px] flex-shrink-0">
+        <div className="relative h-[30px] w-[150px] flex-shrink-0">
           <Image
             src="/images/logo/logo2-white-loader-colour.svg"
             alt="Decentralizard with logo"
             fill
-            className="object-contain"
+            className="-ml-[5px] -mt-[4px] object-contain"
           />
         </div>
         <span className="sr:only">Decentralizard</span>
       </Link>
-
-      {/* Center: Analytical-Expressive Slider (desktop only) */}
-      <SliderFilter />
 
       {/* Right: Navigation + Actions */}
       <div className="flex items-center gap-3 lg:gap-6">

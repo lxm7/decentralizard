@@ -1,23 +1,24 @@
-import React, { FC, useState } from 'react';
+import React, { FC } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Post } from '@/payload-types';
 import { CategoryPill } from '@/components/CateoryPill';
 import { SearchInput } from './SearchInput';
-import { useCategories, useArticleFilters, useArticleNavigation } from './hooks';
+import { useCategories, useArticleNavigation } from './hooks';
 import { getImageUrl, getMockStats } from './utils';
+import { useFilterStore, useFilteredPosts } from '@/stores/useFilterStore';
 
 interface CardMobileViewProps {
   posts: Post[];
 }
 
 export const CardMobileView: FC<CardMobileViewProps> = ({ posts }) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('All Feeds');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  // Use Zustand store for filter state and filtered posts
+  const { selectedCategories, searchQuery, toggleCategory, setSearchQuery } = useFilterStore();
 
   const mockStats = getMockStats();
   const categories = useCategories(posts);
-  const filteredPosts = useArticleFilters(posts, selectedCategory, searchQuery);
+  const filteredPosts = useFilteredPosts(posts);
   const { loadingSlug, handleArticleClick } = useArticleNavigation();
 
   return (
@@ -63,8 +64,8 @@ export const CardMobileView: FC<CardMobileViewProps> = ({ posts }) => {
             <CategoryPill
               key={category}
               title={category}
-              isSelected={selectedCategory === category}
-              onClick={setSelectedCategory}
+              isSelected={selectedCategories.includes(category)}
+              onClick={toggleCategory}
             />
           ))}
         </div>

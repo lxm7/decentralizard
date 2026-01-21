@@ -1,10 +1,10 @@
-import { create } from 'zustand'
+import { create } from 'zustand';
 
 interface CanvasState {
-  dimensions: { width: number; height: number }
-  setDimensions: (dims: { width: number; height: number }) => void
-  isHydrated: boolean
-  markHydrated: () => void
+  dimensions: { width: number; height: number };
+  setDimensions: (dims: { width: number; height: number }) => void;
+  isHydrated: boolean;
+  markHydrated: () => void;
 }
 
 export const useCanvasStore = create<CanvasState>((set) => ({
@@ -12,4 +12,4 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   setDimensions: (dims) => set({ dimensions: dims }),
   isHydrated: false,
   markHydrated: () => set({ isHydrated: true }),
-}))
+}));
