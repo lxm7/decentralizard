@@ -9,6 +9,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Checkbox } from '@/base/checkbox';
 import { Label } from '@/base/label';
 import { useFilterStore, TimeFilter } from '@/stores/useFilterStore';
+import { useZoomStore } from '@/stores/useZoomStore';
 import { useCategories } from './hooks';
 
 interface FilterSidebarProps {
@@ -30,10 +31,13 @@ export const FilterSidebar: FC<FilterSidebarProps> = ({
     selectedCategories,
     timeFilter,
     searchQuery,
+    contentBalance,
     toggleCategory,
     setTimeFilter,
     setSearchQuery,
+    setContentBalance,
   } = useFilterStore();
+  const { zoomLevel, setZoomLevel } = useZoomStore();
   const categories = useCategories(posts);
 
   return (
@@ -68,10 +72,37 @@ export const FilterSidebar: FC<FilterSidebarProps> = ({
 
             {/* Slider Filter */}
             <div className="mb-8">
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
-                Content Balance
-              </h3>
-              <SliderFilter />
+              {activeView === 'wba' ? (
+                <>
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
+                    Zoom Level
+                  </h3>
+                  <SliderFilter
+                    leftLabel="100%"
+                    rightLabel="800%"
+                    value={[zoomLevel]}
+                    min={1}
+                    max={8}
+                    step={1}
+                    onValueChange={(value) => setZoomLevel(value[0])}
+                  />
+                </>
+              ) : (
+                <>
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
+                    Content Balance
+                  </h3>
+                  <SliderFilter
+                    leftLabel="Analytical (Science)"
+                    rightLabel="Expressive (Arts)"
+                    value={[contentBalance]}
+                    min={0}
+                    max={100}
+                    step={1}
+                    onValueChange={(value) => setContentBalance(value[0])}
+                  />
+                </>
+              )}
             </div>
 
             {/* Time Filter */}

@@ -4,6 +4,7 @@ import * as d3 from 'd3';
 import { Post } from '@/payload-types';
 import { useCanvasStore } from '@/stores/useCanvasStore';
 import { useFilteredPosts } from '@/stores/useFilterStore';
+import { useZoomStore } from '@/stores/useZoomStore';
 import { SizeMetric, PostWithMetrics, HierarchyNode, ViewType } from './types';
 import {
   getShade,
@@ -27,6 +28,7 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts, activeView, onV
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const zoomBehaviorRef = useRef<d3.ZoomBehavior<HTMLCanvasElement, unknown> | null>(null);
   const [sizeMetric] = useState<SizeMetric>('clicks');
   const [postsWithMetrics, setPostsWithMetrics] = useState<PostWithMetrics[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -36,9 +38,12 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts, activeView, onV
   // Use Zustand store for filtered posts
   const filteredPosts = useFilteredPosts(posts);
 
-  // Store the current zoom state
+  // Use Zustand store for zoom level
+  const { zoomLevel, setZoomLevel } = useZoomStore();
+
+  // Store the current zoom state (using zoomLevel from store as scale)
   const [zoomState, setZoomState] = useState({
-    scale: 1,
+    scale: zoomLevel,
     centerX: 0,
     centerY: 0,
     visibleRegion: { x: 0, y: 0, width: 0, height: 0 },
@@ -447,6 +452,9 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts, activeView, onV
     // Calculate the new scale and transform
     const newScale = event.transform.k;
 
+    // Update the zoom store
+    setZoomLevel(newScale);
+
     // Calculate visible region in the original treemap coordinates
     const visibleWidth = dimensions.width / newScale;
     const visibleHeight = dimensions.height / newScale;
@@ -506,6 +514,8 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts, activeView, onV
         handleZoom({ ...event, transform });
       });
 
+    zoomBehaviorRef.current = zoom;
+
     d3.select(canvas)
       .call(zoom)
       .on('dblclick.zoom', null)
@@ -521,6 +531,41 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts, activeView, onV
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dimensions, isTransitioning]);
+
+  // Sync d3 zoom when zoomLevel changes from store (e.g., slider)
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !zoomBehaviorRef.current) return;
+
+    // Only update if the zoom level from store differs from current zoom state
+    if (Math.abs(zoomLevel - zoomState.scale) > 0.01) {
+      // Calculate visible region centered on the canvas
+      const centerX = dimensions.width / 2;
+      const centerY = dimensions.height / 2;
+      const visibleWidth = dimensions.width / zoomLevel;
+      const visibleHeight = dimensions.height / zoomLevel;
+      const visibleX = centerX - visibleWidth / 2;
+      const visibleY = centerY - visibleHeight / 2;
+
+      // Update zoom state directly (without triggering d3 zoom event)
+      setZoomState({
+        scale: zoomLevel,
+        centerX,
+        centerY,
+        visibleRegion: {
+          x: visibleX,
+          y: visibleY,
+          width: visibleWidth,
+          height: visibleHeight,
+        },
+      });
+
+      // Update d3 transform without triggering zoom event
+      const transform = d3.zoomIdentity.scale(zoomLevel);
+      d3.select(canvas).property('__zoom', transform);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zoomLevel, dimensions.width, dimensions.height]);
 
   // Find node at position
   const findNodeAtPosition = (x: number, y: number) => {
@@ -602,30 +647,6 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts, activeView, onV
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Reset zoom
-  const handleResetZoom = () => {
-    if (isTransitioning) return;
-
-    setIsTransitioning(true);
-    setZoomState({
-      scale: 1,
-      centerX: dimensions.width / 2,
-      centerY: dimensions.height / 2,
-      visibleRegion: {
-        x: 0,
-        y: 0,
-        width: dimensions.width,
-        height: dimensions.height,
-      },
-    });
-
-    // Reset to the full treemap
-    treemapNodesRef.current = allNodesRef.current;
-    draw();
-
-    setTimeout(() => setIsTransitioning(false), 300);
-  };
-
   // Re-draw when hovered node changes
   useEffect(() => {
     draw();
@@ -694,7 +715,7 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts, activeView, onV
 
         {/* The interactive treemap */}
         <section
-          className="relative mt-4 flex-1 overflow-hidden"
+          className="relative mt-1 flex-1 overflow-hidden"
           aria-label="Interactive articles treemap"
           role="img"
         >
@@ -711,36 +732,6 @@ export const ArticleTreeMap: FC<ArticleTreeMapProps> = ({ posts, activeView, onV
             aria-live="polite"
             className="pointer-events-none absolute z-10 max-w-xs rounded border border-neutral-300 bg-neutral-white bg-opacity-95 p-3 opacity-0 shadow-lg transition-opacity duration-200"
           />
-
-          {/* Zoom controls */}
-          <div className="absolute bottom-4 right-4 flex space-x-2 rounded-lg bg-neutral-white p-2 shadow">
-            <button
-              className="flex h-8 w-8 items-center justify-center rounded bg-neutral-100 hover:bg-neutral-200 disabled:opacity-50"
-              onClick={handleResetZoom}
-              disabled={isTransitioning || zoomState.scale === 1}
-              aria-label="Reset zoom"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-          </div>
-
-          {/* Zoom level indicator */}
-          <div className="absolute bottom-4 left-4 rounded-lg bg-neutral-white px-3 py-2 text-xs text-neutral-600 shadow">
-            <div className="flex items-center">
-              <span>Zoom: {Math.round(zoomState.scale * 100)}%</span>
-            </div>
-          </div>
         </section>
       </main>
     </div>

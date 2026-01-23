@@ -4,18 +4,50 @@ import React from 'react';
 import { cn } from '@/utilities/ui';
 import { Slider } from '@/base/slider';
 
-type SliderProps = React.ComponentProps<typeof Slider>;
+interface SliderFilterProps {
+  className?: string;
+  leftLabel: string;
+  rightLabel: string;
+  leftColor?: string;
+  rightColor?: string;
+  value?: number[];
+  defaultValue?: number[];
+  min?: number;
+  max?: number;
+  step?: number;
+  onValueChange?: (value: number[]) => void;
+}
 
-export const SliderFilter = ({ className, ...props }: SliderProps) => {
+export const SliderFilter = ({
+  className,
+  leftLabel,
+  rightLabel,
+  leftColor = 'text-cyan-400',
+  rightColor = 'text-purple-400',
+  value,
+  defaultValue = [50],
+  min = 0,
+  max = 100,
+  step = 1,
+  onValueChange,
+}: SliderFilterProps) => {
   return (
     <div className={cn('flex flex-col gap-2', className)}>
-      <Slider defaultValue={[50]} max={100} step={1} className="w-full" {...props} />
+      <Slider
+        value={value}
+        defaultValue={defaultValue}
+        min={min}
+        max={max}
+        step={step}
+        onValueChange={onValueChange}
+        className="w-full"
+      />
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-wider text-cyan-400">
-          Analytical (Science)
+        <span className={cn('text-xs font-medium uppercase tracking-wider', leftColor)}>
+          {leftLabel}
         </span>
-        <span className="text-right text-xs font-medium uppercase tracking-wider text-purple-400">
-          Expressive (Arts)
+        <span className={cn('text-right text-xs font-medium uppercase tracking-wider', rightColor)}>
+          {rightLabel}
         </span>
       </div>
     </div>
