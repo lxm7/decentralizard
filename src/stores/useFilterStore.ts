@@ -4,6 +4,14 @@ import React from 'react';
 
 export type TimeFilter = 'all' | 'today' | 'week' | 'month';
 
+/**
+ * Sanitize search query to prevent XSS and injection attacks
+ * Removes potentially dangerous characters and trims whitespace
+ */
+const sanitizeSearchQuery = (query: string): string => {
+  return query.replace(/[<>"']/g, '').trim();
+};
+
 interface FilterState {
   // Filter values
   selectedCategories: string[];
@@ -135,6 +143,30 @@ const getContentBalanceWeight = (
 };
 
 /**
+ * Calculate time filter dates once (not on every render)
+ */
+const getTimeFilterDates = (timeFilter: TimeFilter) => {
+  if (timeFilter === 'all') return null;
+
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  switch (timeFilter) {
+    case 'today':
+      return startOfToday;
+    case 'week': {
+      const startOfWeek = new Date(startOfToday);
+      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay()); // Sunday
+      return startOfWeek;
+    }
+    case 'month':
+      return new Date(now.getFullYear(), now.getMonth(), 1);
+    default:
+      return null;
+  }
+};
+
+/**
  * Selector hook for filtering posts
  * Centralizes all filtering logic in one place for efficiency
  */
@@ -145,29 +177,15 @@ export const useFilteredPosts = (posts: Post[]) => {
   return React.useMemo(() => {
     let result = posts;
 
-    // Filter by time period
+    // Filter by time period (optimized with pre-calculated dates)
     if (timeFilter !== 'all') {
-      const now = new Date();
-      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const startOfWeek = new Date(startOfToday);
-      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay()); // Sunday
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-      result = result.filter((post) => {
-        const publishedAt = post.publishedAt ? new Date(post.publishedAt) : null;
-        if (!publishedAt) return false;
-
-        switch (timeFilter) {
-          case 'today':
-            return publishedAt >= startOfToday;
-          case 'week':
-            return publishedAt >= startOfWeek;
-          case 'month':
-            return publishedAt >= startOfMonth;
-          default:
-            return true;
-        }
-      });
+      const startDate = getTimeFilterDates(timeFilter);
+      if (startDate) {
+        result = result.filter((post) => {
+          const publishedAt = post.publishedAt ? new Date(post.publishedAt) : null;
+          return publishedAt && publishedAt >= startDate;
+        });
+      }
     }
 
     // Filter by categories (if any selected, show posts that match ANY selected category)
@@ -179,9 +197,10 @@ export const useFilteredPosts = (posts: Post[]) => {
       );
     }
 
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+    // Filter by search query (with sanitization for security)
+    const sanitizedQuery = sanitizeSearchQuery(searchQuery);
+    if (sanitizedQuery) {
+      const query = sanitizedQuery.toLowerCase();
       result = result.filter(
         (post) =>
           post.title.toLowerCase().includes(query) ||
@@ -190,14 +209,17 @@ export const useFilteredPosts = (posts: Post[]) => {
     }
 
     // Apply content balance filtering with weighted scoring
-    // Only apply if slider is not at the default center position
+    // Early return: Skip expensive calculations when at default position
     if (contentBalance !== 50) {
-      // Calculate weights for all posts
-      const postsWithWeights = result.map((post) => ({
-        post,
-        score: getPostContentScore(post),
-        weight: getContentBalanceWeight(getPostContentScore(post), contentBalance),
-      }));
+      // Calculate score once per post (optimization)
+      const postsWithWeights = result.map((post) => {
+        const score = getPostContentScore(post);
+        return {
+          post,
+          score,
+          weight: getContentBalanceWeight(score, contentBalance),
+        };
+      });
 
       // Sort by weight (highest relevance first)
       postsWithWeights.sort((a, b) => b.weight - a.weight);
