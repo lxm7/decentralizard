@@ -71,7 +71,7 @@ build-push:
     - aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
     - docker run --privileged --rm tonistiigi/binfmt --install all
     - docker context create tls-env --docker "host=${DOCKER_HOST},ca=${DOCKER_CERT_PATH}/ca.pem,cert=${DOCKER_CERT_PATH}/cert.pem,key=${DOCKER_CERT_PATH}/key.pem"
-    - docker buildx create --use --name multiarch --driver docker-container --context tls-env
+    - docker buildx create --use --name multiarch --driver docker-container tls-env
   script:
     - |
       docker buildx build \
