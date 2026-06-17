@@ -17,7 +17,7 @@ variable "tags" {
   default = {}
 }
 
-# --- Media writer: static creds for the Oracle box to push uploads to S3 ---
+# --- Hetzner box IAM user: S3 media writes + ECR image pulls ---
 resource "aws_iam_user" "media_writer" {
   name = "decentralizard-media-writer"
   tags = var.tags
@@ -35,6 +35,20 @@ data "aws_iam_policy_document" "media_writer" {
       "s3:DeleteObject",
     ]
     resources = ["${var.media_bucket_arn}/*"]
+  }
+  statement {
+    sid     = "EcrAuth"
+    actions = ["ecr:GetAuthorizationToken"]
+    resources = ["*"]
+  }
+  statement {
+    sid = "EcrPull"
+    actions = [
+      "ecr:BatchGetImage",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchCheckLayerAvailability",
+    ]
+    resources = [var.ecr_repository_arn]
   }
 }
 
