@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files
 .env*
+.envrc
 
 # vercel
 .vercel
@@ -43,8 +44,9 @@ next-env.d.ts
 # for demo
 .cache
 
-# Certificates
-certs
+# Certificates — ignore all except the public Supabase CA (needed in the CI image)
+certs/*
+!certs/prod-ca-2021.crt
 
 # Payload default media upload directory
 public/media/

@@ -1,74 +1,54 @@
-# syntax=docker/dockerfile:1.4
+# syntax=docker/dockerfile:1.7
+# Multi-arch (amd64 + arm64) image for the container pipeline:
+# built once in CI, runs on Oracle ARM (Tier 1, always-on) and EKS (Tier 2, demo).
 
-FROM node:20.16.0-bookworm-slim AS base
+ARG NODE_VERSION=20.16.0
 
-# Stage 1: Dependencies
-FROM base AS deps
+FROM node:${NODE_VERSION}-bookworm-slim AS base
 RUN corepack enable
 WORKDIR /app
 
+# --- Stage 1: install all deps (layer cached on yarn.lock) ---
+FROM base AS deps
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn/releases ./.yarn/releases
+RUN YARN_ENABLE_IMMUTABLE_INSTALLS=1 yarn install --immutable
 
-RUN --mount=type=cache,target=/app/.yarn/cache,uid=1001,gid=1001 \
-    YARN_ENABLE_IMMUTABLE_INSTALLS=1 \
-    yarn install --immutable
-
-# Stage 2: Builder
+# --- Stage 2: build the Next.js / Payload app ---
 FROM deps AS builder
-COPY --chown=node:node . .
-RUN --mount=type=cache,target=/app/.next/cache,uid=1001,gid=1001 \
-    yarn build
+ENV NEXT_TELEMETRY_DISABLED=1
+COPY . .
+RUN yarn build
 
-# Stage 3: Production
+# --- Stage 3: prune to production-only deps ---
+FROM deps AS prod-deps
+RUN YARN_ENABLE_IMMUTABLE_INSTALLS=1 yarn workspaces focus --production
+
+# --- Stage 4: runtime ---
 FROM base AS production
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-
-# User and group setup
-RUN corepack enable && \
-    groupadd --gid 1001 nodejs && \
-    groupadd -r certaccess && \
-    useradd --uid 1001 \
-      --create-home \
-      --shell /bin/bash \
-      --groups nodejs,certaccess \
-      nextjs
-
-WORKDIR /app
-
-# Directory structure with correct ownership
-RUN mkdir -p /app/.next /app/public /app/certs && \
-    chown -R nextjs:nodejs /app && \
-    chmod 755 /app/certs
-
-# Certificate handling
-RUN --mount=type=secret,id=cacert,dst=/tmp/prod-ca-2021.crt \
-    cp /tmp/prod-ca-2021.crt /app/certs/ && \
-    chown root:certaccess /app/certs/prod-ca-2021.crt && \
-    chmod 640 /app/certs/prod-ca-2021.crt
-
-# Application files
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=deps --chown=nextjs:nodejs /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
-COPY --from=deps --chown=nextjs:nodejs /app/.yarn ./.yarn
-
-# Production dependencies
-RUN --mount=type=cache,target=/app/.yarn/cache,uid=1001,gid=1001 \
-    YARN_ENABLE_IMMUTABLE_INSTALLS=1 \
-    yarn workspaces focus --production
-
-# Healthcheck
-RUN curl -o /usr/local/bin/wait-for-it \
-    https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && \
-    chmod +x /usr/local/bin/wait-for-it
-
-# Runtime config
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
-    PORT=3000
+    PORT=3000 \
+    CERT_CA=certs/prod-ca-2021.crt
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 1001 nodejs \
+    && useradd --uid 1001 --gid nodejs --create-home --shell /bin/bash nextjs
+
+COPY --from=prod-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder   --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder   --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder   --chown=nextjs:nodejs /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
+COPY --from=builder   --chown=nextjs:nodejs /app/.yarn ./.yarn
+# Public Supabase CA for Postgres TLS — committed to the repo, not a secret
+COPY --from=builder   --chown=nextjs:nodejs /app/certs/prod-ca-2021.crt ./certs/prod-ca-2021.crt
+
+USER nextjs
 EXPOSE 3000
-USER nextjs:certaccess
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=5 \
+    CMD curl -fsS http://localhost:3000/api/health || exit 1
 
 CMD ["yarn", "start"]

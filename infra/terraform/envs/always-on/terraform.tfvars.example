@@ -1,0 +1,10 @@
+region          = "eu-west-1"
+profile          = "default"
+root_domain      = "decentralizard.com"
+media_subdomain  = "cdn"
+
+# Cloudflare zone ID for decentralizard.com (Cloudflare dashboard → Overview → API)
+cloudflare_zone_id = "REPLACE_WITH_ZONE_ID"
+
+# Uncomment once the GitLab repo exists to enable the CI OIDC role:
+# gitlab_project_path = "lxm7/decentralizard"

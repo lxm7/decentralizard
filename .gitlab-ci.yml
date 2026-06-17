@@ -1,0 +1,90 @@
+# CI/CD for decentralizard — multi-arch image build + push to ECR via OIDC (no static keys).
+#
+# Prerequisites:
+#  1. Set `gitlab_project_path` in infra/terraform/envs/always-on/terraform.tfvars and
+#     re-apply, so the GitLab OIDC provider + `decentralizard-gitlab-ci` role exist.
+#  2. deploy-hetzner needs protected CI/CD variables: HETZNER_HOST, HETZNER_USER, HETZNER_SSH_KEY.
+#  3. If `yarn build` needs them, add DATABASE_URI + PAYLOAD_SECRET as CI/CD variables.
+
+stages:
+  - validate
+  - build
+  - deploy
+
+variables:
+  AWS_REGION: eu-west-1
+  AWS_ROLE_ARN: arn:aws:iam::158871758094:role/decentralizard-gitlab-ci
+  ECR_REGISTRY: 158871758094.dkr.ecr.eu-west-1.amazonaws.com
+  IMAGE_NAME: decentralizard
+
+lint-type:
+  stage: validate
+  image: node:20-bookworm-slim
+  cache:
+    key:
+      files:
+        - yarn.lock
+    paths:
+      - .yarn/cache
+  before_script:
+    - corepack enable
+  script:
+    - yarn install --immutable
+    - yarn type-check
+    - yarn lint
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+build-push:
+  stage: build
+  image: docker:27
+  services:
+    - docker:27-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  before_script:
+    - apk add --no-cache aws-cli jq
+    - |
+      CREDS=$(aws sts assume-role-with-web-identity \
+        --role-arn "$AWS_ROLE_ARN" \
+        --role-session-name "gitlab-${CI_PIPELINE_ID}" \
+        --web-identity-token "$GITLAB_OIDC_TOKEN" \
+        --duration-seconds 3600 \
+        --query Credentials --output json)
+      export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r .AccessKeyId)
+      export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r .SecretAccessKey)
+      export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r .SessionToken)
+    - aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+    - docker buildx create --use --name multiarch --driver docker-container
+  script:
+    - |
+      docker buildx build \
+        --platform linux/amd64,linux/arm64 \
+        --file Dockerfile.production \
+        --tag "$ECR_REGISTRY/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA" \
+        --tag "$ECR_REGISTRY/$IMAGE_NAME:latest" \
+        --cache-from type=registry,ref=$ECR_REGISTRY/$IMAGE_NAME:buildcache \
+        --cache-to type=registry,ref=$ECR_REGISTRY/$IMAGE_NAME:buildcache,mode=max \
+        --push .
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+deploy-hetzner:
+  stage: deploy
+  image: alpine:3.20
+  needs:
+    - build-push
+  before_script:
+    - apk add --no-cache openssh-client
+    - eval "$(ssh-agent -s)"
+    - printf '%s\n' "$HETZNER_SSH_KEY" | ssh-add -
+    - mkdir -p ~/.ssh && ssh-keyscan -H "$HETZNER_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+  script:
+    - ssh "$HETZNER_USER@$HETZNER_HOST" "cd /opt/decentralizard && ./deploy.sh $CI_COMMIT_SHORT_SHA"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
