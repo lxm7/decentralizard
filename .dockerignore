@@ -5,6 +5,19 @@
 .gitattributes
 .node-version
 
+# Build outputs — never copy local build artefacts into the image
+node_modules
+.next
+out
+
+# Env files — never bake secrets into the image
+.env*
+.envrc
+
+# Infra / docs — not needed in the container
+infra
+docs
+
 # Docker files
 .dockerignore*
 Dockerfile*

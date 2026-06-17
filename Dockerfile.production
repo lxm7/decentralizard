@@ -24,11 +24,7 @@ ENV PAYLOAD_SECRET=$PAYLOAD_SECRET
 COPY . .
 RUN yarn build
 
-# --- Stage 3: prune to production-only deps ---
-FROM deps AS prod-deps
-RUN YARN_ENABLE_IMMUTABLE_INSTALLS=1 yarn workspaces focus --production
-
-# --- Stage 4: runtime ---
+# --- Stage 3: runtime ---
 FROM base AS production
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
@@ -41,7 +37,7 @@ RUN apt-get update \
     && groupadd --gid 1001 nodejs \
     && useradd --uid 1001 --gid nodejs --create-home --shell /bin/bash nextjs
 
-COPY --from=prod-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder   --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder   --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder   --chown=nextjs:nodejs /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
