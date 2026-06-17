@@ -73,6 +73,8 @@ build-push:
     - docker context create tls-env --docker "host=${DOCKER_HOST},ca=${DOCKER_CERT_PATH}/ca.pem,cert=${DOCKER_CERT_PATH}/cert.pem,key=${DOCKER_CERT_PATH}/key.pem"
     - docker buildx create --use --name multiarch --driver docker-container tls-env
   script:
+    - '[[ -n "$DATABASE_URI" ]] || { echo "ERROR: DATABASE_URI is empty"; exit 1; }'
+    - '[[ -n "$PAYLOAD_SECRET" ]] || { echo "ERROR: PAYLOAD_SECRET is empty"; exit 1; }'
     - |
       docker buildx build \
         --platform linux/amd64,linux/arm64 \
@@ -98,7 +100,7 @@ deploy-hetzner:
     - printf '%s\n' "$HETZNER_SSH_KEY" | ssh-add -
     - mkdir -p ~/.ssh && ssh-keyscan -H "$HETZNER_HOST" >> ~/.ssh/known_hosts 2>/dev/null
   script:
-    - ssh "$HETZNER_USER@$HETZNER_HOST" "cd /opt/decentralizard && ./deploy.sh $CI_COMMIT_SHORT_SHA"
+    - ssh "$HETZNER_USER@$HETZNER_HOST" "cd /opt/decentralizard && ./deploy.sh '${CI_COMMIT_SHORT_SHA}'"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
