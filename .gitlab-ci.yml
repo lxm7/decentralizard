@@ -70,12 +70,15 @@ build-push:
       export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r .SessionToken)
     - aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
     - docker run --privileged --rm tonistiigi/binfmt --install all
-    - docker buildx create --use --name multiarch --driver docker-container
+    - docker context create tls-env --docker "host=${DOCKER_HOST},ca=${DOCKER_CERT_PATH}/ca.pem,cert=${DOCKER_CERT_PATH}/cert.pem,key=${DOCKER_CERT_PATH}/key.pem"
+    - docker buildx create --use --name multiarch --driver docker-container --context tls-env
   script:
     - |
       docker buildx build \
         --platform linux/amd64,linux/arm64 \
         --file Dockerfile.production \
+        --build-arg DATABASE_URI="$DATABASE_URI" \
+        --build-arg PAYLOAD_SECRET="$PAYLOAD_SECRET" \
         --tag "$ECR_REGISTRY/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA" \
         --tag "$ECR_REGISTRY/$IMAGE_NAME:latest" \
         --cache-from type=registry,ref=$ECR_REGISTRY/$IMAGE_NAME:buildcache \
