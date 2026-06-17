@@ -66,10 +66,12 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
-      ssl: {
-        ca: fs.readFileSync(path.resolve(process.cwd(), process.env.CERT_CA || '')),
-        rejectUnauthorized: true,
-      },
+      ssl: process.env.CERT_CA
+        ? {
+            ca: fs.readFileSync(path.resolve(process.cwd(), process.env.CERT_CA)),
+            rejectUnauthorized: true,
+          }
+        : undefined,
     },
     afterSchemaInit: [
       ({ schema }) => {

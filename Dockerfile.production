@@ -16,7 +16,8 @@ RUN YARN_ENABLE_IMMUTABLE_INSTALLS=1 yarn install --immutable
 
 # --- Stage 2: build the Next.js / Payload app ---
 FROM deps AS builder
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    CERT_CA=certs/prod-ca-2021.crt
 ARG DATABASE_URI
 ARG PAYLOAD_SECRET
 ENV DATABASE_URI=$DATABASE_URI
