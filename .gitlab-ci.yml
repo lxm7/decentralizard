@@ -38,17 +38,24 @@ lint-type:
 
 build-push:
   stage: build
-  image: docker:27
+  image: amazon/aws-cli:latest
   services:
-    - docker:27-dind
+    - name: docker:27-dind
+      alias: docker
   variables:
     DOCKER_TLS_CERTDIR: '/certs'
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_VERIFY: '1'
+    DOCKER_CERT_PATH: '/certs/client'
   id_tokens:
     GITLAB_OIDC_TOKEN:
       aud: https://gitlab.com
   before_script:
-    - apk add --no-cache python3 py3-pip jq
-    - pip3 install --quiet --break-system-packages awscli
+    - yum install -y -q jq tar gzip
+    - curl -fsSL "https://download.docker.com/linux/static/stable/x86_64/docker-27.5.1.tgz" | tar -xz -C /usr/local/bin --strip-components=1 docker/docker
+    - mkdir -p /usr/local/lib/docker/cli-plugins
+    - curl -fsSL "https://github.com/docker/buildx/releases/download/v0.21.1/buildx-v0.21.1.linux-amd64" -o /usr/local/lib/docker/cli-plugins/docker-buildx
+    - chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
     - |
       CREDS=$(aws sts assume-role-with-web-identity \
         --role-arn "$AWS_ROLE_ARN" \
