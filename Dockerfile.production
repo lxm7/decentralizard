@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 # Multi-arch (amd64 + arm64) image for the container pipeline:
-# built once in CI, runs on Oracle ARM (Tier 1, always-on) and EKS (Tier 2, demo).
+# built once in CI, runs on Hetzner CAX11 ARM (Tier 1, always-on) and EKS (Tier 2, demo).
 
 ARG NODE_VERSION=20.16.0
 

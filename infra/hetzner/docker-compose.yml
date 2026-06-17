@@ -1,0 +1,17 @@
+services:
+  app:
+    image: 158871758094.dkr.ecr.eu-west-1.amazonaws.com/decentralizard:latest
+    restart: always
+    env_file:
+      - .env.production
+    ports:
+      - '127.0.0.1:3000:3000'
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: always
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - app
