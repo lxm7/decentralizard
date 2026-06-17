@@ -42,14 +42,13 @@ build-push:
   services:
     - docker:27-dind
   variables:
-    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_TLS_CERTDIR: '/certs'
   id_tokens:
     GITLAB_OIDC_TOKEN:
       aud: https://gitlab.com
   before_script:
-    - apk add --no-cache curl jq
-    - curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscli.zip
-    - unzip -q /tmp/awscli.zip -d /tmp && /tmp/aws/install --bin-dir /usr/local/bin && rm -rf /tmp/aws /tmp/awscli.zip
+    - apk add --no-cache python3 py3-pip jq
+    - pip3 install --quiet --break-system-packages awscli
     - |
       CREDS=$(aws sts assume-role-with-web-identity \
         --role-arn "$AWS_ROLE_ARN" \
