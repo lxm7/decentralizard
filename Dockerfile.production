@@ -20,13 +20,15 @@ RUN YARN_ENABLE_IMMUTABLE_INSTALLS=1 yarn install --immutable
 FROM base AS builder
 ENV NEXT_TELEMETRY_DISABLED=1 \
     CERT_CA=certs/prod-ca-2021.crt
-ARG DATABASE_URI
-ARG PAYLOAD_SECRET
-ENV DATABASE_URI=$DATABASE_URI
-ENV PAYLOAD_SECRET=$PAYLOAD_SECRET
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN yarn build
+# Build-time secrets via BuildKit mounts — not written to image layers or the
+# exported registry build cache (unlike ARG/ENV, which leak via the :buildcache image).
+RUN --mount=type=secret,id=database_uri \
+    --mount=type=secret,id=payload_secret \
+    DATABASE_URI="$(cat /run/secrets/database_uri)" \
+    PAYLOAD_SECRET="$(cat /run/secrets/payload_secret)" \
+    yarn build
 
 # --- Stage 3: runtime ($TARGETPLATFORM — arm64 or amd64) ---
 # yarn install runs here (not copied from deps) so native modules

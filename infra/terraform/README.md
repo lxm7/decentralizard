@@ -71,3 +71,68 @@ expensive stack.
 - Phase 6 — Observability — kube-prometheus-stack + Loki; app /metrics scraped; Grafana dashboards;
   postgres_exporter for Supabase.
 - Phase 7 — Portfolio — architecture diagram, README, Loom of the spin-up, submit AdSense.
+
+### Notes on Claoudflare Tunnels:
+
+#### What tunneling is here
+
+Normal way serve website: box has public IP, open inbound ports 80/443 to
+whole internet, DNS A record → box IP, you run nginx + Let's Encrypt certs.
+Box exposed. Scanned, attacked, DDoS hits origin direct. You babysit cert
+renewal + firewall.
+
+Cloudflare Tunnel flips it. cloudflared daemon runs on your box (in your
+compose). It dials outbound to Cloudflare edge — those 4 QUIC connections to
+fra03/fra07/fra21 you saw in logs. Persistent, encrypted, stays open.
+
+Traffic flow:
+user → Cloudflare edge (anycast) → [existing outbound tunnel] → cloudflared →
+app:3000 (docker net)
+
+Box opens zero inbound ports. No A record to your IP. That's why dig
+decentralizard.com showed 104.21.x/172.67.x (CF proxy IPs), never your box
+91.107.211.52. Origin IP hidden.
+
+Why this = best-practice secure infra
+
+- Outbound-only = near-zero attack surface. Firewall can DROP all inbound.
+  Can't port-scan, can't DDoS, can't hit an origin you can't find.
+- No origin-IP leak bypass. Classic CF-proxy-via-DNS flaw: people orange-cloud
+  DNS but leave box IP reachable; attacker finds real IP, hits it direct, skips
+  CF entirely. Tunnel makes origin unreachable except through tunnel. Bypass
+  impossible.
+- TLS handled at edge. CF owns the cert, auto-renew, TLS 1.3/QUIC. No certbot,
+  no port 443 cert plumbing on box.
+- Edge stack free in front of $4/mo box: DDoS protection, WAF, caching, global
+  anycast, analytics.
+- Zero-trust shaped. Origin trusts nothing inbound. Can bolt Cloudflare Access
+  (SSO auth) on admin routes with no app code.
+
+Why over alternatives
+
+- vs nginx + Let's Encrypt + open 443 — you own cert renewal, firewall, DDoS
+  exposure, IP-leak risk. Tunnel deletes all of it.
+- vs AWS ALB/ELB — hourly cost, cloud lock-in, still need security groups.
+  Overkill for one small box. Against your cost-dodge plan.
+- vs Tailscale/WireGuard — mesh for private/admin access, not serving public
+  anonymous web traffic. Wrong tool for public ingress.
+- vs ngrok — dev/ephemeral toy. CF tunnel = production, free tier, native to
+  your existing CF zone + WAF + cache.
+
+Why you couldn't find "step 2" (the app:3000 field)
+
+Real reasons, not you being dumb:
+
+1. Two management modes. Tunnel either locally-managed (config.yml on box, no
+   UI for ingress) or remotely-managed (dashboard owns ingress → "Public
+   Hostnames" UI). The add-hostname → http://app:3000 field only exists in remote
+   mode, and only after cloudflared connects advertising allow_remote_config
+   (that feature flag was in your connector). Until that handshake, tab's
+   absent/empty.
+2. Dashboard moved it. Old "Tunnels" page → now Zero Trust > Networks >
+   Connectors. Last session bounced around hunting it for that reason.
+3. The killer: two tunnels. You had decentralizard AND work-you-cunt. The UI
+   showed you one connector's hostnames while you thought you edited the other.
+   The app:3000 setting got saved — but the apex hostname ended up attached to
+   work-you-cunt with a typo (app:300), and DNS CNAME pointed there. So "step 2"
+   was done — on the wrong tunnel. That mismatch = the entire 502 saga.

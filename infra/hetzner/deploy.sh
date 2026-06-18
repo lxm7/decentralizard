@@ -9,6 +9,9 @@ REGION="eu-west-1"
 docker pull "$IMAGE:$SHA"
 docker tag "$IMAGE:$SHA" "$IMAGE:latest"
 
+# Pin compose to this exact image (reproducible deploy, no :latest race).
+export APP_TAG="$SHA"
+
 # First run: bring up all services. Subsequent runs: only restart app.
 if docker compose -f /opt/decentralizard/docker-compose.yml ps -q cloudflared | grep -q .; then
   docker compose -f /opt/decentralizard/docker-compose.yml up -d --no-deps --pull never app

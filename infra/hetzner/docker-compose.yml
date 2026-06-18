@@ -1,17 +1,49 @@
 services:
   app:
-    image: 158871758094.dkr.ecr.eu-west-1.amazonaws.com/decentralizard:latest
+    image: 158871758094.dkr.ecr.eu-west-1.amazonaws.com/decentralizard:${APP_TAG:-latest}
     restart: always
     env_file:
       - .env.production
-    ports:
-      - '127.0.0.1:3000:3000'
+    # No host port publish: cloudflared reaches the app over the compose network
+    # (service DNS name `app`). Re-add '127.0.0.1:3000:3000' only for host-local debugging.
+    expose:
+      - '3000'
+    healthcheck:
+      test: ['CMD', 'curl', '-fsS', 'http://localhost:3000/api/health']
+      interval: 30s
+      timeout: 3s
+      start_period: 30s
+      retries: 5
+    # Tuned for a Hetzner CAX11 (2 vCPU / 4 GB). Adjust for your instance.
+    mem_limit: 2560m
+    cpus: 1.5
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+    networks:
+      - web
 
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:2026.6.1
     restart: always
     command: tunnel --no-autoupdate run
     env_file:
       - .env.production
     depends_on:
-      - app
+      app:
+        condition: service_healthy
+    mem_limit: 256m
+    cpus: 0.5
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+    networks:
+      - web
+
+networks:
+  web:
+    driver: bridge

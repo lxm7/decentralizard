@@ -79,8 +79,8 @@ build-push:
       docker buildx build \
         --platform linux/amd64,linux/arm64 \
         --file Dockerfile.production \
-        --build-arg DATABASE_URI="$DATABASE_URI" \
-        --build-arg PAYLOAD_SECRET="$PAYLOAD_SECRET" \
+        --secret id=database_uri,env=DATABASE_URI \
+        --secret id=payload_secret,env=PAYLOAD_SECRET \
         --tag "$ECR_REGISTRY/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA" \
         --tag "$ECR_REGISTRY/$IMAGE_NAME:latest" \
         --cache-from type=registry,ref=$ECR_REGISTRY/$IMAGE_NAME:buildcache \
