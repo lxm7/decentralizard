@@ -25,24 +25,10 @@ import { LivePreviewListener } from '@/components/LivePreviewListener';
 // Enable ISR - revalidate every 60 seconds in production
 export const revalidate = 60;
 
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise });
-  const posts = await payload.find({
-    collection: 'posts',
-    draft: false,
-    limit: 1000,
-    overrideAccess: false,
-    pagination: false,
-    select: {
-      slug: true,
-    },
-  });
-
-  const params = posts.docs.map(({ slug }) => {
-    return { slug };
-  });
-
-  return params;
+  return [];
 }
 
 type Args = {
