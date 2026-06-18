@@ -84,8 +84,8 @@ build-push:
         --tag "$ECR_REGISTRY/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA" \
         --tag "$ECR_REGISTRY/$IMAGE_NAME:latest" \
         --cache-from type=registry,ref=$ECR_REGISTRY/$IMAGE_NAME:buildcache \
-        --cache-to type=registry,ref=$ECR_REGISTRY/$IMAGE_NAME:buildcache,mode=max \
-        --push .
+        --cache-to type=registry,ref=$ECR_REGISTRY/$IMAGE_NAME:buildcache,mode=min,compression=zstd,force-compression=true \
+        --output type=image,push=true,compression=zstd,force-compression=true,oci-mediatypes=true .
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
 
