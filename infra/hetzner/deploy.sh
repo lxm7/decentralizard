@@ -6,9 +6,6 @@ REGISTRY="158871758094.dkr.ecr.eu-west-1.amazonaws.com"
 IMAGE="$REGISTRY/decentralizard"
 REGION="eu-west-1"
 
-aws ecr get-login-password --region "$REGION" | \
-  docker login --username AWS --password-stdin "$REGISTRY"
-
 docker pull "$IMAGE:$SHA"
 docker tag "$IMAGE:$SHA" "$IMAGE:latest"
 
