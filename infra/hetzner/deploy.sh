@@ -13,5 +13,6 @@ docker tag "$IMAGE:$SHA" "$IMAGE:latest"
 if docker compose -f /opt/decentralizard/docker-compose.yml ps -q cloudflared | grep -q .; then
   docker compose -f /opt/decentralizard/docker-compose.yml up -d --no-deps --pull never app
 else
-  docker compose -f /opt/decentralizard/docker-compose.yml up -d --pull never
+  # FIRST RUN: Allow Docker to pull missing images (like cloudflared) from Docker Hub
+  docker compose -f /opt/decentralizard/docker-compose.yml up -d
 fi
