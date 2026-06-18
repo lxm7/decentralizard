@@ -91,7 +91,9 @@ build-push:
 
 deploy-hetzner:
   stage: deploy
-  image: amazon/aws-cli:latest
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint: ['']
   needs:
     - build-push
   id_tokens:
