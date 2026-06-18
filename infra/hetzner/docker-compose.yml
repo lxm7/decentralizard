@@ -10,9 +10,11 @@ services:
       - '3000'
     healthcheck:
       test: ['CMD', 'curl', '-fsS', 'http://localhost:3000/api/health']
-      interval: 30s
+      # Tight interval so a fresh container reports `healthy` in ~5s, keeping the
+      # blue-green cutover in deploy.sh fast. start_period covers Next.js boot.
+      interval: 5s
       timeout: 3s
-      start_period: 30s
+      start_period: 15s
       retries: 5
     # Tuned for a Hetzner CAX11 (2 vCPU / 4 GB). Adjust for your instance.
     mem_limit: 2560m
