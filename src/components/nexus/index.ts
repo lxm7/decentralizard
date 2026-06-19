@@ -11,6 +11,7 @@ export {
   type BottomNavProps,
 } from './BottomNav';
 export { type Tone, toneVar, toneColor } from './tone';
+export { TopNav, type NavLink, type TopNavProps } from './TopNav';
 
 // Promote existing ArticleAnalyser atoms to a neutral import path (no file move = zero churn).
 export { SearchInput } from '../ArticleAnalyser/SearchInput';

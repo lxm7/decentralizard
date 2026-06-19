@@ -208,7 +208,8 @@ body,
   /* Base glass surface. blur + saturate(180%) = the Apple "pop".
      iOS top highlight via inset shadow (keeps ::before free for borders). */
   .glass {
-    position: relative;
+    /* No `position` here — let each element's fixed/sticky/relative utility win.
+       (Setting position on the skin would override positioning utilities.) */
     background: oklch(var(--glass-bg));
     backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
@@ -246,10 +247,8 @@ body,
       radial-gradient(circle at 50% 50%, oklch(var(--accent-indigo) / 0.06) 0%, transparent 50%);
   }
   /* Gradient hairline border via masked padding-box. Owns ::before — don't combine
-     with another ::before utility on the same element. */
-  .glass-border-gradient {
-    position: relative;
-  }
+     with another ::before utility on the same element. The host must be positioned
+     (fixed/sticky/relative) for the ::before to anchor correctly. */
   .glass-border-gradient::before {
     content: '';
     position: absolute;
