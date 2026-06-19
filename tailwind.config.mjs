@@ -54,6 +54,22 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      // Nexus 4px baseline scale (enables p-md, gap-lg, py-xl, h-xxl, px-margin-desktop…)
+      spacing: {
+        base: '4px',
+        xs: '4px',
+        sm: '8px',
+        md: '16px',
+        lg: '24px',
+        xl: '40px',
+        xxl: '64px',
+        gutter: '20px',
+        'margin-mobile': '16px',
+        'margin-desktop': '32px',
+      },
+      maxWidth: {
+        'max-width': '1440px',
+      },
       colors: {
         accent: {
           DEFAULT: 'oklch(var(--accent))',
@@ -88,6 +104,11 @@ export default {
           DEFAULT: 'oklch(var(--secondary))',
           foreground: 'oklch(var(--secondary-foreground))',
         },
+        // Nexus electric-indigo accent (action + AI). Stitch "secondary" maps here.
+        'accent-indigo': {
+          DEFAULT: 'oklch(var(--accent-indigo))',
+          strong: 'oklch(var(--accent-indigo-strong))',
+        },
         success: 'oklch(var(--success))',
         error: 'oklch(var(--error))',
         warning: 'oklch(var(--warning))',
@@ -114,7 +135,13 @@ export default {
           black: 'oklch(var(--neutral-black))',
         },
       },
-      fontFamily: ['var(--font-rubik)'],
+      fontFamily: {
+        // Default body stays Rubik (set on <html>); Nexus pages opt into the trio below.
+        sans: ['var(--font-rubik)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'ui-sans-serif', 'system-ui', 'sans-serif'], // Sora
+        body: ['var(--font-body)', 'ui-sans-serif', 'system-ui', 'sans-serif'], // Inter
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'], // JetBrains Mono
+      },
       keyframes: {
         'accordion-down': {
           from: { height: '0' },

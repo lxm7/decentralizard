@@ -1,46 +1,46 @@
-import { useState } from 'react'
-import Link from 'next/link'
+import { useState } from 'react';
+import Link from 'next/link';
 
 export default function NewsletterModal({ onClose }) {
-  const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [success, setSuccess] = useState(false)
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     try {
       const response = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong')
+        throw new Error(data.message || 'Something went wrong');
       }
 
-      setSuccess(true)
-      localStorage.setItem('newsletter_subscribed', 'true')
+      setSuccess(true);
+      localStorage.setItem('newsletter_subscribed', 'true');
 
       // Close modal after success message is shown
       setTimeout(() => {
-        onClose()
-      }, 2000)
+        onClose();
+      }, 2000);
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-neutral-black/75 p-4">
+    <div className="bg-neutral-black/75 fixed inset-0 z-[1000] flex items-center justify-center p-4">
       <div className="relative flex max-h-[90vh] w-full max-w-[700px] flex-col overflow-hidden rounded bg-neutral-white md:flex-row">
         <button
           className="absolute right-2.5 top-1 z-10 cursor-pointer border-none bg-transparent text-3xl text-neutral-black"
@@ -50,7 +50,7 @@ export default function NewsletterModal({ onClose }) {
           ×
         </button>
 
-        <div className="min-h-[200px] flex-1 bg-brand-magenta bg-gradient-to-tr from-brand-magenta to-brand-teal md:min-h-[400px]"></div>
+        <div className="min-h-[200px] flex-1 bg-accent-indigo bg-gradient-to-tr from-accent-indigo to-brand-violet md:min-h-[400px]"></div>
 
         <div className="flex flex-1 flex-col overflow-y-auto p-[40px_30px]">
           <h2 className="m-0 mb-5 text-[38px] font-black text-neutral-black">Decentralizard</h2>
@@ -84,7 +84,7 @@ export default function NewsletterModal({ onClose }) {
 
               <button
                 type="submit"
-                className="w-full cursor-pointer rounded border-none bg-brand-magenta bg-gradient-to-r from-brand-magenta to-brand-teal p-3 text-base font-semibold text-neutral-white transition-colors duration-200 hover:opacity-90 disabled:cursor-not-allowed disabled:bg-neutral-300"
+                className="w-full cursor-pointer rounded border-none bg-accent-indigo bg-gradient-to-r from-accent-indigo to-brand-violet p-3 text-base font-semibold text-neutral-white transition-opacity duration-200 hover:opacity-90 disabled:cursor-not-allowed disabled:bg-neutral-300"
                 disabled={loading}
               >
                 {loading ? 'SIGNING UP...' : 'SIGN UP'}
@@ -110,5 +110,5 @@ export default function NewsletterModal({ onClose }) {
         </div>
       </div>
     </div>
-  )
+  );
 }

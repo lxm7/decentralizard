@@ -58,3 +58,7 @@ scripts/**.json
 scripts/seed-blog-posts.ts
 scripts/seeds
 scripts/getCategories.ts
+
+# local agent / skill state
+.claude
+graphify-out

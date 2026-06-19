@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload';
 
 import {
   BlocksFeature,
@@ -7,16 +7,16 @@ import {
   HorizontalRuleFeature,
   InlineToolbarFeature,
   lexicalEditor,
-} from '@payloadcms/richtext-lexical'
+} from '@payloadcms/richtext-lexical';
 
-import { authenticated } from '../../access/authenticated'
-import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
-import { Banner } from '../../blocks/Banner/config'
-import { Code } from '../../blocks/Code/config'
-import { MediaBlock } from '../../blocks/MediaBlock/config'
-import { generatePreviewPath } from '../../utilities/generatePreviewPath'
-import { populateAuthors } from './hooks/populateAuthors'
-import { revalidateDelete, revalidatePost } from './hooks/revalidatePost'
+import { authenticated } from '../../access/authenticated';
+import { authenticatedOrPublished } from '../../access/authenticatedOrPublished';
+import { Banner } from '../../blocks/Banner/config';
+import { Code } from '../../blocks/Code/config';
+import { MediaBlock } from '../../blocks/MediaBlock/config';
+import { generatePreviewPath } from '../../utilities/generatePreviewPath';
+import { populateAuthors } from './hooks/populateAuthors';
+import { revalidateDelete, revalidatePost } from './hooks/revalidatePost';
 
 import {
   MetaDescriptionField,
@@ -24,8 +24,8 @@ import {
   MetaTitleField,
   OverviewField,
   PreviewField,
-} from '@payloadcms/plugin-seo/fields'
-import { slugField } from '@/fields/slug'
+} from '@payloadcms/plugin-seo/fields';
+import { slugField } from '@/fields/slug';
 
 export const Posts: CollectionConfig<'posts'> = {
   slug: 'posts',
@@ -55,9 +55,9 @@ export const Posts: CollectionConfig<'posts'> = {
           slug: typeof data?.slug === 'string' ? data.slug : '',
           collection: 'posts',
           req,
-        })
+        });
 
-        return path
+        return path;
       },
     },
     preview: (data, { req }) =>
@@ -120,7 +120,7 @@ export const Posts: CollectionConfig<'posts'> = {
                     FixedToolbarFeature(),
                     InlineToolbarFeature(),
                     HorizontalRuleFeature(),
-                  ]
+                  ];
                 },
               }),
               label: false,
@@ -142,7 +142,7 @@ export const Posts: CollectionConfig<'posts'> = {
                   id: {
                     not_in: [id],
                   },
-                }
+                };
               },
               hasMany: true,
               relationTo: 'posts',
@@ -158,6 +158,103 @@ export const Posts: CollectionConfig<'posts'> = {
             },
           ],
           label: 'Meta',
+        },
+        {
+          label: 'Intelligence',
+          description: 'Nexus analysis metrics surfaced in the article Data Snapshot panel.',
+          fields: [
+            {
+              name: 'sentiment',
+              type: 'group',
+              label: 'Market Sentiment',
+              fields: [
+                {
+                  name: 'label',
+                  type: 'select',
+                  defaultValue: 'neutral',
+                  options: [
+                    { label: 'Bullish', value: 'bullish' },
+                    { label: 'Bearish', value: 'bearish' },
+                    { label: 'Neutral', value: 'neutral' },
+                  ],
+                },
+                {
+                  name: 'score',
+                  type: 'number',
+                  label: 'Delta %',
+                  admin: {
+                    description:
+                      'Signed sentiment delta, e.g. -12 or 8. Drives the chip on the snapshot panel.',
+                  },
+                },
+              ],
+            },
+            {
+              name: 'validity',
+              type: 'number',
+              label: 'Validity Score',
+              min: 0,
+              max: 100,
+              admin: {
+                description:
+                  '0–100 confidence in the underlying data. ≥90 marks the article as a Verified Oracle.',
+              },
+            },
+            {
+              name: 'domain',
+              type: 'select',
+              admin: {
+                description: 'Primary intelligence domain for clustering and the hero chip.',
+              },
+              options: [
+                { label: 'Layer 2', value: 'layer-2' },
+                { label: 'DeFi', value: 'defi' },
+                { label: 'MEV', value: 'mev' },
+                { label: 'Infrastructure', value: 'infrastructure' },
+                { label: 'Governance', value: 'governance' },
+                { label: 'Security', value: 'security' },
+                { label: 'Markets', value: 'markets' },
+              ],
+            },
+            {
+              name: 'sources',
+              type: 'array',
+              label: 'Source Verification',
+              admin: {
+                description: 'Provenance signals shown in the snapshot panel.',
+              },
+              fields: [
+                {
+                  name: 'label',
+                  type: 'text',
+                  required: true,
+                },
+                {
+                  name: 'confidence',
+                  type: 'number',
+                  min: 0,
+                  max: 100,
+                  admin: {
+                    description: 'Confidence %, e.g. 99.2',
+                  },
+                },
+                {
+                  name: 'type',
+                  type: 'select',
+                  defaultValue: 'analytics',
+                  admin: {
+                    description: 'Determines the source icon.',
+                  },
+                  options: [
+                    { label: 'On-Chain Analytics', value: 'analytics' },
+                    { label: 'Smart Contract Audit', value: 'audit' },
+                    { label: 'Governance / Legal', value: 'gavel' },
+                    { label: 'Verified Oracle', value: 'verified' },
+                  ],
+                },
+              ],
+            },
+          ],
         },
         {
           name: 'meta',
@@ -213,9 +310,9 @@ export const Posts: CollectionConfig<'posts'> = {
         beforeChange: [
           ({ siblingData, value }) => {
             if (siblingData._status === 'published' && !value) {
-              return new Date()
+              return new Date();
             }
-            return value
+            return value;
           },
         ],
       },
@@ -270,4 +367,4 @@ export const Posts: CollectionConfig<'posts'> = {
     },
     maxPerDoc: 50,
   },
-}
+};

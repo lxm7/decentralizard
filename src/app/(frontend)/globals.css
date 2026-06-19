@@ -14,41 +14,54 @@
   }
 
   :root {
-    --background: 0.15 0 0;
-    --foreground: 0.18 0.04 265;
+    /* ── Nexus light theme (default). Dark lives under [data-theme='dark']. ── */
+    --background: 0.985 0.004 240; /* #f7f9fb paper canvas */
+    --foreground: 0.22 0.006 230; /* #191c1e */
 
-    --card: 0.97 0.005 280;
-    --card-foreground: 0.18 0.04 265;
+    --card: 1 0 0;
+    --card-foreground: 0.22 0.006 230;
 
     --popover: 1 0 0;
-    --popover-foreground: 0.18 0.04 265;
+    --popover-foreground: 0.22 0.006 230;
 
-    --primary: 0.25 0.03 265;
-    --primary-foreground: 0.98 0.005 250;
+    --primary: 0.21 0.03 265; /* Deep Navy solid buttons */
+    --primary-foreground: 0.99 0 0;
 
-    --secondary: 0.97 0.005 250;
+    --secondary: 0.965 0.004 240; /* shadcn subtle surface */
     --secondary-foreground: 0.25 0.03 265;
 
-    --muted: 0.97 0.005 250;
-    --muted-foreground: 0.55 0.015 250;
+    --muted: 0.965 0.004 240;
+    --muted-foreground: 0.45 0.012 245; /* #45464d */
 
-    --accent: 0.97 0.005 250;
+    --accent: 0.965 0.004 240;
     --accent-foreground: 0.25 0.03 265;
 
-    --destructive: 0.65 0.22 25;
-    --destructive-foreground: 0.98 0.005 250;
+    --destructive: 0.62 0.2 22;
+    --destructive-foreground: 0.99 0 0;
 
-    --border: 0.92 0.005 280;
-    /* --input: 0.93 0.015 250; */
-    --input: 0.28 0.035 215;
-    --ring: 0.18 0.04 265;
+    --border: 0.92 0.004 250; /* #c6c6cd hairline */
+    --input: 0.92 0.004 250;
+    --ring: 0.55 0.2 277; /* indigo focus ring */
 
-    --radius: 0.2rem;
+    --radius: 0.2rem; /* unchanged — keeps existing component shape; glass uses --glass-radius */
 
-    /* Semantic colors */
-    --success: 0.78 0.08 175;
-    --warning: 0.88 0.08 85;
-    --error: 0.75 0.15 25;
+    /* Semantic colors (validity / sentiment) */
+    --success: 0.8 0.12 165; /* emerald #4edea3 */
+    --warning: 0.85 0.1 85; /* amber  #F59E0B */
+    --error: 0.62 0.2 22; /* rose   #ba1a1a */
+
+    /* Nexus accent: electric indigo (action + AI) */
+    --accent-indigo: 0.55 0.2 277; /* #6366F1 */
+    --accent-indigo-strong: 0.48 0.21 274; /* #4648d4 */
+
+    /* iOS "Liquid Glass" material */
+    --glass-bg: 1 0 0 / 0.62;
+    --glass-bg-strong: 1 0 0 / 0.78;
+    --glass-stroke: 1 0 0 / 0.55;
+    --glass-blur: 22px;
+    --glass-saturate: 180%;
+    --glass-shadow: 0.3 0.05 270 / 0.12;
+    --glass-radius: 1.25rem;
 
     /* Brand colors from logo */
     --brand-violet: 0.44 0.31 303;
@@ -112,6 +125,14 @@
     --success: 0.4 0.08 175;
     --warning: 0.45 0.08 85;
     --error: 0.5 0.15 25;
+
+    /* Nexus accent + glass (dark). Unlisted glass vars inherit from :root. */
+    --accent-indigo: 0.62 0.19 277;
+    --accent-indigo-strong: 0.55 0.21 274;
+    --glass-bg: 0.16 0.01 265 / 0.5;
+    --glass-bg-strong: 0.13 0.01 265 / 0.72;
+    --glass-stroke: 1 0 0 / 0.12;
+    --glass-shadow: 0 0 0 / 0.4;
 
     /* Brand colors stay consistent */
     --brand-violet: 0.44 0.31 303;
@@ -177,4 +198,110 @@ body,
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Nexus design system — iOS "Liquid Glass" material + shared effects.
+   Tokens defined per-theme in :root / [data-theme='dark'] above.
+   ────────────────────────────────────────────────────────────────────────── */
+@layer components {
+  /* Base glass surface. blur + saturate(180%) = the Apple "pop".
+     iOS top highlight via inset shadow (keeps ::before free for borders). */
+  .glass {
+    /* No `position` here — let each element's fixed/sticky/relative utility win.
+       (Setting position on the skin would override positioning utilities.) */
+    background: oklch(var(--glass-bg));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border: 1px solid oklch(var(--glass-stroke));
+    border-radius: var(--glass-radius);
+    box-shadow:
+      0 8px 32px oklch(var(--glass-shadow)),
+      inset 0 1px 0 0 oklch(1 0 0 / 0.5);
+  }
+  /* Denser fill for nav bars / spotlight modal. Compose: class="glass glass-strong". */
+  .glass-strong {
+    background: oklch(var(--glass-bg-strong));
+  }
+  /* Indigo-tinted stroke for "intelligence" overlays (search, AI, graph). */
+  .neo-glass {
+    border-color: oklch(var(--accent-indigo) / 0.2);
+  }
+}
+
+@layer utilities {
+  .node-glow {
+    box-shadow: 0 0 15px oklch(var(--accent-indigo) / 0.5);
+  }
+  .node-glow-cyan {
+    box-shadow: 0 0 15px oklch(var(--brand-teal) / 0.5);
+  }
+  .node-glow-magenta {
+    box-shadow: 0 0 15px oklch(var(--brand-magenta) / 0.5);
+  }
+  .kandinsky-bg {
+    background-color: oklch(var(--background));
+    background-image:
+      radial-gradient(circle at 10% 20%, oklch(var(--accent-indigo) / 0.05) 0%, transparent 20%),
+      radial-gradient(circle at 90% 80%, oklch(var(--brand-teal) / 0.05) 0%, transparent 20%),
+      radial-gradient(circle at 50% 50%, oklch(var(--accent-indigo) / 0.06) 0%, transparent 50%);
+  }
+  /* Gradient hairline border via masked padding-box. Owns ::before — don't combine
+     with another ::before utility on the same element. The host must be positioned
+     (fixed/sticky/relative) for the ::before to anchor correctly. */
+  .glass-border-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      oklch(var(--accent-indigo) / 0.4),
+      oklch(var(--accent-indigo) / 0.1),
+      transparent
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+@keyframes pulse-node {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.05);
+    opacity: 1;
+    box-shadow: 0 0 20px oklch(var(--accent-indigo) / 0.4);
+  }
+}
+.animated-node {
+  animation: pulse-node 3s infinite alternate;
+}
+
+@keyframes nexus-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-nexus-in {
+  animation: nexus-fade-in 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animated-node,
+  .animate-nexus-in {
+    animation: none;
+  }
 }
