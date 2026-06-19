@@ -58,7 +58,7 @@ export default function RelationalGraphPreview() {
       <TopNav
         brand="Decentralizard"
         links={[
-          { label: 'Search', href: '/search' },
+          { label: 'Archive', href: '/posts' },
           { label: 'Graph', href: '/graph', active: true },
         ]}
         actions={

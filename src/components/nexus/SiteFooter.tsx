@@ -157,7 +157,7 @@ export function SiteFooter({ className }: { className?: string }) {
         </div>
 
         {/* Bottom bar */}
-        <p className="border-border/60 mt-xl border-t pt-md font-body text-xs text-muted-foreground">
+        <p className="border-border/60 mt-xl border-t pt-xl font-body text-xs text-muted-foreground">
           © A next-generation media company. {new Date().getFullYear()} Decentralizard Media, Inc.
         </p>
       </div>

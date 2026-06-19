@@ -5,6 +5,8 @@ import {
   deriveResonance,
   deriveSentimentSeries,
   domainLabel,
+  resonancePercentile,
+  sentimentIndex,
   sentimentLabel,
 } from '@/utilities/postMetrics';
 
@@ -78,6 +80,7 @@ export function buildCells(rest: Post[], all: Post[]): BentoCell[] {
 
   for (const p of research) {
     const verified = (p.validity ?? 0) >= 90;
+    const idx = sentimentIndex(p);
     cells.push({
       kind: 'research',
       tag: categoryLabel(p),
@@ -86,6 +89,9 @@ export function buildCells(rest: Post[], all: Post[]): BentoCell[] {
       verified,
       node: verified ? undefined : nodeCode(p),
       href: postHref(p),
+      index: idx.label,
+      indexTone: idx.tone,
+      nodes: deriveResonance(p.id).views,
     });
   }
 
@@ -96,6 +102,7 @@ export function buildCells(rest: Post[], all: Post[]): BentoCell[] {
 export function buildArchiveCells(posts: Post[]): BentoCell[] {
   return posts.map((p) => {
     const verified = (p.validity ?? 0) >= 90;
+    const idx = sentimentIndex(p);
     return {
       kind: 'research' as const,
       tag: categoryLabel(p),
@@ -104,6 +111,9 @@ export function buildArchiveCells(posts: Post[]): BentoCell[] {
       verified,
       node: verified ? undefined : nodeCode(p),
       href: postHref(p),
+      index: idx.label,
+      indexTone: idx.tone,
+      nodes: deriveResonance(p.id).views,
     };
   });
 }
@@ -131,7 +141,7 @@ export type FilterState = {
   sentimentMin: number;
   /** Minimum validity 0–100 (0 = off → keep all). */
   validityMin: number;
-  /** Impact scope 0–100. Presentation-only for now (no backing field). */
+  /** Minimum network-resonance reach 0–100 (0 = off → keep all). */
   impact: number;
 };
 
@@ -140,7 +150,7 @@ export const INITIAL_FILTERS: FilterState = {
   query: '',
   sentimentMin: 0,
   validityMin: 0,
-  impact: 100,
+  impact: 0,
 };
 
 /** In-memory filter over the loaded curated feed. Pure — safe on both sides. */
@@ -153,8 +163,32 @@ export function filterPosts(posts: Post[], f: FilterState): Post[] {
     if (f.domains.length && !(p.domain && f.domains.includes(p.domain))) return false;
     if ((p.validity ?? 0) < f.validityMin) return false;
     if ((p.sentiment?.score ?? 0) < minScore) return false;
+    if (f.impact > 0 && resonancePercentile(p.id) < f.impact) return false;
     if (q && !`${p.title ?? ''} ${p.shortDescription ?? ''}`.toLowerCase().includes(q))
       return false;
     return true;
   });
+}
+
+/**
+ * Filter, but never strand the feed empty. The numeric sliders (sentiment,
+ * validity, impact) gate on fields editors often leave unset, so a strict pass
+ * can match nothing. Falls back in steps — drop numeric thresholds, then domain,
+ * then everything — keeping the user's text query longest. `relaxed` is true
+ * whenever the strict pass came up empty so the UI can flag "closest results".
+ */
+export function filterPostsWithFallback(
+  posts: Post[],
+  f: FilterState
+): { posts: Post[]; relaxed: boolean } {
+  const strict = filterPosts(posts, f);
+  if (strict.length) return { posts: strict, relaxed: false };
+
+  const numericOff = filterPosts(posts, { ...f, sentimentMin: 0, validityMin: 0, impact: 0 });
+  if (numericOff.length) return { posts: numericOff, relaxed: true };
+
+  const queryOnly = filterPosts(posts, { ...INITIAL_FILTERS, query: f.query });
+  if (queryOnly.length) return { posts: queryOnly, relaxed: true };
+
+  return { posts, relaxed: true };
 }

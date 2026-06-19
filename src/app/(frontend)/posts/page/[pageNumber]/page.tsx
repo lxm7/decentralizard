@@ -51,7 +51,7 @@ export default async function Page({ params: paramsPromise }: Args) {
         brand="Decentralizard"
         brandHref="/"
         links={[
-          { label: 'Search', href: '/search' },
+          { label: 'Archive', href: '/posts' },
           { label: 'Graph', href: '/graph' },
         ]}
         actions={

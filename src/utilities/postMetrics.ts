@@ -1,4 +1,5 @@
 import type { Post } from '@/payload-types';
+import type { Tone } from '@/components/nexus/tone';
 
 /**
  * Deterministic derivation of presentation-only metrics (traffic resonance,
@@ -23,6 +24,15 @@ export function formatCompact(n: number): string {
   if (n >= 1_000_000) return `${+(n / 1_000_000).toFixed(1)}M`;
   if (n >= 10_000) return `${+(n / 1000).toFixed(1)}k`;
   return n.toLocaleString('en-US');
+}
+
+/**
+ * Deterministic 0–100 reach percentile from the same seed that drives
+ * `deriveResonance` views — lets the Impact Scope filter rank posts by network
+ * resonance without a backing editorial field.
+ */
+export function resonancePercentile(id: Post['id']): number {
+  return Math.round(seededRandom(postSeed(id)) * 100);
 }
 
 /** Seeded views/shares for the Network Resonance block. */
@@ -60,6 +70,27 @@ export function sentimentTone(label?: string | null): SentimentTone {
 export function sentimentLabel(label?: string | null): string {
   const v = label ?? 'neutral';
   return v.charAt(0).toUpperCase() + v.slice(1);
+}
+
+/** Map sentiment direction to a design tone for the INDEX bar colour. */
+const SENTIMENT_BAR_TONE: Record<SentimentTone, Tone> = {
+  bull: 'teal',
+  bear: 'magenta',
+  neutral: 'indigo',
+};
+
+/**
+ * The "INDEX" marker for a post: a "<Sentiment> <±score>%" label plus the tone
+ * that colours its bar. Shared by the featured card, research cards and the
+ * article hero so they read consistently.
+ */
+export function sentimentIndex(post: Post): { label: string; tone: Tone } {
+  const score = post.sentiment?.score ?? 0;
+  const sign = score > 0 ? '+' : '';
+  return {
+    label: `${sentimentLabel(post.sentiment?.label)} ${sign}${score}%`,
+    tone: SENTIMENT_BAR_TONE[sentimentTone(post.sentiment?.label)],
+  };
 }
 
 /** Display labels for the `domain` select values. */

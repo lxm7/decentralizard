@@ -11,6 +11,7 @@ import configPromise from '@payload-config';
 import { getPayload } from 'payload';
 import React from 'react';
 import PageClient from './page.client';
+import { SearchModal, SearchTrigger } from '@/components/discover/SearchModal';
 
 export const dynamic = 'force-static';
 export const revalidate = 600;
@@ -39,16 +40,12 @@ export default async function Page() {
         brand="Decentralizard"
         brandHref="/"
         links={[
-          { label: 'Search', href: '/search' },
+          { label: 'Archive', href: '/posts', active: true },
           { label: 'Graph', href: '/graph' },
         ]}
         actions={
           <>
-            <Button variant="ghost" size="icon" aria-label="Search" asChild>
-              <Link href="/search">
-                <Search className="h-5 w-5" aria-hidden />
-              </Link>
-            </Button>
+            <SearchTrigger />
             <NotificationsMenu />
             <AppsMenu className="hidden md:inline-flex" />
           </>
@@ -57,9 +54,6 @@ export default async function Page() {
 
       <main className="mx-auto flex max-w-max-width flex-col gap-md px-margin-mobile py-md md:px-margin-desktop">
         <div className="flex items-baseline justify-between">
-          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
-            Archive
-          </h1>
           <span className="font-mono text-xs text-muted-foreground">
             {posts.totalDocs} {posts.totalDocs === 1 ? 'stream' : 'streams'}
           </span>

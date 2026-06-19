@@ -66,7 +66,7 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
       <TopNav
         brand="Decentralizard"
         links={[
-          { label: 'Search', href: '/search', active: true },
+          { label: 'Archive', href: '/posts', active: true },
           { label: 'Graph', href: '/graph' },
         ]}
       />

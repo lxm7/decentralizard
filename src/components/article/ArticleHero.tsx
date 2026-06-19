@@ -1,6 +1,6 @@
 import { BadgeCheck } from 'lucide-react';
 
-import { StatusChip } from '@/components/nexus';
+import { IndexBar, StatusChip, type Tone } from '@/components/nexus';
 
 export interface ArticleHeroProps {
   category?: string;
@@ -9,6 +9,9 @@ export interface ArticleHeroProps {
   title: string;
   dek?: string;
   author?: { name: string; role?: string; initials?: string };
+  /** "INDEX:" label (e.g. "Neutral 0%") shown above the title. */
+  index?: string;
+  indexTone?: Tone;
 }
 
 export function ArticleHero({
@@ -18,6 +21,8 @@ export function ArticleHero({
   title,
   dek,
   author,
+  index,
+  indexTone,
 }: ArticleHeroProps) {
   return (
     <header className="space-y-md">
@@ -33,6 +38,8 @@ export function ArticleHero({
           <span className="font-body text-sm text-muted-foreground">{publishedLabel}</span>
         ) : null}
       </div>
+
+      {index ? <IndexBar label={index} tone={indexTone} /> : null}
 
       <h1 className="font-display text-3xl font-bold leading-tight tracking-tight text-foreground md:text-4xl">
         {title}

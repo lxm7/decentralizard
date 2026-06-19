@@ -7,7 +7,7 @@ import type { Post } from '@/payload-types';
 
 import { BentoMatrix } from './BentoMatrix';
 import { HeroTopologyCard } from './HeroTopologyCard';
-import { buildCells, buildHero, filterPosts } from './model';
+import { buildCells, buildHero, filterPostsWithFallback } from './model';
 import { useDiscoverStore } from './store';
 
 /**
@@ -21,8 +21,8 @@ export function DiscoverFeed({ posts }: { posts: Post[] }) {
   const validityMin = useDiscoverStore((s) => s.validityMin);
   const impact = useDiscoverStore((s) => s.impact);
 
-  const filtered = useMemo(
-    () => filterPosts(posts, { domains, query, sentimentMin, validityMin, impact }),
+  const { posts: filtered, relaxed } = useMemo(
+    () => filterPostsWithFallback(posts, { domains, query, sentimentMin, validityMin, impact }),
     [posts, domains, query, sentimentMin, validityMin, impact]
   );
 
@@ -50,6 +50,11 @@ export function DiscoverFeed({ posts }: { posts: Post[] }) {
 
   return (
     <>
+      {relaxed && (
+        <p className="text-center font-body text-xs text-muted-foreground">
+          No exact matches — showing closest results.
+        </p>
+      )}
       <HeroTopologyCard {...buildHero(hero)} />
       {cells.length > 0 ? <BentoMatrix cells={cells} /> : null}
       <Link

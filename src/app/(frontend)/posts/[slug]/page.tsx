@@ -28,6 +28,7 @@ import {
   deriveResonance,
   deriveSentimentSeries,
   domainLabel,
+  sentimentIndex,
   sentimentLabel,
   sentimentTone,
 } from '@/utilities/postMetrics';
@@ -121,6 +122,7 @@ export default async function Post({ params: paramsPromise }: Args) {
 
   // Derived presentation metrics (no analytics backend — seeded from id)
   const score = post.sentiment?.score ?? 0;
+  const index = sentimentIndex(post);
   const resonance = deriveResonance(post.id);
   const author = post.populatedAuthors?.[0];
   const heroImage = post.heroImage && typeof post.heroImage === 'object' ? post.heroImage : null;
@@ -137,7 +139,7 @@ export default async function Post({ params: paramsPromise }: Args) {
       />
 
       <div
-        className="min-h-screen bg-background font-body text-foreground"
+        className="bg-background font-body text-foreground"
         itemScope
         itemType="https://schema.org/Article"
       >
@@ -154,7 +156,7 @@ export default async function Post({ params: paramsPromise }: Args) {
         <TopNav
           brand="Decentralizard"
           links={[
-            { label: 'Search', href: '/search' },
+            { label: 'Archive', href: '/posts' },
             { label: 'Graph', href: '/graph' },
           ]}
           actions={
@@ -179,6 +181,8 @@ export default async function Post({ params: paramsPromise }: Args) {
               title={post.title}
               dek={post.shortDescription ?? undefined}
               author={author?.name ? { name: author.name, role: 'Contributor' } : undefined}
+              index={index.label}
+              indexTone={index.tone}
             />
 
             <figure className="relative h-[360px] overflow-hidden rounded-2xl border border-border">

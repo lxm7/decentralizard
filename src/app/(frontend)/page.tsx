@@ -61,7 +61,7 @@ export default async function HomePage() {
         brand="Decentralizard"
         brandHref="/"
         links={[
-          { label: 'Search', href: '/search' },
+          { label: 'Archive', href: '/posts' },
           { label: 'Graph', href: '/graph' },
         ]}
         actions={

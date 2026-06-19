@@ -86,6 +86,7 @@ export function MetricSlider({
 
 const SENTIMENT_DISPLAY = (v: number) => (v / 100).toFixed(2);
 const VALIDITY_DISPLAY = (v: number) => `${v}%`;
-const IMPACT_DISPLAY = (v: number) => (v >= 100 ? 'Global' : v >= 50 ? 'Regional' : 'Local');
+const IMPACT_DISPLAY = (v: number) =>
+  v <= 0 ? 'Any' : v >= 100 ? 'Global' : v >= 50 ? 'Regional' : 'Local';
 
 export { SENTIMENT_DISPLAY, VALIDITY_DISPLAY, IMPACT_DISPLAY };

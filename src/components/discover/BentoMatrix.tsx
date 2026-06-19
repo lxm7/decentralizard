@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   Activity,
@@ -10,7 +11,10 @@ import {
 } from 'lucide-react';
 
 import { cn } from '@/utilities/ui';
-import { Sparkline, StatusChip, type Tone } from '@/components/nexus';
+import { IndexBar, Sparkline, StatusChip, type Tone } from '@/components/nexus';
+
+/** Temporary cover art until per-post media lands. */
+const PLACEHOLDER_IMG = '/images/future1.webp';
 
 /** Stretched overlay link so an entire card is clickable without nesting interactive elements. */
 function CardLink({ href, label }: { href?: string; label: string }) {
@@ -59,6 +63,9 @@ export type BentoCell =
       verified?: boolean;
       node?: string;
       href?: string;
+      index: string;
+      indexTone: Tone;
+      nodes: string;
     };
 
 export function BentoMatrix({ cells }: { cells: BentoCell[] }) {
@@ -77,6 +84,15 @@ function FocusCard({ tag, index, title, dek, href }: Extract<BentoCell, { kind: 
   return (
     <article className="glass group relative flex flex-col justify-between overflow-hidden p-md md:col-span-2 md:row-span-2">
       <CardLink href={href} label={title} />
+      <Image
+        src={PLACEHOLDER_IMG}
+        alt=""
+        fill
+        sizes="(max-width: 768px) 100vw, 50vw"
+        className="object-cover object-center"
+      />
+      {/* Scrim keeps overlaid text legible against the cover art. */}
+      <div className="via-card/80 to-card/30 absolute inset-0 bg-gradient-to-t from-card" />
       <div className="from-accent-indigo/15 to-brand-magenta/10 absolute inset-0 bg-gradient-to-br via-transparent" />
       <div className="relative flex items-start justify-between">
         <StatusChip tone="indigo">{tag}</StatusChip>
@@ -85,10 +101,7 @@ function FocusCard({ tag, index, title, dek, href }: Extract<BentoCell, { kind: 
         </span>
       </div>
       <div className="relative">
-        <div className="mb-xs flex items-center gap-xs">
-          <span className="h-1 w-8 rounded-full bg-accent-indigo" />
-          <span className="font-mono text-[10px] text-muted-foreground">INDEX: {index}</span>
-        </div>
+        <IndexBar label={index} className="mb-xs" />
         <h2 className="mb-xs font-display text-xl font-bold leading-tight text-foreground transition-colors group-hover:text-accent-indigo">
           {title}
         </h2>
@@ -152,28 +165,48 @@ function ResearchCard({
   verified,
   node,
   href,
+  index,
+  indexTone,
+  nodes,
 }: Extract<BentoCell, { kind: 'research' }>) {
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-sm transition-shadow hover:shadow-[0_4px_20px_oklch(0.3_0.05_270/0.06)]">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-[0_4px_20px_oklch(0.3_0.05_270/0.06)]">
       <CardLink href={href} label={title} />
-      <div className="mb-xs flex items-start justify-between">
-        <span className="flex h-6 w-6 items-center justify-center rounded bg-muted text-foreground">
-          <Microscope className="h-3.5 w-3.5" aria-hidden />
-        </span>
-        {verified ? (
-          <StatusChip tone="success">Verified</StatusChip>
-        ) : node ? (
-          <span className="font-mono text-[9px] text-muted-foreground">NODE: {node}</span>
-        ) : (
-          <span className="font-body text-[9px] uppercase tracking-wide text-muted-foreground">
-            {tag}
-          </span>
-        )}
+      <div className="relative h-24 w-full shrink-0 overflow-hidden">
+        <Image
+          src={PLACEHOLDER_IMG}
+          alt={title}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 33vw, 25vw"
+          className="object-cover object-center"
+        />
       </div>
-      <h3 className="mb-1 mt-auto font-body text-sm font-semibold leading-tight text-foreground">
-        {title}
-      </h3>
-      <p className="line-clamp-2 font-body text-xs text-muted-foreground">{dek}</p>
+      <div className="flex flex-1 flex-col p-sm">
+        <div className="mb-xs flex items-start justify-between">
+          <span className="flex items-center gap-xs">
+            <span className="flex h-6 w-6 items-center justify-center rounded bg-muted text-foreground">
+              <Microscope className="h-3.5 w-3.5" aria-hidden />
+            </span>
+            <span className="font-mono text-[10px] text-muted-foreground">{nodes} nodes</span>
+          </span>
+          {verified ? (
+            <StatusChip tone="success">Verified</StatusChip>
+          ) : node ? (
+            <span className="font-mono text-[9px] text-muted-foreground">NODE: {node}</span>
+          ) : (
+            <span className="font-body text-[9px] uppercase tracking-wide text-muted-foreground">
+              {tag}
+            </span>
+          )}
+        </div>
+        <div className="mt-auto">
+          <IndexBar label={index} tone={indexTone} className="mb-xs" />
+          <h3 className="mb-1 font-body text-sm font-semibold leading-tight text-foreground">
+            {title}
+          </h3>
+          <p className="line-clamp-2 font-body text-xs text-muted-foreground">{dek}</p>
+        </div>
+      </div>
     </article>
   );
 }

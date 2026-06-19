@@ -3,6 +3,7 @@
  * Reused across article-detail / deep-search / relational-graph / home-discover.
  */
 export { StatusChip, type StatusChipProps } from './StatusChip';
+export { IndexBar, type IndexBarProps } from './IndexBar';
 export { Sparkline, type SparklineProps } from './Sparkline';
 export { type Tone, toneVar, toneColor } from './tone';
 export { TopNav, type NavLink, type TopNavProps } from './TopNav';
