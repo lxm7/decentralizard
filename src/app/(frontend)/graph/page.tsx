@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
-import { Bell, LayoutGrid, User } from 'lucide-react';
 
-import { Button } from '@/base/button';
-import { TopNav } from '@/components/nexus';
+import { SiteHeader } from '@/components/discover/SiteHeader';
 import { GraphWorkspace } from '@/components/graph/GraphWorkspace';
 import type { GraphData } from '@/components/graph/types';
 
@@ -55,26 +53,7 @@ const data: GraphData = {
 export default function RelationalGraphPreview() {
   return (
     <div className="flex h-screen flex-col bg-background font-body text-foreground">
-      <TopNav
-        brand="Decentralizard"
-        links={[
-          { label: 'Archive', href: '/posts' },
-          { label: 'Graph', href: '/graph', active: true },
-        ]}
-        actions={
-          <>
-            <Button variant="ghost" size="icon" aria-label="Notifications">
-              <Bell className="h-5 w-5" aria-hidden />
-            </Button>
-            <Button variant="ghost" size="icon" aria-label="Grid">
-              <LayoutGrid className="h-5 w-5" aria-hidden />
-            </Button>
-            <Button variant="ghost" size="icon" aria-label="Profile">
-              <User className="h-5 w-5" aria-hidden />
-            </Button>
-          </>
-        }
-      />
+      <SiteHeader active="/graph" />
       <GraphWorkspace data={data} />
     </div>
   );

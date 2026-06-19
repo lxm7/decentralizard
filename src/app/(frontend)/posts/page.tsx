@@ -1,17 +1,13 @@
 import type { Metadata } from 'next/types';
-import Link from 'next/link';
-import { Search } from 'lucide-react';
 
-import { Button } from '@/base/button';
 import { Pagination } from '@/components/Pagination';
-import { AppsMenu, NotificationsMenu, TopNav } from '@/components/nexus';
 import { BentoMatrix } from '@/components/discover/BentoMatrix';
 import { buildArchiveCells } from '@/components/discover/model';
+import { SiteHeader } from '@/components/discover/SiteHeader';
 import configPromise from '@payload-config';
 import { getPayload } from 'payload';
 import React from 'react';
 import PageClient from './page.client';
-import { SearchModal, SearchTrigger } from '@/components/discover/SearchModal';
 
 export const dynamic = 'force-static';
 export const revalidate = 600;
@@ -36,21 +32,7 @@ export default async function Page() {
     <div className="kandinsky-bg font-body text-foreground">
       <PageClient />
 
-      <TopNav
-        brand="Decentralizard"
-        brandHref="/"
-        links={[
-          { label: 'Archive', href: '/posts', active: true },
-          { label: 'Graph', href: '/graph' },
-        ]}
-        actions={
-          <>
-            <SearchTrigger />
-            <NotificationsMenu />
-            <AppsMenu className="hidden md:inline-flex" />
-          </>
-        }
-      />
+      <SiteHeader active="/posts" />
 
       <main className="mx-auto flex max-w-max-width flex-col gap-md px-margin-mobile py-md md:px-margin-desktop">
         <div className="flex items-baseline justify-between">

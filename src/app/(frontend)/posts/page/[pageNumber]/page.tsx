@@ -1,12 +1,9 @@
 import type { Metadata } from 'next/types';
-import Link from 'next/link';
-import { Search } from 'lucide-react';
 
-import { Button } from '@/base/button';
 import { Pagination } from '@/components/Pagination';
-import { AppsMenu, NotificationsMenu, TopNav } from '@/components/nexus';
 import { BentoMatrix } from '@/components/discover/BentoMatrix';
 import { buildArchiveCells } from '@/components/discover/model';
+import { SiteHeader } from '@/components/discover/SiteHeader';
 import configPromise from '@payload-config';
 import { getPayload } from 'payload';
 import React from 'react';
@@ -47,25 +44,7 @@ export default async function Page({ params: paramsPromise }: Args) {
     <div className="kandinsky-bg font-body text-foreground">
       <PageClient />
 
-      <TopNav
-        brand="Decentralizard"
-        brandHref="/"
-        links={[
-          { label: 'Archive', href: '/posts' },
-          { label: 'Graph', href: '/graph' },
-        ]}
-        actions={
-          <>
-            <Button variant="ghost" size="icon" aria-label="Search" asChild>
-              <Link href="/search">
-                <Search className="h-5 w-5" aria-hidden />
-              </Link>
-            </Button>
-            <NotificationsMenu />
-            <AppsMenu className="hidden md:inline-flex" />
-          </>
-        }
-      />
+      <SiteHeader active="/posts" />
 
       <main className="mx-auto flex max-w-max-width flex-col gap-md px-margin-mobile py-md md:px-margin-desktop">
         <div className="flex items-baseline justify-between">

@@ -8,9 +8,8 @@ import { LivePreviewListener } from '@/components/LivePreviewListener';
 import NewsletterManager from '@/components/NewsletterModal/manager';
 import { generateMeta } from '@/utilities/generateMeta';
 
-import { AppsMenu, NotificationsMenu, TopNav } from '@/components/nexus';
 import { DiscoverFeed } from '@/components/discover/DiscoverFeed';
-import { SearchModal, SearchTrigger } from '@/components/discover/SearchModal';
+import { SiteHeader } from '@/components/discover/SiteHeader';
 
 // Enable ISR - revalidate every 30 seconds in production
 export const revalidate = 30;
@@ -57,27 +56,12 @@ export default async function HomePage() {
       <PayloadRedirects disableNotFound url="/" />
       {draft && <LivePreviewListener />}
 
-      <TopNav
-        brand="Decentralizard"
-        brandHref="/"
-        links={[
-          { label: 'Archive', href: '/posts' },
-          { label: 'Graph', href: '/graph' },
-        ]}
-        actions={
-          <>
-            <SearchTrigger />
-            <NotificationsMenu />
-            <AppsMenu className="hidden md:inline-flex" />
-          </>
-        }
-      />
+      <SiteHeader />
 
       <main className="mx-auto flex max-w-max-width flex-col gap-md px-margin-mobile py-md md:px-margin-desktop">
         <DiscoverFeed posts={posts} />
       </main>
 
-      <SearchModal />
       <NewsletterManager />
     </div>
   );

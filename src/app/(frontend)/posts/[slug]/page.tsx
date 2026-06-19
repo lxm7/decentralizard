@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 
 import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowUpRight, ExternalLink, Network } from 'lucide-react';
+import { ArrowUpRight, ExternalLink } from 'lucide-react';
 import configPromise from '@payload-config';
 import { getPayload } from 'payload';
 import { draftMode } from 'next/headers';
@@ -11,8 +10,7 @@ import React, { cache } from 'react';
 import RichText from '@/components/RichText';
 import { PayloadRedirects } from '@/components/PayloadRedirects';
 import { LivePreviewListener } from '@/components/LivePreviewListener';
-import { Button } from '@/base/button';
-import { TopNav } from '@/components/nexus';
+import { SiteHeader } from '@/components/discover/SiteHeader';
 import { ArticleHero } from '@/components/article/ArticleHero';
 import { CorrelatedGrid, type CorrelatedItem } from '@/components/article/CorrelatedGrid';
 import { DataSnapshotPanel, type SnapshotSource } from '@/components/article/DataSnapshotPanel';
@@ -153,20 +151,7 @@ export default async function Post({ params: paramsPromise }: Args) {
           <meta key={i} itemProp="author" content={a?.name || ''} />
         ))}
 
-        <TopNav
-          brand="Decentralizard"
-          links={[
-            { label: 'Archive', href: '/posts' },
-            { label: 'Graph', href: '/graph' },
-          ]}
-          actions={
-            <Button asChild variant="ghost" size="icon" aria-label="Relational graph">
-              <Link href="/graph">
-                <Network className="h-5 w-5" aria-hidden />
-              </Link>
-            </Button>
-          }
-        />
+        <SiteHeader />
 
         {/* Allows redirects for valid pages too */}
         <PayloadRedirects disableNotFound url={url} />

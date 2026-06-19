@@ -7,7 +7,7 @@ import React from 'react';
 import { Search } from '@/search/Component';
 import PageClient from './page.client';
 import { CardPostData } from '@/components/Card';
-import { TopNav } from '@/components/nexus';
+import { SiteHeader } from '@/components/discover/SiteHeader';
 
 type Args = {
   searchParams: Promise<{
@@ -63,13 +63,7 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
   return (
     <div className="bg-background font-body text-foreground">
       <PageClient />
-      <TopNav
-        brand="Decentralizard"
-        links={[
-          { label: 'Archive', href: '/posts', active: true },
-          { label: 'Graph', href: '/graph' },
-        ]}
-      />
+      <SiteHeader active="/posts" />
       <div className="container mb-16 pt-24">
         <div className="prose max-w-none text-center dark:prose-invert">
           <h1 className="mb-8 lg:mb-16">Search</h1>
