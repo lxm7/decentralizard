@@ -158,7 +158,7 @@ export function SiteFooter({ className }: { className?: string }) {
 
         {/* Bottom bar */}
         <p className="border-border/60 mt-xl border-t pt-xl font-body text-xs text-muted-foreground">
-          © A next-generation media company. {new Date().getFullYear()} Decentralizard Media, Inc.
+          © By PolyKinesis LTD - {new Date().getFullYear()} - Decentralizard Media, Inc.
         </p>
       </div>
     </footer>

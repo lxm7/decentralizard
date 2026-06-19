@@ -74,16 +74,26 @@ function snapshotSources(post: Post): SnapshotSource[] {
   return [{ label: 'Aggregate Validity', confidence: post.validity ?? 85, icon: 'verified' }];
 }
 
+/** heroImage url when populated, else the shared home-feed placeholder. */
+function relatedImage(p: Post): string {
+  if (p.heroImage && typeof p.heroImage === 'object' && p.heroImage.url) {
+    return p.heroImage.url;
+  }
+  return '/images/future1.webp';
+}
+
 function correlatedItems(post: Post, categoryFallback: Post[]): CorrelatedItem[] {
   const related = (post.relatedPosts ?? []).filter(
     (p): p is Post => typeof p === 'object' && p !== null
   );
   const source = related.length > 0 ? related : categoryFallback;
-  return source.slice(0, 3).map((p, i) => ({
+  return source.slice(0, 4).map((p, i) => ({
     title: p.title,
     category: categoryLabel(p),
     dek: p.shortDescription ?? undefined,
     views: `${deriveResonance(p.id).views} `,
+    imageUrl: relatedImage(p),
+    href: p.slug ? `/posts/${p.slug}` : undefined,
     featured: i === 0,
   }));
 }
@@ -96,7 +106,7 @@ export default async function Post({ params: paramsPromise }: Args) {
 
   if (!post) return <PayloadRedirects url={url} />;
 
-  // Related content for the Correlated Intelligence grid
+  // Related content for the Similar Articles grid
   const firstCategory = post.categories?.[0];
   const categoryId = typeof firstCategory === 'object' ? firstCategory?.id : null;
   const categoryBasedPosts = categoryId
@@ -296,7 +306,7 @@ const queryPostsByCategory = cache(
     const result = await payload.find({
       collection: 'posts',
       draft,
-      limit: 3,
+      limit: 4,
       depth: 1,
       overrideAccess: draft,
       sort: '-publishedAt',
