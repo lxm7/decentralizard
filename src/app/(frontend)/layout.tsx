@@ -1,37 +1,59 @@
-import React from 'react'
-import type { Metadata } from 'next'
-import { draftMode, headers } from 'next/headers'
-import Script from 'next/script'
-import { Rubik } from 'next/font/google'
+import React from 'react';
+import type { Metadata } from 'next';
+import { draftMode, headers } from 'next/headers';
+import Script from 'next/script';
+import { Rubik, Sora, Inter, JetBrains_Mono } from 'next/font/google';
 // import { GoogleAnalytics } from '@next/third-parties/google'
 
-import { AdminBar } from '@/components/AdminBar'
+import { AdminBar } from '@/components/AdminBar';
 // import { Footer } from '@/Footer/Component'
 // import { Header } from '@/Header/Component'
-import { Providers } from '@/providers'
-import { InitTheme } from '@/providers/Theme/InitTheme'
-import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
+import { Providers } from '@/providers';
+import { InitTheme } from '@/providers/Theme/InitTheme';
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph';
 
-import './globals.css'
-import { getServerSideURL } from '@/utilities/getURL'
+import './globals.css';
+import { getServerSideURL } from '@/utilities/getURL';
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
 const rubik = Rubik({
   subsets: ['latin'],
   weight: ['400', '700'],
   // display: 'swap',
   variable: '--font-rubik',
-})
+});
+
+// Nexus design system — headings (Sora), body (Inter), data/mono (JetBrains Mono).
+// Self-hosted by next/font at build time (no CLS, no external request).
+const sora = Sora({
+  subsets: ['latin'],
+  weight: ['600', '700'],
+  display: 'swap',
+  variable: '--font-display',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-body',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  display: 'swap',
+  variable: '--font-mono',
+});
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const { isEnabled } = await draftMode()
-  const nonce = (await headers()).get('x-nonce') as string
+  const { isEnabled } = await draftMode();
+  const nonce = (await headers()).get('x-nonce') as string;
 
   return (
     <html
-      className={`${rubik.className}`}
-      // className={cn(GeistSans.variable, GeistMono.variable, inter.className)}
+      className={`${rubik.className} ${sora.variable} ${inter.variable} ${jetbrainsMono.variable}`}
       lang="en"
       suppressHydrationWarning
     >
@@ -105,7 +127,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </body>
       {/* <GoogleAnalytics gaId="G-J228LCHT7Y" /> */}
     </html>
-  )
+  );
 }
 
 export const metadata: Metadata = {
@@ -118,4 +140,4 @@ export const metadata: Metadata = {
     images: ['https://decentralizard.com/images/future1.webp'],
     site: '@Decentralizard1',
   },
-}
+};

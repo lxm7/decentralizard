@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NexusGraph - Article Detail View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Sora:wght@600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#dae2fd",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#131b2e",
+                    "tertiary-container": "#002113",
+                    "surface": "#f7f9fb",
+                    "outline-variant": "#c6c6cd",
+                    "surface-tint": "#565e74",
+                    "on-primary-container": "#7c839b",
+                    "error-container": "#ffdad6",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed": "#e1e0ff",
+                    "surface-variant": "#e0e3e5",
+                    "on-error-container": "#93000a",
+                    "secondary-container": "#6063ee",
+                    "tertiary": "#000000",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-primary": "#ffffff",
+                    "on-secondary-container": "#fffbff",
+                    "on-primary-fixed": "#131b2e",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "tertiary-fixed": "#6ffbbe",
+                    "primary-fixed-dim": "#bec6e0",
+                    "outline": "#76777d",
+                    "on-background": "#191c1e",
+                    "on-error": "#ffffff",
+                    "secondary-fixed-dim": "#c0c1ff",
+                    "surface-container-high": "#e6e8ea",
+                    "on-tertiary-fixed": "#002113",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-primary-fixed-variant": "#3f465c",
+                    "on-tertiary-container": "#009668",
+                    "on-surface-variant": "#45464d",
+                    "on-surface": "#191c1e",
+                    "on-secondary-fixed-variant": "#2f2ebe",
+                    "surface-bright": "#f7f9fb",
+                    "background": "#f7f9fb",
+                    "surface-dim": "#d8dadc",
+                    "surface-container-low": "#f2f4f6",
+                    "secondary": "#4648d4",
+                    "inverse-surface": "#2d3133",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "on-secondary-fixed": "#07006c",
+                    "inverse-primary": "#bec6e0",
+                    "primary": "#000000",
+                    "surface-container": "#eceef0"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "md": "16px",
+                    "margin-desktop": "32px",
+                    "gutter": "20px",
+                    "sm": "8px",
+                    "xl": "40px",
+                    "xxl": "64px",
+                    "margin-mobile": "16px",
+                    "max-width": "1440px",
+                    "base": "4px",
+                    "lg": "24px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "h1-mobile": [
+                            "Sora"
+                    ],
+                    "label-caps": [
+                            "Inter"
+                    ],
+                    "h2": [
+                            "Sora"
+                    ],
+                    "h1": [
+                            "Sora"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "body-sm": [
+                            "Inter"
+                    ],
+                    "data-mono": [
+                            "JetBrains Mono"
+                    ]
+            },
+            "fontSize": {
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "h1-mobile": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "label-caps": [
+                            "12px",
+                            {
+                                    "lineHeight": "1",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "h2": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "h1": [
+                            "40px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "data-mono": [
+                            "13px",
+                            {
+                                    "lineHeight": "1.4",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "500"
+                            }
+                    ]
+            }
+        },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-surface-container-lowest/80 backdrop-blur-xl dark:bg-surface-container-lowest/80 border-b border-outline-variant/30 dark:border-outline-variant/20 shadow-sm docked full-width top-0 sticky z-50">
+<div class="flex justify-between items-center px-margin-desktop py-md max-w-max-width mx-auto">
+<div class="flex items-center gap-lg">
+<div class="font-h2 text-h2 font-bold text-primary dark:text-primary-fixed">
+                    NexusGraph
+                </div>
+<div class="hidden md:flex gap-md font-body-md text-body-md">
+<a class="text-on-surface-variant dark:text-on-surface-variant/70 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Market Analysis</a>
+<a class="text-secondary dark:text-secondary-fixed-dim border-b-2 border-secondary dark:border-secondary-fixed-dim pb-1 hover:text-primary dark:hover:text-primary-fixed transition-colors opacity-80 scale-95 transition-all" href="#">Tech Deep-dives</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant/70 hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Validity Reports</a>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button aria-label="hub" class="text-primary dark:text-primary-fixed hover:text-secondary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">hub</span>
+</button>
+<button aria-label="account_balance_wallet" class="text-primary dark:text-primary-fixed hover:text-secondary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_balance_wallet</span>
+</button>
+<button class="bg-primary text-on-primary px-lg py-sm rounded-full font-label-caps text-label-caps hover:bg-surface-tint transition-colors">Connect Wallet</button>
+</div>
+</div>
+</header>
+<!-- SideNavBar (Persistent on Desktop, hidden on smaller screens for Article Detail intent) -->
+<!-- Not rendering SideNav as per semantic shell mandate for focused detail views -->
+<!-- Main Content Grid -->
+<main class="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop py-xl grid grid-cols-1 lg:grid-cols-12 gap-xl">
+<!-- Article Canvas (8 Columns) -->
+<article class="lg:col-span-8 space-y-xl">
+<!-- Hero Header -->
+<header class="space-y-md">
+<div class="flex items-center gap-sm">
+<span class="bg-tertiary-fixed-dim/20 text-on-tertiary-container px-sm py-xs rounded-DEFAULT font-label-caps text-label-caps border border-tertiary-fixed-dim/30">Verified Oracle</span>
+<span class="text-on-surface-variant font-body-sm text-body-sm">Published 2h ago</span>
+</div>
+<h1 class="font-h1-mobile md:font-h1 text-h1-mobile md:text-h1 text-primary leading-tight">
+                    The Decentralization Illusion: Analyzing Validator Distribution in Layer 2 Scaling Solutions
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                    A comprehensive technical deep-dive into the actual distribution of validator nodes across major L2 networks, revealing centralized failure points hidden behind decentralized marketing.
+                </p>
+<div class="flex items-center gap-sm pt-sm">
+<div class="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant overflow-hidden">
+<img alt="Author Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a financial tech analyst in their mid 30s. They have a serious, intelligent expression and are wearing a modern, minimalist dark blazer over a simple white shirt. The lighting is crisp and bright, characteristic of a high-end corporate portrait in a light-mode UI context. The background is a clean, slightly blurred bright grey." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkx0vCaZcZ5TZAcBUVVGDxE046AnWdcUm3sfG9eqR4PU_XXJyIDKpUys094vzv-9Nc4gbvTrfx568FOQVUJd5z2mdKjRg2v490z2bcdZBmVs0UkcWUH1gKqT-BwQIdTypbiFLDJPOCiB6rjfJ9X-YVYW7c4flutezSTQXwPhMZySgk5X_FlpBcjgKdtAGZqWMS0Lu9WYMkDOaCMXOz9UFldE7MYLAtbvvn0IBaE4-4SWS0xuHo4y8gP_Ydzg0WsjGEi7jTp_tELog"/>
+</div>
+<div class="font-body-sm text-body-sm">
+<span class="font-semibold text-primary">Dr. Elias Vance</span>
+<span class="text-on-surface-variant"> • Lead Protocol Researcher</span>
+</div>
+</div>
+</header>
+<!-- Hero Image/Graphic -->
+<div class="w-full h-[400px] rounded-xl overflow-hidden border border-outline-variant/30 relative">
+<!-- Using an image here as a placeholder for a complex data visualization -->
+<img alt="Data Visualization" class="w-full h-full object-cover" data-alt="A highly detailed, futuristic data visualization representing network nodes. Glowing white and electric indigo lines connect various data points scattered across a clean, light grey background. The visual language implies high finance, algorithmic trading, and web3 technology. The lighting is bright and crisp, fitting a premium corporate modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqPkbWmOCCyGRHWKyk2O7ydCk7BuTHLeuq8cFE09-by6mpa4KihE37b3Fc7z3Evh1BcJd9dtGLSeZd2P6zFeos5jsLaqVgDf-rpwotF_N7ZF5anBNz0qUBtwbthBdx63Y-ZU5HEhzFqT2v-YSZzQ_XyyYNaubXOoAGrpaROxFmtK9Poeavwr3SY63ZpdiTv2nQ915QmZiLvhYtAEzMnS1nXD3JtBl6e_RbBGxej7B5WsJIGyVcL0xEfssGpPyVx2Yr0zw1t81khuQ"/>
+<div class="absolute bottom-sm right-sm bg-surface-container-lowest/80 backdrop-blur-xl border border-secondary-container/20 px-sm py-xs rounded-DEFAULT font-data-mono text-data-mono text-on-surface-variant">
+                    Fig 1. Node Topology Heatmap
+                </div>
+</div>
+<!-- Article Body -->
+<div class="font-body-md text-body-md text-on-surface space-y-md leading-relaxed">
+<p>
+                    The promise of Layer 2 (L2) solutions has always been increased throughput without sacrificing the core ethos of decentralization. However, our latest algorithmic sweep of major rollup contracts reveals a starkly different reality. By analyzing over 4 million blocks across the top three L2 networks, we've identified significant centralization vectors that challenge current market narratives.
+                </p>
+<h2 class="font-h2 text-h2 text-primary pt-lg pb-sm">Validator Concentration Metrics</h2>
+<p>
+                    When observing the Sequencer node distribution, the data becomes alarming. In Network Alpha, 84% of all transactions processed in Q3 were routed through just three distinct IP clusters. This isn't mere geographic concentration; it represents a coordinated operational bottleneck.
+                </p>
+<div class="my-lg p-lg bg-surface-container-low border border-outline-variant/50 rounded-lg relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-1 h-full bg-secondary-container"></div>
+<span class="material-symbols-outlined absolute top-md right-md text-outline-variant opacity-50" style="font-size: 48px;">format_quote</span>
+<p class="font-body-lg text-body-lg text-on-surface-variant italic relative z-10">
+                        "Decentralization is not a binary state, but a spectrum. Currently, major L2s are operating closer to permissioned databases than sovereign networks, shielded by complex cryptography."
+                    </p>
+</div>
+<p>
+                    The implications for smart contract risk are profound. If a single entity controls the transaction ordering for a significant portion of block time, MEV (Maximal Extractable Value) extraction becomes monopolized. We detected a 300% increase in sophisticated sandwich attacks originating from these core validator clusters over the last 30 days.
+                </p>
+<!-- Code Snippet / Raw Data Block -->
+<div class="bg-primary-container text-on-primary-container p-md rounded-lg font-data-mono text-data-mono overflow-x-auto my-lg">
+<pre><code>
+// Sequencer Integrity Check
+function verifySequencerCommitment(
+    bytes32 _stateRoot,
+    uint256 _timestamp,
+    address _validator
+) external view returns (bool) {
+    require(block.timestamp &lt;= _timestamp + MAX_LATENCY, "Stale root");
+    require(validatorSet[_validator], "Unauthorized");
+    
+    // Critical failure point: Centralized oracle reliance
+    return oracle.verify(_stateRoot);
+}
+                    </code></pre>
+</div>
+<p>
+                    As institutional capital flows into Web3 infrastructure, the demand for verifiable transparency will force a reckoning. Protocols that cannot mathematically prove their decentralization will likely face severe regulatory and market penalties in the coming quarters.
+                </p>
+</div>
+</article>
+<!-- Data Snapshot Panel (4 Columns) -->
+<aside class="lg:col-span-4 space-y-md">
+<!-- Floating Data Panel -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md sticky top-[100px] shadow-sm">
+<h3 class="font-h2 text-h2 text-primary mb-md pb-sm border-b border-outline-variant/30">Data Snapshot</h3>
+<!-- Sentiment Trend -->
+<div class="mb-lg">
+<div class="flex justify-between items-baseline mb-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Market Sentiment</span>
+<span class="font-data-mono text-data-mono text-error">Bearish -12%</span>
+</div>
+<!-- Sparkline Placeholder -->
+<div class="h-[60px] w-full bg-surface-container-low rounded flex items-end overflow-hidden border border-outline-variant/20 relative">
+<svg class="w-full h-full text-error/30" preserveaspectratio="none" viewbox="0 0 100 30">
+<path d="M0,10 L20,15 L40,5 L60,20 L80,25 L100,28 L100,30 L0,30 Z" fill="currentColor"></path>
+<polyline fill="none" points="0,10 20,15 40,5 60,20 80,25 100,28" stroke="var(--error)" stroke-width="1"></polyline>
+</svg>
+<!-- Trend Indicator Dot -->
+<div class="absolute right-0 top-[28px] w-2 h-2 rounded-full bg-error translate-x-[50%] translate-y-[-50%] shadow-[0_0_8px_var(--error)]"></div>
+</div>
+</div>
+<!-- Validity Breakdown -->
+<div class="mb-lg">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-sm">Source Verification</span>
+<div class="space-y-sm">
+<!-- Node 1 -->
+<div class="flex items-center gap-sm bg-surface p-sm rounded-lg border border-outline-variant/30">
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed-dim/20 flex items-center justify-center border border-tertiary-fixed-dim">
+<span class="material-symbols-outlined text-on-tertiary-container" style="font-size: 16px;">verified_user</span>
+</div>
+<div class="flex-1">
+<div class="font-body-sm text-body-sm font-semibold text-primary">On-Chain Analytics</div>
+<div class="font-data-mono text-data-mono text-on-surface-variant" style="font-size: 10px;">Confidence: 99.2%</div>
+</div>
+</div>
+<!-- Node 2 -->
+<div class="flex items-center gap-sm bg-surface p-sm rounded-lg border border-outline-variant/30">
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed-dim/20 flex items-center justify-center border border-tertiary-fixed-dim">
+<span class="material-symbols-outlined text-on-tertiary-container" style="font-size: 16px;">gavel</span>
+</div>
+<div class="flex-1">
+<div class="font-body-sm text-body-sm font-semibold text-primary">Smart Contract Audit</div>
+<div class="font-data-mono text-data-mono text-on-surface-variant" style="font-size: 10px;">Confidence: 96.5%</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Social Popularity -->
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-sm">Network Resonance</span>
+<div class="grid grid-cols-2 gap-sm">
+<div class="bg-surface-container-low p-sm rounded border border-outline-variant/20 flex flex-col items-center justify-center">
+<span class="material-symbols-outlined text-secondary mb-xs" style="font-size: 20px;">visibility</span>
+<span class="font-h2 text-h2 text-primary text-center">42.8k</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant text-[10px]">Views</span>
+</div>
+<div class="bg-surface-container-low p-sm rounded border border-outline-variant/20 flex flex-col items-center justify-center">
+<span class="material-symbols-outlined text-secondary mb-xs" style="font-size: 20px;">share</span>
+<span class="font-h2 text-h2 text-primary text-center">1,204</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant text-[10px]">Shares</span>
+</div>
+</div>
+</div>
+<!-- Action -->
+<button class="w-full mt-lg bg-gradient-to-r from-secondary-container to-[#8b5cf6] text-on-primary py-sm rounded-lg font-body-sm text-body-sm font-semibold shadow-[0_0_15px_rgba(99,102,241,0.2)] hover:shadow-[0_0_25px_rgba(99,102,241,0.4)] transition-all">
+                    Generate AI Summary
+                </button>
+</div>
+</aside>
+</main>
+<!-- Related Articles (Bottom Bento Grid) -->
+<section class="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop py-xxl border-t border-outline-variant/20">
+<h2 class="font-h2 text-h2 text-primary mb-lg">Correlated Intelligence</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- High Popularity Card (Scaled Up) -->
+<a class="md:col-span-2 group bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:shadow-[0_4px_20px_rgba(15,23,42,0.05)] transition-all flex flex-col md:flex-row relative" href="#">
+<!-- Glassmorphic Overlay for High Views -->
+<div class="absolute top-sm left-sm bg-surface-container-lowest/80 backdrop-blur-xl border border-secondary-container/30 px-sm py-xs rounded font-data-mono text-data-mono text-secondary-container z-10 text-[11px] flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> 120k Views
+                </div>
+<div class="md:w-1/2 h-48 md:h-auto relative overflow-hidden bg-surface-container-highest">
+<img alt="Related Article Image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Abstract 3D rendering of blockchain technology. Glowing geometric cubes arranged in a decentralized network structure against a clean white and light grey background. Accents of deep navy and electric indigo highlight the connections between cubes. The style is modern, corporate, and pristine." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9RcUGFVLLh70suGfH-ev2Tbf3mswbjrAyxG7RP7VAwckTBPC-l_75PJc-ufbot1Q_cZ5mDRs75XeeBT65EU76Oz_8wiYlPejMjDSmu-q9by_zaNTo2assGBUrHsdfBd5_OWZ150NGMjM862SjQAZvfQvLsurUKTGePPghs7U4jVbWYc6AJggy1z9AOmCWXpqBOFFApi_C34fCGYZKmwHGycM6ubk1ZXX02lvv-y36uBl_LZaQr_Rx5OrAssdRux4DYKySDzEheXs"/>
+</div>
+<div class="p-lg md:w-1/2 flex flex-col justify-center bg-surface-container-lowest">
+<span class="font-label-caps text-label-caps text-secondary-container mb-sm">Tech Deep-dives</span>
+<h3 class="font-h2 text-h2 text-primary mb-sm leading-tight group-hover:text-secondary-container transition-colors" style="font-size: 26px;">The MEV Supply Chain: Identifying Extraction Nodes</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-3">An analysis of how value is extracted from decentralized exchanges before transactions even hit the mempool, mapping the hidden actors in the ecosystem.</p>
+</div>
+</a>
+<!-- Standard Card -->
+<a class="group bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:shadow-[0_4px_20px_rgba(15,23,42,0.05)] transition-all flex flex-col relative" href="#">
+<div class="h-40 relative overflow-hidden bg-surface-container-highest">
+<img alt="Related Article Image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A clean, minimalist workspace featuring a high-end laptop displaying complex financial charts and data dashboards. A pair of glasses and a stylus rest near the keyboard. The lighting is soft and bright, suggesting a morning working session in a modern corporate office. The color palette emphasizes whites, light greys, and subtle blue screen reflections." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAt7K_1cHQpmfLHuOcbkMXVPo2ax0zD9fT7z3cFcBWUVpA4s8jwcmV92s5pzaDuJTVDB8RqICiiThQAsZOCTc4ZtlPKR8FbWvjKNAzT213UJBqyKWiBFNDJIVRqewCPJ3qxZ1lQsNmEvPgXadwkoYWbnMf0CNhpqM5JLa3p3nJCZCXnBrtQEkJEJ69bxRB0qrJRWe_Y8oxb_EtCFb33nKw-EVNLpvrlStZCV7NwmNifQha7RSQgtV1_FOQCb7TmC5q0DMc-U73LFjQ"/>
+</div>
+<div class="p-md flex flex-col flex-1 bg-surface-container-lowest">
+<span class="font-label-caps text-label-caps text-tertiary-fixed-dim text-on-tertiary-container mb-sm">Validity Reports</span>
+<h3 class="font-h2 text-h2 text-primary mb-sm leading-tight group-hover:text-secondary-container transition-colors text-[20px]">Oracle Latency Arbitrage</h3>
+<div class="mt-auto flex items-center justify-between text-on-surface-variant font-data-mono text-data-mono text-[11px]">
+<span>45k Views</span>
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[14px]">arrow_outward</span> Read</span>
+</div>
+</div>
+</a>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-surface dark:bg-surface full-width border-t border-outline-variant/20 flat no shadows mt-xl">
+<div class="flex flex-col md:flex-row justify-between items-center py-lg px-margin-desktop max-w-max-width mx-auto">
+<div class="font-h2 text-h2 text-primary mb-md md:mb-0">
+                NexusGraph
+            </div>
+<div class="font-body-sm text-body-sm text-on-surface-variant dark:text-on-surface-variant text-center md:text-left mb-md md:mb-0">
+                © 2024 NexusGraph Protocol. Data transparency via decentralized oracles.
+            </div>
+<div class="flex gap-md font-body-sm text-body-sm">
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors" href="#">Protocol Docs</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors" href="#">Data Transparency</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors" href="#">Risk Disclaimer</a>
+</div>
+</div>
+</footer>
+</body></html>
