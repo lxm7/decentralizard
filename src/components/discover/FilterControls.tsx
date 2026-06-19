@@ -2,29 +2,29 @@
 
 import { Slider } from '@/base/slider';
 import { cn } from '@/utilities/ui';
-import { DOMAIN_LABELS, domainLabel } from '@/utilities/postMetrics';
+import type { FilterCategory } from './categories';
 
-/** Domain enum values, in declaration order. */
-export const DOMAIN_VALUES = Object.keys(DOMAIN_LABELS);
-
-/** Toggleable domain chips. Controlled — parent owns the selected set. */
-export function DomainChips({
+/** Toggleable category chips, sourced from the live categories collection.
+ *  Controlled — parent owns the selected set (category slugs). */
+export function CategoryChips({
+  categories,
   selected,
   onToggle,
 }: {
+  categories: FilterCategory[];
   selected: string[];
-  onToggle: (d: string) => void;
+  onToggle: (slug: string) => void;
 }) {
   return (
     <div className="flex flex-wrap gap-xs">
-      {DOMAIN_VALUES.map((d) => {
-        const on = selected.includes(d);
+      {categories.map((c) => {
+        const on = selected.includes(c.slug);
         return (
           <button
-            key={d}
+            key={c.slug}
             type="button"
             aria-pressed={on}
-            onClick={() => onToggle(d)}
+            onClick={() => onToggle(c.slug)}
             className={cn(
               'rounded-full px-3 py-1 font-body text-xs transition-colors',
               on
@@ -32,7 +32,7 @@ export function DomainChips({
                 : 'border border-border bg-muted text-foreground hover:text-accent-indigo'
             )}
           >
-            {domainLabel(d)}
+            {c.title}
           </button>
         );
       })}

@@ -1,3 +1,5 @@
+import type { Where } from 'payload';
+
 import type { Post } from '@/payload-types';
 import type { Tone } from '@/components/nexus';
 import type { BentoCell, Trend } from './BentoMatrix';
@@ -133,8 +135,8 @@ export function buildHero(post: Post) {
 // --- Filtering -----------------------------------------------------------
 
 export type FilterState = {
-  /** Selected domain enum values; empty = all domains. */
-  domains: string[];
+  /** Selected category slugs; empty = all categories. */
+  categories: string[];
   /** Free-text query matched against title + short description. */
   query: string;
   /** Minimum normalized sentiment (0 = off → keep all). */
@@ -146,7 +148,7 @@ export type FilterState = {
 };
 
 export const INITIAL_FILTERS: FilterState = {
-  domains: [],
+  categories: [],
   query: '',
   sentimentMin: 0,
   validityMin: 0,
@@ -160,7 +162,12 @@ export function filterPosts(posts: Post[], f: FilterState): Post[] {
   const minScore = f.sentimentMin <= 0 ? -Infinity : (f.sentimentMin / 100) * 200 - 100;
 
   return posts.filter((p) => {
-    if (f.domains.length && !(p.domain && f.domains.includes(p.domain))) return false;
+    if (f.categories.length) {
+      const match = (p.categories ?? []).some(
+        (c) => typeof c === 'object' && c !== null && !!c.slug && f.categories.includes(c.slug)
+      );
+      if (!match) return false;
+    }
     if ((p.validity ?? 0) < f.validityMin) return false;
     if ((p.sentiment?.score ?? 0) < minScore) return false;
     if (f.impact > 0 && resonancePercentile(p.id) < f.impact) return false;
@@ -191,4 +198,59 @@ export function filterPostsWithFallback(
   if (queryOnly.length) return { posts: queryOnly, relaxed: true };
 
   return { posts, relaxed: true };
+}
+
+// --- Server-side search (RSC) --------------------------------------------
+// The DB-backed filters map onto a Payload `Where`; impact is seeded from the
+// post id (not a column) so it can't be queried — it's applied post-fetch.
+
+/** Build a Payload `Where` for the filters that map onto real Post columns. */
+export function buildPostsWhere(f: FilterState, includeDrafts = false): Where {
+  const and: Where[] = includeDrafts ? [] : [{ _status: { equals: 'published' } }];
+
+  const q = f.query.trim();
+  if (q) {
+    and.push({ or: [{ title: { like: q } }, { shortDescription: { like: q } }] });
+  }
+  if (f.categories.length) {
+    and.push({ 'categories.slug': { in: f.categories } });
+  }
+  if (f.sentimentMin > 0) {
+    // Same 0–100 → signed score mapping the client filter uses.
+    and.push({ 'sentiment.score': { greater_than_equal: (f.sentimentMin / 100) * 200 - 100 } });
+  }
+  if (f.validityMin > 0) {
+    and.push({ validity: { greater_than_equal: f.validityMin } });
+  }
+
+  return { and };
+}
+
+/** Apply the impact gate (resonance percentile from id) to already-fetched docs. */
+export function applyImpact(posts: Post[], impact: number): Post[] {
+  if (impact <= 0) return posts;
+  return posts.filter((p) => resonancePercentile(p.id) >= impact);
+}
+
+/** Parse raw URL searchParams into a FilterState. */
+export function parseFilters(sp: Record<string, string | string[] | undefined>): FilterState {
+  const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+  const num = (v: string | string[] | undefined) => {
+    const n = Number(first(v));
+    return Number.isFinite(n) ? n : 0;
+  };
+  return {
+    query: first(sp.q) ?? '',
+    categories: sp.category ? (Array.isArray(sp.category) ? sp.category : [sp.category]) : [],
+    sentimentMin: num(sp.sentiment),
+    validityMin: num(sp.validity),
+    impact: num(sp.impact),
+  };
+}
+
+/** True when any filter is active — drives the results header / dynamic render. */
+export function hasActiveFilters(f: FilterState): boolean {
+  return Boolean(
+    f.query.trim() || f.categories.length || f.sentimentMin || f.validityMin || f.impact
+  );
 }

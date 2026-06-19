@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search, Sparkles, X } from 'lucide-react';
 
 import { Button } from '@/base/button';
@@ -8,9 +9,10 @@ import { Input } from '@/base/input';
 import { cn } from '@/utilities/ui';
 
 import { INITIAL_FILTERS, type FilterState } from './model';
+import type { FilterCategory } from './categories';
 import { useDiscoverStore } from './store';
 import {
-  DomainChips,
+  CategoryChips,
   MetricSlider,
   SENTIMENT_DISPLAY,
   VALIDITY_DISPLAY,
@@ -27,32 +29,51 @@ export function SearchTrigger() {
   );
 }
 
-function snapshot(): FilterState {
-  const s = useDiscoverStore.getState();
+/** Seed staged filters from the current URL so the overlay reflects active search. */
+function filtersFromUrl(): FilterState {
+  if (typeof window === 'undefined') return { ...INITIAL_FILTERS };
+  const p = new URLSearchParams(window.location.search);
+  const num = (k: string) => {
+    const n = Number(p.get(k));
+    return Number.isFinite(n) ? n : 0;
+  };
   return {
-    domains: s.domains,
-    query: s.query,
-    sentimentMin: s.sentimentMin,
-    validityMin: s.validityMin,
-    impact: s.impact,
+    query: p.get('q') ?? '',
+    categories: p.getAll('category'),
+    sentimentMin: num('sentiment'),
+    validityMin: num('validity'),
+    impact: num('impact'),
   };
 }
 
+/** Serialize staged filters into the archive's searchParams. */
+function toQueryString(f: FilterState): string {
+  const p = new URLSearchParams();
+  const q = f.query.trim();
+  if (q) p.set('q', q);
+  f.categories.forEach((c) => p.append('category', c));
+  if (f.sentimentMin > 0) p.set('sentiment', String(f.sentimentMin));
+  if (f.validityMin > 0) p.set('validity', String(f.validityMin));
+  if (f.impact > 0) p.set('impact', String(f.impact));
+  return p.toString();
+}
+
 /**
- * Detailed search overlay. Stages filter values locally and applies them to the
- * home feed in place on submit (the feed reads the same store). Mounted once on
- * the home page; visibility is driven by `searchOpen` in the store.
+ * Detailed search overlay. Stages filter values locally; on submit it pushes
+ * them to the archive as URL searchParams (`/posts?q=…`), which the archive RSC
+ * reads and server-renders. URL-driven so it works from every page and the
+ * results are shareable. Visibility is driven by `searchOpen` in the store.
  */
-export function SearchModal() {
+export function SearchModal({ categories }: { categories: FilterCategory[] }) {
+  const router = useRouter();
   const open = useDiscoverStore((s) => s.searchOpen);
   const setOpen = useDiscoverStore((s) => s.setSearchOpen);
-  const applyAll = useDiscoverStore((s) => s.applyAll);
 
-  const [staged, setStaged] = useState<FilterState>(snapshot);
+  const [staged, setStaged] = useState<FilterState>(() => ({ ...INITIAL_FILTERS }));
 
-  // Seed the staged copy from the live store each time the overlay opens.
+  // Seed the staged copy from the current URL each time the overlay opens.
   useEffect(() => {
-    if (open) setStaged(snapshot());
+    if (open) setStaged(filtersFromUrl());
   }, [open]);
 
   // Close on Escape.
@@ -67,14 +88,17 @@ export function SearchModal() {
 
   if (!open) return null;
 
-  const toggleDomain = (d: string) =>
+  const toggleCategory = (slug: string) =>
     setStaged((s) => ({
       ...s,
-      domains: s.domains.includes(d) ? s.domains.filter((x) => x !== d) : [...s.domains, d],
+      categories: s.categories.includes(slug)
+        ? s.categories.filter((x) => x !== slug)
+        : [...s.categories, slug],
     }));
 
   const submit = () => {
-    applyAll(staged);
+    const qs = toQueryString(staged);
+    router.push(qs ? `/posts?${qs}` : '/posts');
     setOpen(false);
   };
 
@@ -128,9 +152,13 @@ export function SearchModal() {
 
           <div className="space-y-sm">
             <span className="font-body text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Domains
+              Categories
             </span>
-            <DomainChips selected={staged.domains} onToggle={toggleDomain} />
+            <CategoryChips
+              categories={categories}
+              selected={staged.categories}
+              onToggle={toggleCategory}
+            />
           </div>
 
           <div className="grid gap-md sm:grid-cols-2">

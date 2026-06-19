@@ -15,15 +15,15 @@ import { useDiscoverStore } from './store';
  * re-derives the hero + bento matrix on every change. Instant, no network.
  */
 export function DiscoverFeed({ posts }: { posts: Post[] }) {
-  const domains = useDiscoverStore((s) => s.domains);
+  const categories = useDiscoverStore((s) => s.categories);
   const query = useDiscoverStore((s) => s.query);
   const sentimentMin = useDiscoverStore((s) => s.sentimentMin);
   const validityMin = useDiscoverStore((s) => s.validityMin);
   const impact = useDiscoverStore((s) => s.impact);
 
   const { posts: filtered, relaxed } = useMemo(
-    () => filterPostsWithFallback(posts, { domains, query, sentimentMin, validityMin, impact }),
-    [posts, domains, query, sentimentMin, validityMin, impact]
+    () => filterPostsWithFallback(posts, { categories, query, sentimentMin, validityMin, impact }),
+    [posts, categories, query, sentimentMin, validityMin, impact]
   );
 
   const hero = filtered[0];

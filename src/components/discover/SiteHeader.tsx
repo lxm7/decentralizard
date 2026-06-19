@@ -1,6 +1,7 @@
 import { AppsMenu, NotificationsMenu, TopNav } from '@/components/nexus';
 
 import { SearchModal, SearchTrigger } from './SearchModal';
+import { getFilterCategories } from './categories';
 
 const NAV_LINKS = [
   { label: 'Archive', href: '/posts' },
@@ -10,9 +11,11 @@ const NAV_LINKS = [
 /**
  * The single site header used on every page. Brand, nav links and action
  * buttons are identical everywhere — only the highlighted nav item varies via
- * `active` (the current route's href). Owns the SearchModal its button opens.
+ * `active` (the current route's href). Owns the SearchModal its button opens,
+ * feeding it the live category list for the filter chips.
  */
-export function SiteHeader({ active }: { active?: string } = {}) {
+export async function SiteHeader({ active }: { active?: string } = {}) {
+  const categories = await getFilterCategories();
   return (
     <>
       <TopNav
@@ -27,7 +30,7 @@ export function SiteHeader({ active }: { active?: string } = {}) {
           </>
         }
       />
-      <SearchModal />
+      <SearchModal categories={categories} />
     </>
   );
 }

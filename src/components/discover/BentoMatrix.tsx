@@ -70,7 +70,7 @@ export type BentoCell =
 
 export function BentoMatrix({ cells }: { cells: BentoCell[] }) {
   return (
-    <section className="grid auto-rows-[250px] grid-cols-1 gap-sm md:grid-cols-3 md:gap-md lg:grid-cols-4">
+    <section className="grid auto-rows-[280px] grid-cols-1 gap-sm md:grid-cols-3 md:gap-md lg:grid-cols-4">
       {cells.map((cell, i) => {
         if (cell.kind === 'focus') return <FocusCard key={i} {...cell} />;
         if (cell.kind === 'pulse') return <PulseTrendsCard key={i} trends={cell.trends} />;
@@ -181,8 +181,8 @@ function ResearchCard({
           className="object-cover object-center"
         />
       </div>
-      <div className="flex flex-1 flex-col p-md">
-        <div className="mb-xs flex items-start justify-between">
+      <div className="flex flex-1 flex-col justify-between gap-xs p-md">
+        <div className="flex items-start justify-between">
           <span className="flex items-center gap-xs">
             <span className="flex h-6 w-6 items-center justify-center rounded bg-muted text-foreground">
               <Microscope className="h-3.5 w-3.5" aria-hidden />
@@ -199,9 +199,9 @@ function ResearchCard({
             </span>
           )}
         </div>
-        <div className="mt-auto">
-          <IndexBar label={index} tone={indexTone} className="mb-xs" />
-          <h3 className="mb-xs font-body text-base font-semibold leading-tight text-foreground">
+        <IndexBar label={index} tone={indexTone} />
+        <div className="space-y-xs">
+          <h3 className="pb-2 font-body text-base font-semibold leading-tight text-foreground">
             {title}
           </h3>
           <p className="line-clamp-2 font-body text-sm text-muted-foreground">{dek}</p>
