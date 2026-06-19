@@ -109,7 +109,7 @@ export function SearchModal({ categories }: { categories: FilterCategory[] }) {
       role="dialog"
       aria-modal="true"
       aria-label="Detailed search"
-      className="fixed inset-0 z-[60] flex items-start justify-center p-md pt-[12vh]"
+      className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto p-md pt-[6vh] md:pt-[12vh]"
     >
       <button
         type="button"
