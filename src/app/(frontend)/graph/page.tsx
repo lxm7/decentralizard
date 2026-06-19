@@ -2,11 +2,11 @@ import type { Metadata } from 'next';
 import { Bell, LayoutGrid, User } from 'lucide-react';
 
 import { Button } from '@/base/button';
-import { BottomNav, TopNav } from '@/components/nexus';
+import { TopNav } from '@/components/nexus';
 import { GraphWorkspace } from '@/components/graph/GraphWorkspace';
 import type { GraphData } from '@/components/graph/types';
 
-export const metadata: Metadata = { title: 'Relational Graph — Nexus preview' };
+export const metadata: Metadata = { title: 'Relational Graph — Decentralizard' };
 
 const data: GraphData = {
   coreId: 'core',
@@ -56,12 +56,10 @@ export default function RelationalGraphPreview() {
   return (
     <div className="flex h-screen flex-col bg-background font-body text-foreground">
       <TopNav
-        brand="Nexus Matrix"
+        brand="Decentralizard"
         links={[
-          { label: 'Discover', href: '/nexus/home' },
-          { label: 'Graph', href: '#', active: true },
-          { label: 'Market', href: '#' },
-          { label: 'Pulse', href: '#' },
+          { label: 'Search', href: '/search' },
+          { label: 'Graph', href: '/graph', active: true },
         ]}
         actions={
           <>
@@ -78,7 +76,6 @@ export default function RelationalGraphPreview() {
         }
       />
       <GraphWorkspace data={data} />
-      <BottomNav active="graph" />
     </div>
   );
 }

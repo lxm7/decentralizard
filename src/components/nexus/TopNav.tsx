@@ -63,7 +63,7 @@ export function TopNav({
                   className={cn(
                     'font-body text-sm transition-colors',
                     l.active
-                      ? 'border-b-2 border-accent-indigo pb-0.5 font-semibold text-accent-indigo'
+                      ? 'border-b-2 border-accent-indigo pb-[-0.5] font-semibold text-accent-indigo'
                       : 'text-muted-foreground hover:text-foreground'
                   )}
                 >

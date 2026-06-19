@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { ArrowRight, Share2 } from 'lucide-react';
 
 import { Button } from '@/base/button';
@@ -9,10 +10,12 @@ export interface HeroTopologyCardProps {
   title: string;
   dek: string;
   nodes: string;
+  /** Link target for the featured article (omit in static previews). */
+  href?: string;
 }
 
 /** Featured glass hero with an animated topology backdrop. */
-export function HeroTopologyCard({ node, synced, title, dek, nodes }: HeroTopologyCardProps) {
+export function HeroTopologyCard({ node, synced, title, dek, nodes, href }: HeroTopologyCardProps) {
   return (
     <section className="glass relative flex h-[400px] min-h-[300px] flex-col justify-end overflow-hidden p-md">
       <div className="bg-muted/30 absolute inset-0">
@@ -51,9 +54,17 @@ export function HeroTopologyCard({ node, synced, title, dek, nodes }: HeroTopolo
         </h1>
         <p className="mb-md line-clamp-2 font-body text-sm text-muted-foreground">{dek}</p>
         <div className="flex items-center gap-md">
-          <Button className="rounded-lg">
-            Access Stream <ArrowRight className="ml-1 h-4 w-4" aria-hidden />
-          </Button>
+          {href ? (
+            <Button asChild className="rounded-lg">
+              <Link href={href}>
+                Access Stream <ArrowRight className="ml-1 h-4 w-4" aria-hidden />
+              </Link>
+            </Button>
+          ) : (
+            <Button className="rounded-lg">
+              Access Stream <ArrowRight className="ml-1 h-4 w-4" aria-hidden />
+            </Button>
+          )}
           <span className="flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
             <Share2 className="h-3.5 w-3.5" aria-hidden /> {nodes} nodes
           </span>

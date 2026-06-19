@@ -252,6 +252,38 @@ export interface Post {
   };
   relatedPosts?: (number | Post)[] | null;
   categories?: (number | Category)[] | null;
+  sentiment?: {
+    label?: ('bullish' | 'bearish' | 'neutral') | null;
+    /**
+     * Signed sentiment delta, e.g. -12 or 8. Drives the chip on the snapshot panel.
+     */
+    score?: number | null;
+  };
+  /**
+   * 0–100 confidence in the underlying data. ≥90 marks the article as a Verified Oracle.
+   */
+  validity?: number | null;
+  /**
+   * Primary intelligence domain for clustering and the hero chip.
+   */
+  domain?: ('layer-2' | 'defi' | 'mev' | 'infrastructure' | 'governance' | 'security' | 'markets') | null;
+  /**
+   * Provenance signals shown in the snapshot panel.
+   */
+  sources?:
+    | {
+        label: string;
+        /**
+         * Confidence %, e.g. 99.2
+         */
+        confidence?: number | null;
+        /**
+         * Determines the source icon.
+         */
+        type?: ('analytics' | 'audit' | 'gavel' | 'verified') | null;
+        id?: string | null;
+      }[]
+    | null;
   meta?: {
     title?: string | null;
     /**
@@ -1222,6 +1254,22 @@ export interface PostsSelect<T extends boolean = true> {
   content?: T;
   relatedPosts?: T;
   categories?: T;
+  sentiment?:
+    | T
+    | {
+        label?: T;
+        score?: T;
+      };
+  validity?: T;
+  domain?: T;
+  sources?:
+    | T
+    | {
+        label?: T;
+        confidence?: T;
+        type?: T;
+        id?: T;
+      };
   meta?:
     | T
     | {

@@ -4,14 +4,10 @@
  */
 export { StatusChip, type StatusChipProps } from './StatusChip';
 export { Sparkline, type SparklineProps } from './Sparkline';
-export {
-  BottomNav,
-  defaultBottomNavItems,
-  type BottomNavItem,
-  type BottomNavProps,
-} from './BottomNav';
 export { type Tone, toneVar, toneColor } from './tone';
 export { TopNav, type NavLink, type TopNavProps } from './TopNav';
+export { SiteFooter } from './SiteFooter';
+export { NotificationsMenu, AppsMenu } from './HeaderMenus';
 
 // Promote existing ArticleAnalyser atoms to a neutral import path (no file move = zero churn).
 export { SearchInput } from '../ArticleAnalyser/SearchInput';

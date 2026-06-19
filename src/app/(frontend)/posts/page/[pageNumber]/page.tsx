@@ -1,8 +1,12 @@
 import type { Metadata } from 'next/types';
+import Link from 'next/link';
+import { Search } from 'lucide-react';
 
-import { CollectionArchive } from '@/components/CollectionArchive';
-import { PageRange } from '@/components/PageRange';
+import { Button } from '@/base/button';
 import { Pagination } from '@/components/Pagination';
+import { AppsMenu, NotificationsMenu, TopNav } from '@/components/nexus';
+import { BentoMatrix } from '@/components/discover/BentoMatrix';
+import { buildArchiveCells } from '@/components/discover/model';
 import configPromise from '@payload-config';
 import { getPayload } from 'payload';
 import React from 'react';
@@ -10,6 +14,8 @@ import PageClient from './page.client';
 import { notFound } from 'next/navigation';
 
 export const revalidate = 600;
+
+const POSTS_PER_PAGE = 12;
 
 type Args = {
   params: Promise<{
@@ -28,36 +34,61 @@ export default async function Page({ params: paramsPromise }: Args) {
   const posts = await payload.find({
     collection: 'posts',
     depth: 1,
-    limit: 12,
+    limit: POSTS_PER_PAGE,
     page: sanitizedPageNumber,
     overrideAccess: false,
+    sort: '-publishedAt',
+    where: { _status: { equals: 'published' } },
   });
 
+  const cells = buildArchiveCells(posts.docs);
+
   return (
-    <div className="pb-24 pt-24">
+    <div className="kandinsky-bg font-body text-foreground">
       <PageClient />
-      <div className="container mb-16">
-        <div className="prose max-w-none dark:prose-invert">
-          <h1>Posts</h1>
+
+      <TopNav
+        brand="Decentralizard"
+        brandHref="/"
+        links={[
+          { label: 'Search', href: '/search' },
+          { label: 'Graph', href: '/graph' },
+        ]}
+        actions={
+          <>
+            <Button variant="ghost" size="icon" aria-label="Search" asChild>
+              <Link href="/search">
+                <Search className="h-5 w-5" aria-hidden />
+              </Link>
+            </Button>
+            <NotificationsMenu />
+            <AppsMenu className="hidden md:inline-flex" />
+          </>
+        }
+      />
+
+      <main className="mx-auto flex max-w-max-width flex-col gap-md px-margin-mobile py-md md:px-margin-desktop">
+        <div className="flex items-baseline justify-between">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
+            Archive
+          </h1>
+          <span className="font-mono text-xs text-muted-foreground">
+            Page {posts.page} of {posts.totalPages}
+          </span>
         </div>
-      </div>
 
-      <div className="container mb-8">
-        <PageRange
-          collection="posts"
-          currentPage={posts.page}
-          limit={12}
-          totalDocs={posts.totalDocs}
-        />
-      </div>
+        {cells.length > 0 ? (
+          <BentoMatrix cells={cells} />
+        ) : (
+          <p className="py-xxl text-center font-body text-muted-foreground">
+            No intelligence streams on this page.
+          </p>
+        )}
 
-      <CollectionArchive posts={posts.docs} />
-
-      <div className="container">
-        {posts?.page && posts?.totalPages > 1 && (
+        {posts.page && posts.totalPages > 1 && (
           <Pagination page={posts.page} totalPages={posts.totalPages} />
         )}
-      </div>
+      </main>
     </div>
   );
 }
@@ -65,7 +96,7 @@ export default async function Page({ params: paramsPromise }: Args) {
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { pageNumber } = await paramsPromise;
   return {
-    title: `Payload Website Template Posts Page ${pageNumber || ''}`,
+    title: `Archive · Page ${pageNumber || ''} · Decentralizard`,
   };
 }
 

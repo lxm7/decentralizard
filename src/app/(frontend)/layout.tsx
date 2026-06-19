@@ -6,7 +6,7 @@ import { Rubik, Sora, Inter, JetBrains_Mono } from 'next/font/google';
 // import { GoogleAnalytics } from '@next/third-parties/google'
 
 import { AdminBar } from '@/components/AdminBar';
-// import { Footer } from '@/Footer/Component'
+import { SiteFooter } from '@/components/nexus/SiteFooter';
 // import { Header } from '@/Header/Component'
 import { Providers } from '@/providers';
 import { InitTheme } from '@/providers/Theme/InitTheme';
@@ -122,7 +122,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </Script>
           {/* <Header /> */}
           {children}
-          {/* <Footer /> */}
+          <SiteFooter />
         </Providers>
       </body>
       {/* <GoogleAnalytics gaId="G-J228LCHT7Y" /> */}

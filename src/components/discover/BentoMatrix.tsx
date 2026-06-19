@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import {
   Activity,
   BrainCircuit,
@@ -10,6 +11,16 @@ import {
 
 import { cn } from '@/utilities/ui';
 import { Sparkline, StatusChip, type Tone } from '@/components/nexus';
+
+/** Stretched overlay link so an entire card is clickable without nesting interactive elements. */
+function CardLink({ href, label }: { href?: string; label: string }) {
+  if (!href) return null;
+  return (
+    <Link href={href} aria-label={label} className="absolute inset-0 z-20">
+      <span className="sr-only">{label}</span>
+    </Link>
+  );
+}
 
 // RSC-safe: trends carry a string key, resolved to a lucide component here.
 const trendIcons = {
@@ -38,7 +49,7 @@ export interface Trend {
 }
 
 export type BentoCell =
-  | { kind: 'focus'; tag: string; index: string; title: string; dek: string }
+  | { kind: 'focus'; tag: string; index: string; title: string; dek: string; href?: string }
   | { kind: 'pulse'; trends: Trend[] }
   | {
       kind: 'research';
@@ -47,6 +58,7 @@ export type BentoCell =
       dek: string;
       verified?: boolean;
       node?: string;
+      href?: string;
     };
 
 export function BentoMatrix({ cells }: { cells: BentoCell[] }) {
@@ -61,9 +73,10 @@ export function BentoMatrix({ cells }: { cells: BentoCell[] }) {
   );
 }
 
-function FocusCard({ tag, index, title, dek }: Extract<BentoCell, { kind: 'focus' }>) {
+function FocusCard({ tag, index, title, dek, href }: Extract<BentoCell, { kind: 'focus' }>) {
   return (
     <article className="glass group relative flex flex-col justify-between overflow-hidden p-md md:col-span-2 md:row-span-2">
+      <CardLink href={href} label={title} />
       <div className="from-accent-indigo/15 to-brand-magenta/10 absolute inset-0 bg-gradient-to-br via-transparent" />
       <div className="relative flex items-start justify-between">
         <StatusChip tone="indigo">{tag}</StatusChip>
@@ -138,9 +151,11 @@ function ResearchCard({
   dek,
   verified,
   node,
+  href,
 }: Extract<BentoCell, { kind: 'research' }>) {
   return (
-    <article className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-sm transition-shadow hover:shadow-[0_4px_20px_oklch(0.3_0.05_270/0.06)]">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-sm transition-shadow hover:shadow-[0_4px_20px_oklch(0.3_0.05_270/0.06)]">
+      <CardLink href={href} label={title} />
       <div className="mb-xs flex items-start justify-between">
         <span className="flex h-6 w-6 items-center justify-center rounded bg-muted text-foreground">
           <Microscope className="h-3.5 w-3.5" aria-hidden />
