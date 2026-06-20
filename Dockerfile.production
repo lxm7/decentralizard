@@ -31,14 +31,16 @@ RUN --mount=type=secret,id=database_uri \
     yarn build
 
 # --- Stage 3: runtime ($TARGETPLATFORM — arm64 or amd64) ---
-# yarn install runs here (not copied from deps) so native modules
-# (e.g. sharp) are built for the correct target arch.
+# Next.js standalone output: the app server and its traced node_modules come
+# from the builder, so there is NO yarn install here (kills the QEMU-emulated
+# arm64 install that dominated build time). Only sharp's native binary is
+# re-laid per-arch below.
 FROM node:${NODE_VERSION}-bookworm-slim AS production
-RUN corepack enable
 WORKDIR /app
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
+    HOSTNAME=0.0.0.0 \
     CERT_CA=certs/prod-ca-2021.crt
 
 RUN apt-get update \
@@ -47,14 +49,27 @@ RUN apt-get update \
     && groupadd --gid 1001 nodejs \
     && useradd --uid 1001 --gid nodejs --create-home --shell /bin/bash nextjs
 
-COPY --chown=nextjs:nodejs package.json yarn.lock .yarnrc.yml ./
-COPY --chown=nextjs:nodejs .yarn/releases ./.yarn/releases
-RUN YARN_ENABLE_IMMUTABLE_INSTALLS=1 yarn install --immutable
-
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+# Standalone server + traced deps, then the static assets it does not bundle.
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 # Public Supabase CA for Postgres TLS — committed to the repo, not a secret
 COPY --from=builder --chown=nextjs:nodejs /app/certs/prod-ca-2021.crt ./certs/prod-ca-2021.crt
+
+# sharp ships an arch-specific prebuilt binary; the standalone trace carries the
+# build-host (amd64) one. Rebuild sharp for $TARGETPLATFORM in an isolated dir
+# (prebuilt @img/* packages — download only, no compile) and overlay it onto the
+# traced tree, so image optimization works on arm64 (Hetzner Tier 1) and amd64
+# (EKS Tier 2) alike. Isolation keeps npm from reconciling the standalone's
+# package.json against its (intentionally partial) traced node_modules.
+RUN --mount=type=cache,target=/root/.npm \
+    mkdir -p /tmp/sharp && cd /tmp/sharp \
+    && npm init -y >/dev/null 2>&1 \
+    && npm install --no-save --no-audit --no-fund sharp@0.34.5 \
+    && rm -rf /app/node_modules/sharp /app/node_modules/@img \
+    && cp -a /tmp/sharp/node_modules/. /app/node_modules/ \
+    && chown -R nextjs:nodejs /app/node_modules/sharp /app/node_modules/@img \
+    && rm -rf /tmp/sharp
 
 USER nextjs
 EXPOSE 3000
@@ -62,4 +77,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=5 \
     CMD curl -fsS http://localhost:3000/api/health || exit 1
 
-CMD ["yarn", "start"]
+CMD ["node", "server.js"]
