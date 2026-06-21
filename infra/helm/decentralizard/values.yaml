@@ -1,0 +1,50 @@
+replicaCount: 2
+
+image:
+  repository: ""
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Public hostname (external-dns creates the Cloudflare record from the Ingress)
+host: ""
+# ACM cert ARN (eu-west-1) for the ALB HTTPS listener
+acmCertificateArn: ""
+
+serviceAccount:
+  name: decentralizard
+  # IRSA role granting the pod S3 media access via the AWS default cred chain
+  roleArn: ""
+
+containerPort: 3000
+
+# Plain (non-sensitive) runtime env, injected by Terraform
+env: {}
+
+# Secret env synced from SSM Parameter Store by External Secrets Operator
+externalSecrets:
+  enabled: true
+  clusterSecretStore: aws-parameterstore
+  region: eu-west-1
+  ssmPrefix: /decentralizard/eks
+  keys: []
+
+secretName: decentralizard-env
+
+serviceMonitor:
+  enabled: true
+  path: /api/metrics
+  interval: 30s
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: "1"
+    memory: 768Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70

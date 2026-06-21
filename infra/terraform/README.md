@@ -71,6 +71,10 @@ expensive stack.
 - Phase 6 — Observability — kube-prometheus-stack + Loki; app /metrics scraped; Grafana dashboards;
   postgres_exporter for Supabase.
 - Phase 7 — Portfolio — architecture diagram, README, Loom of the spin-up, submit AdSense.
+- Phase 8 (optional) — Step Functions orchestrating the EKS lifecycle: button/EventBridge → state
+  machine runs terraform up (target-apply → full-apply), holds live N min, auto-destroys (ordered,
+  catch→destroy on any failure). Serverless control plane driving the heavyweight K8s demo to $0.
+  Encodes the cold-start -target two-step + teardown ordering as explicit states. Niche; do only after 4-7.
 
 ### Notes on Claoudflare Tunnels:
 

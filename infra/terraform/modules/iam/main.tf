@@ -37,8 +37,8 @@ data "aws_iam_policy_document" "media_writer" {
     resources = ["${var.media_bucket_arn}/*"]
   }
   statement {
-    sid     = "EcrAuth"
-    actions = ["ecr:GetAuthorizationToken"]
+    sid       = "EcrAuth"
+    actions   = ["ecr:GetAuthorizationToken"]
     resources = ["*"]
   }
   statement {
@@ -130,7 +130,12 @@ data "aws_iam_policy_document" "gitlab_ci" {
       "ecr:BatchGetImage",
       "ecr:GetDownloadUrlForLayer",
     ]
-    resources = [var.ecr_repository_arn]
+    # main app repo + the Phase 4 og-image Lambda repo (decentralizard-og-image),
+    # derived by name to avoid a cross-state dependency cycle.
+    resources = [
+      var.ecr_repository_arn,
+      "${var.ecr_repository_arn}-og-image",
+    ]
   }
 }
 

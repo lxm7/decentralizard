@@ -26,7 +26,15 @@ export const generateMeta = async (args: {
 }): Promise<Metadata> => {
   const { doc } = args || {};
 
-  const ogImage = getImageURL(doc?.meta?.image);
+  // Posts get a branded OG card rendered async by the publish pipeline
+  // (infra/terraform/envs/lambda-pipeline) at a deterministic CDN key. Falls
+  // back to the SEO meta image / template default pre-CDN and for pages.
+  const isPost = doc && typeof doc === 'object' && 'publishedAt' in doc;
+  const slug = typeof doc?.slug === 'string' ? doc.slug : undefined;
+  const ogImage =
+    isPost && slug && process.env.MEDIA_BASE_URL
+      ? `${process.env.MEDIA_BASE_URL}/og/posts/${slug}.png`
+      : getImageURL(doc?.meta?.image);
 
   const title = doc?.meta?.title
     ? doc?.meta?.title + ' | Decentralizard'
@@ -42,7 +50,6 @@ export const generateMeta = async (args: {
     (doc?.slug ? (Array.isArray(doc.slug) ? '/' + doc.slug.join('/') : `/${doc.slug}`) : '');
 
   // Extract author information for posts
-  const isPost = doc && typeof doc === 'object' && 'publishedAt' in doc;
   const authors =
     isPost && 'populatedAuthors' in doc && doc.populatedAuthors
       ? doc.populatedAuthors

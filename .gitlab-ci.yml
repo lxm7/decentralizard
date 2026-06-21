@@ -89,6 +89,64 @@ build-push:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
 
+# Phase 4: build the og-image container Lambda (arm64) → ECR. Single-arch +
+# --provenance=false because Lambda can't pull multi-arch / attestation manifests.
+# Only runs when the Lambda source changes; allow_failure covers the first-run
+# window before the ECR repo exists (terraform apply -target creates it).
+build-og-image:
+  stage: build
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint: ['']
+  services:
+    - name: docker:27-dind
+      alias: docker
+  variables:
+    DOCKER_TLS_CERTDIR: '/certs'
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_VERIFY: '1'
+    DOCKER_CERT_PATH: '/certs/client'
+    OG_IMAGE_NAME: decentralizard-og-image
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  before_script:
+    - yum install -y -q jq tar gzip
+    - curl -fsSL "https://download.docker.com/linux/static/stable/x86_64/docker-27.5.1.tgz" | tar -xz -C /usr/local/bin --strip-components=1 docker/docker
+    - mkdir -p /usr/local/lib/docker/cli-plugins
+    - curl -fsSL "https://github.com/docker/buildx/releases/download/v0.21.1/buildx-v0.21.1.linux-amd64" -o /usr/local/lib/docker/cli-plugins/docker-buildx
+    - chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
+    - |
+      CREDS=$(aws sts assume-role-with-web-identity \
+        --role-arn "$AWS_ROLE_ARN" \
+        --role-session-name "gitlab-og-${CI_PIPELINE_ID}" \
+        --web-identity-token "$GITLAB_OIDC_TOKEN" \
+        --duration-seconds 3600 \
+        --query Credentials --output json)
+      export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r .AccessKeyId)
+      export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r .SecretAccessKey)
+      export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r .SessionToken)
+    - aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+    - docker run --privileged --rm tonistiigi/binfmt --install arm64
+    - docker context create tls-env --docker "host=${DOCKER_HOST},ca=${DOCKER_CERT_PATH}/ca.pem,cert=${DOCKER_CERT_PATH}/cert.pem,key=${DOCKER_CERT_PATH}/key.pem"
+    - docker buildx create --use --name ogbuilder --driver docker-container tls-env
+  script:
+    - |
+      docker buildx build \
+        --platform linux/arm64 \
+        --provenance=false \
+        --file infra/lambda/og-image/Dockerfile \
+        --tag "$ECR_REGISTRY/$OG_IMAGE_NAME:$CI_COMMIT_SHORT_SHA" \
+        --tag "$ECR_REGISTRY/$OG_IMAGE_NAME:latest" \
+        --output type=image,push=true,oci-mediatypes=false \
+        infra/lambda/og-image
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - infra/lambda/og-image/**/*
+        - .gitlab-ci.yml
+      allow_failure: true
+
 deploy-hetzner:
   stage: deploy
   image:

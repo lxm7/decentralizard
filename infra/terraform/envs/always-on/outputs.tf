@@ -2,12 +2,20 @@ output "media_bucket" {
   value = module.media_cdn.bucket_name
 }
 
+output "media_bucket_arn" {
+  value = module.media_cdn.bucket_arn
+}
+
 output "cdn_domain" {
   value = local.media_fqdn
 }
 
 output "cloudfront_domain" {
   value = module.media_cdn.cloudfront_domain_name
+}
+
+output "cloudfront_distribution_id" {
+  value = module.media_cdn.cloudfront_distribution_id
 }
 
 output "ecr_repository_url" {

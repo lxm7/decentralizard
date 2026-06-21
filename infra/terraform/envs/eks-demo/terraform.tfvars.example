@@ -1,0 +1,18 @@
+region       = "eu-west-1"
+profile      = "default"
+root_domain  = "decentralizard.com"
+app_subdomain = "eks"
+
+# Cluster sizing — arm64 Graviton spot, matches the multi-arch ECR image
+cluster_version     = "1.31"
+node_instance_types = ["t4g.medium"]
+node_desired_size   = 2
+image_tag           = "latest"
+
+# Cloudflare zone ID for decentralizard.com (dashboard → Overview → API)
+cloudflare_zone_id = "REPLACE_WITH_ZONE_ID"
+
+# Scoped Cloudflare API token (Zone:DNS:Edit on decentralizard.com).
+# Consumed by external-dns to manage the eks. record. Keep out of git
+# (*.tfvars is gitignored). Prefer: export TF_VAR_cloudflare_api_token=...
+cloudflare_api_token = "REPLACE_WITH_CF_TOKEN"

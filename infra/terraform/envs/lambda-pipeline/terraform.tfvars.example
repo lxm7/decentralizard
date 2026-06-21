@@ -1,0 +1,7 @@
+# Copy to terraform.tfvars. All have sensible defaults; override only if needed.
+# region             = "eu-west-1"
+# profile            = "default"
+# site_host          = "decentralizard.com"
+# og_image_tag       = "latest"
+# api_secret_param   = "/decentralizard/pipeline/api-secret"
+# indexnow_key_param = "/decentralizard/pipeline/indexnow-key"

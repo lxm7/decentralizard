@@ -16,6 +16,7 @@ import { Code } from '../../blocks/Code/config';
 import { MediaBlock } from '../../blocks/MediaBlock/config';
 import { generatePreviewPath } from '../../utilities/generatePreviewPath';
 import { populateAuthors } from './hooks/populateAuthors';
+import { publishPipeline } from './hooks/publishPipeline';
 import { revalidateDelete, revalidatePost } from './hooks/revalidatePost';
 
 import {
@@ -354,7 +355,7 @@ export const Posts: CollectionConfig<'posts'> = {
     ...slugField(),
   ],
   hooks: {
-    afterChange: [revalidatePost],
+    afterChange: [revalidatePost, publishPipeline],
     afterRead: [populateAuthors],
     afterDelete: [revalidateDelete],
   },

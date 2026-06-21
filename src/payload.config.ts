@@ -73,9 +73,15 @@ export default buildConfig({
           }
         : undefined,
     },
+    // Schema is migration-managed, never auto-pushed. Drizzle `push` defaults to
+    // true and re-ran on every prod boot — that's what kept resetting RLS, and
+    // would let multiple instances (Hetzner + EKS) thrash the shared live DB.
+    // Local schema iteration: use a local DB + migrations, or temporarily flip.
+    push: false,
+    migrationDir: path.resolve(dirname, 'migrations'),
     afterSchemaInit: [
       ({ schema }) => {
-        // Enable RLS for all tables
+        // Enable RLS for all tables (baked into generated migrations).
         Object.values(schema.tables).forEach((table) => table.enableRLS());
         return schema;
       },
@@ -84,9 +90,6 @@ export default buildConfig({
   collections: [Pages, Posts, Media, Categories, Users, NewsletterSubscribers],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
-  custom: {
-    supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY,
-  },
   plugins: [
     ...plugins,
     s3Storage({

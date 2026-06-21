@@ -13,3 +13,7 @@ output "cloudfront_domain_name" {
 output "cloudfront_arn" {
   value = aws_cloudfront_distribution.media.arn
 }
+
+output "cloudfront_distribution_id" {
+  value = aws_cloudfront_distribution.media.id
+}
