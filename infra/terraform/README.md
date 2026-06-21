@@ -32,20 +32,141 @@ terraform init
 terraform apply
 ```
 
+### For EKS Tier
+
+##### Apply secrets if not already:
+
+```bash
+for k in DATABASE_URI PAYLOAD_SECRET CRON_SECRET SMTP_USER SMTP_PASSWORD;
+  do
+    aws ssm put-parameter --overwrite --type SecureString --name "/decentralizard/eks/$k" --value "${(P)k}" --region eu-west-1
+  done
+```
+
+Same as above but additional options if it fails / dangling orphan
+
+```bash
+aws eks update-kubeconfig --name decentralizard-eks --region eu-west-1
+```
+
 ## After apply
 
 - Media-writer creds for the Oracle box:
-  ```bash
-  terraform output -raw media_writer_access_key_id
-  terraform output -raw media_writer_secret_access_key
-  ```
+
+```bash
+terraform output -raw media_writer_access_key_id
+terraform output -raw media_writer_secret_access_key
+```
+
 - One-time media migration (files land at bucket root, matching the Payload adapter):
-  ```bash
-  aws s3 sync ../../../public/media "s3://$(terraform output -raw media_bucket)/"
-  ```
+
+```bash
+aws s3 sync ../../../public/media "s3://$(terraform output -raw media_bucket)/"
+```
+
 - Then set the app env: `S3_BUCKET=<media_bucket>`,
   `MEDIA_BASE_URL=https://cdn.decentralizard.com`, `AWS_REGION=eu-west-1`,
   plus the media-writer key/secret on the Oracle box.
+
+## Restart
+
+```bash
+kubectl rollout restart deployment -n decentralizard
+```
+
+## Terraform Destroy
+
+```bash
+export CLOUDFLARE_API_TOKEN="cfat_xxx4b8"
+```
+
+Delete in-cluster LB sources first so the controller cleans up its own AWS resources
+
+```bash
+kubectl delete ingress,svc --all -A --timeout=120s
+helm uninstall app -n <ns>
+
+Find<ns>:
+
+grep -n 'helm_release\|namespace' app.tf addons.tf in envs/eks-demo/
+
+then:
+terraform destroy -auto-approve
+```
+
+### Other Helm commands for build / tear downs:
+
+```bash
+First: point kubectl/helm at cluster
+
+Needed before any helm/kubectl cmd (kubeconfig gone after
+destroy):
+aws eks update-kubeconfig --name decentralizard-eks --region
+eu-west-1
+
+Build-up / inspect commands used
+
+helm list -A                              # all releases, all
+namespaces
+helm list -n external-secrets             # one namespace
+helm status decentralizard -n decentralizard
+helm get values decentralizard -n decentralizard   # rendered
+values
+kubectl get pods -A                       # what's running
+kubectl get ingress,svc -A                # LB sources
+(ALB/NLB origins)
+kubectl get crd externalsecrets.external-secrets.io   # CRD
+ready before app
+kubectl get externalsecrets -A            # secret sync status
+CRD check mattered — app release failed before (no matches for
+kind aws-parameterstore) cuz external-secrets CRDs not ready.
+Order: external-secrets → CRDs ready → app.
+
+Tear-down commands (pre-terraform destroy)
+
+Stops the orphan-ALB problem you just hit. Delete LB sources
+first so controller cleans its own AWS junk:
+kubectl delete ingress,svc --all -A --timeout=120s    # frees
+ALB/NLB + EIPs
+helm uninstall decentralizard -n decentralizard
+helm uninstall loki kube-prometheus-stack -n monitoring
+helm uninstall external-dns -n external-dns
+helm uninstall external-secrets -n external-secrets
+helm uninstall aws-load-balancer-controller -n kube-system   #
+LAST — it does the cleanup
+Then terraform destroy.
+```
+
+#### Then verify nothing's billing (eu-west-1) — these four are the only chargeable things:
+
+```bash
+aws eks list-clusters --region eu-west-1 --query clusters
+aws ec2 describe-instances --region eu-west-1 --filters Name=instance-state-name,Values=running --query 'Reservations[].Instances[].InstanceId'
+aws elbv2 describe-load-balancers --region eu-west-1 --query 'LoadBalancers[].LoadBalancerName'
+aws ec2 describe-volumes --region eu-west-1 --filters Name=status,Values=available --query 'Volumes[].VolumeId'
+```
+
+If destroy errors with DependencyViolation (orphan ALB holding the subnet): the AWS LB Controller didn't
+finish cleaning its ALB before TF tried to delete the VPC. Fix:
+
+```bash
+aws elbv2 describe-load-balancers --region eu-west-1 --query 'LoadBalancers[].LoadBalancerArn'
+aws elbv2 delete-load-balancer --region eu-west-1 --load-balancer-arn <arn>
+terraform destroy -auto-approve # re-run, now subnets free up
+```
+
+If describe-volumes lists leftover EBS (Prometheus/Loki PVCs that didn't cascade): delete them so they
+don't bill:
+
+```bash
+aws ec2 delete-volume --region eu-west-1 --volume-id <vol-id>
+```
+
+Check
+
+```bash
+aws eks list-clusters --region eu-west-1
+```
 
 ## 2 Tier plan
 
@@ -140,3 +261,7 @@ Real reasons, not you being dumb:
    The app:3000 setting got saved — but the apex hostname ended up attached to
    work-you-cunt with a typo (app:300), and DNS CNAME pointed there. So "step 2"
    was done — on the wrong tunnel. That mismatch = the entire 502 saga.
+
+```
+
+```
