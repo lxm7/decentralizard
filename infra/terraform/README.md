@@ -74,6 +74,12 @@ aws s3 sync ../../../public/media "s3://$(terraform output -raw media_bucket)/"
 kubectl rollout restart deployment -n decentralizard
 ```
 
+## Find VPC, other id's
+
+```bash
+aws ec2 describe-vpcs --region eu-west-1 --query 'Vpcs[].[VpcId,Tags[?Key==`Name`].Value|[0],IsDefault]' --output table
+```
+
 ## Terraform Destroy
 
 ```bash
@@ -83,7 +89,8 @@ export CLOUDFLARE_API_TOKEN="cfat_xxx4b8"
 Delete in-cluster LB sources first so the controller cleans up its own AWS resources
 
 ```bash
-kubectl delete ingress,svc --all -A --timeout=120s
+kubectl delete svc --all -A --timeout=120s
+kubectl delete ingress --all -A --timeout=120s
 helm uninstall app -n <ns>
 
 Find<ns>:
@@ -144,6 +151,30 @@ aws eks list-clusters --region eu-west-1 --query clusters
 aws ec2 describe-instances --region eu-west-1 --filters Name=instance-state-name,Values=running --query 'Reservations[].Instances[].InstanceId'
 aws elbv2 describe-load-balancers --region eu-west-1 --query 'LoadBalancers[].LoadBalancerName'
 aws ec2 describe-volumes --region eu-west-1 --filters Name=status,Values=available --query 'Volumes[].VolumeId'
+
+Also check DependencyViolation if destroy failed, something still IN vpc. Hunt it:
+
+VPC=vpc-0498413791eac0282; R=eu-west-1
+
+# ENIs — #1 culprit (leftover from LB/NAT/EKS)
+aws ec2 describe-network-interfaces --region $R --filters Name=vpc-id Values=$VPC --query 'NetworkInterfaces[].[NetworkInterfaceId,Description,Status]' --output table
+
+# NAT gateways (not auto-deleted, $$ if left)
+aws ec2 describe-nat-gateways --region $R --filter Name=vpc-id,Values=$VPC --query 'NatGateways[?State!=`deleted`].[NatGatewayId,State]' --output table
+
+# Classic ELB (the API you missed)
+aws elb describe-load-balancers --region $R --query "LoadBalancerDescriptions[?VPCId=='$VPC'].LoadBalancerName"
+
+# VPC endpoints
+aws ec2 describe-vpc-endpoints --region $R --filters Name=vpc-id,Values=$VPC --query 'VpcEndpoints[].VpcEndpointId'
+
+# Non-default security groups
+aws ec2 describe-security-groups --region $R --filters Name=vpc-id,Values=$VPC --query "SecurityGroups[?GroupName!='default'].[GroupId,GroupName]" --output table
+
+# Subnets / IGW / route tables
+aws ec2 describe-subnets --region $R --filters Name=vpc-id,Values=$VPC --query 'Subnets[].SubnetId'
+
+aws ec2 describe-internet-gateways --region $R --filters Name=attachment.vpc-id,Values=$VPC --query 'InternetGateways[].InternetGatewayId'
 ```
 
 If destroy errors with DependencyViolation (orphan ALB holding the subnet): the AWS LB Controller didn't
